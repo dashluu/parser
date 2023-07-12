@@ -13,6 +13,8 @@ public interface IASTVisitor {
 
     void visitParam(ParamASTNode paramNode);
 
+    void visitParamDecl(ParamDeclASTNode paramDeclNode);
+
     void visitParamList(ParamListASTNode paramListNode);
 
     void visitUnOp(UnOpASTNode unOpASTNode);
