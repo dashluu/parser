@@ -205,7 +205,7 @@ public class ExprASTPass {
             return primaryResult;
         }
 
-        ASTNode root = null;
+        ASTNode root = primaryResult.getData();
         ParseResult<ASTNode> postfixResult;
         UnASTNode postfixNode;
         boolean end = false;

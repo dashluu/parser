@@ -109,7 +109,6 @@ public class ExprSyntaxPass {
 
         lexer.consume();
         syntaxBuff.add(new SyntaxInfo(opTok, SyntaxTag.TYPE_CONV));
-        // Parse type conversion
         tokResult = lexer.lookahead();
         if (tokResult.getStatus() != LexStatus.OK) {
             return err.raise(tokResult.getErrMsg());
@@ -121,7 +120,7 @@ public class ExprSyntaxPass {
         }
 
         lexer.consume();
-        syntaxBuff.add(new SyntaxInfo(opTok, SyntaxTag.ID));
+        syntaxBuff.add(new SyntaxInfo(dtypeTok, SyntaxTag.TYPE_ID));
         return ParseResult.ok(null);
     }
 
