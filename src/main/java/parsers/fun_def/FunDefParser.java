@@ -52,12 +52,11 @@ public class FunDefParser {
             return astResult;
         }
 
-        // Dummy scope acts as a scope surrounding parameters and the body
-        Scope dummyScope = new Scope(scope);
+        Scope bodyScope = new Scope(scope);
         FunDefASTNode funDefNode = (FunDefASTNode) astResult.getData();
         TypeInfo retType = funDefNode.getDtype();
-        dummyScope.setRetType(retType);
-        ParseResult<ScopeASTNode> bodyResult = scopeParser.parseBlock(dummyScope);
+        bodyScope.setRetType(retType);
+        ParseResult<ScopeASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {

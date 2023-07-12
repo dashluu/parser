@@ -10,18 +10,20 @@ import types.TypeTable;
 
 public class FunHeadASTPass {
     private SyntaxBuff syntaxBuff;
-    private Scope scope;
+    private Scope funScope;
     private final TypeTable typeTable = TypeTable.getInst();
     private final ParseErr err = ParseErr.getInst();
 
     /**
      * Constructs an AST for a function header.
      *
+     * @param syntaxBuff a buffer containing syntax information.
+     * @param funScope   the scope surrounding the function header.
      * @return a ParseResult object as the result of constructing the AST.
      */
-    public ParseResult<ASTNode> doFunHead(SyntaxBuff syntaxBuff, Scope scope) {
+    public ParseResult<ASTNode> doFunHead(SyntaxBuff syntaxBuff, Scope funScope) {
         this.syntaxBuff = syntaxBuff;
-        this.scope = scope;
+        this.funScope = funScope;
         ParseResult<ASTNode> idResult = doFunId();
         if (idResult.getStatus() == ParseStatus.ERR) {
             return idResult;
@@ -47,7 +49,7 @@ public class FunHeadASTPass {
         ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
         funDefNode.setParamListNode(paramListNode);
         // Update the return type of the function in the symbol table
-        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolTable symbolTable = funScope.getSymbolTable();
         String id = funDefNode.getTok().getVal();
         SymbolInfo symbol = symbolTable.getSymbol(id);
         symbol.setDtype(retType);
@@ -64,18 +66,16 @@ public class FunHeadASTPass {
         Tok idTok = syntaxInfo.getTok();
         // Check if the function id has been defined
         String id = idTok.getVal();
-        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolTable symbolTable = funScope.getSymbolTable();
         if (symbolTable.getSymbol(id) != null) {
             return err.raise(new ErrMsg("'" + id + "' is already defined", idTok));
         }
 
-        // Update the block memory
-        long blockMem = MemSys.getBlockMem();
-        MemSys.updateBlockMem();
         // Create a new function
-        FunInfo funInfo = new FunInfo(id, null, blockMem);
-        symbolTable.registerSymbol(funInfo);
-        return ParseResult.ok(new FunDefASTNode(idTok, null, blockMem));
+        symbolTable.registerSymbol(new FunInfo(id, null));
+        MemTable memTable = funScope.getMemTable();
+        memTable.registerMem(id, MemTable.nextBlockMem());
+        return ParseResult.ok(new FunDefASTNode(idTok, null));
     }
 
     /**
@@ -88,6 +88,7 @@ public class FunHeadASTPass {
         ParseResult<ASTNode> paramResult;
         boolean firstParam = true;
         int i = 0;
+        Scope paramScope = new Scope(funScope);
         // '('
         syntaxBuff.forward();
 
@@ -96,7 +97,7 @@ public class FunHeadASTPass {
                 // ','
                 syntaxBuff.forward();
             }
-            paramResult = doParam(i);
+            paramResult = doParam(i, paramScope);
             if (paramResult.getStatus() == ParseStatus.ERR) {
                 return paramResult;
             }
@@ -113,10 +114,11 @@ public class FunHeadASTPass {
     /**
      * Constructs an AST node for a parameter.
      *
-     * @param i the index of the parameter in the list.
+     * @param i          the index of the parameter in the list.
+     * @param paramScope the scope surrounding the parameters, which is different from the scope surrounding the function.
      * @return a ParseResult object as the result of constructing the AST node.
      */
-    private ParseResult<ASTNode> doParam(int i) {
+    private ParseResult<ASTNode> doParam(int i, Scope paramScope) {
         // Name
         SyntaxInfo nameInfo = syntaxBuff.forward();
         // Data type
@@ -129,15 +131,19 @@ public class FunHeadASTPass {
         }
 
         // Check if the parameter's name has been defined
-        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolTable symbolTable = paramScope.getSymbolTable();
         Tok nameTok = nameInfo.getTok();
         String name = nameTok.getVal();
-        if (symbolTable.getSymbol(name) != null) {
+        SymbolInfo symbol = symbolTable.getSymbol(name);
+        if (symbol != null && symbol.getSymbolType() == SymbolType.PARAM) {
             return err.raise(new ErrMsg("'" + name + "' is already defined", nameTok));
         }
 
         // Create a new parameter
-        symbolTable.registerSymbol(new ParamInfo(name, dtype, i));
+        symbol = new ParamInfo(name, dtype);
+        symbolTable.registerSymbol(symbol);
+        MemTable memTable = paramScope.getMemTable();
+        memTable.registerMem(name, i);
         return ParseResult.ok(new ParamDeclASTNode(nameTok, dtype));
     }
 

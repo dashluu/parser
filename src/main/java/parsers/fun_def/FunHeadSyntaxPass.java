@@ -24,6 +24,8 @@ public class FunHeadSyntaxPass {
     /**
      * Attempts to consume and check the syntax of a function header.
      *
+     * @param syntaxBuff a buffer containing syntax information.
+     * @param scope      the scope surrounding the function header.
      * @return a ParseResult object as the result of consuming a function header.
      * @throws IOException if there is an IO exception.
      */
