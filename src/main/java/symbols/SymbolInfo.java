@@ -13,10 +13,6 @@ public class SymbolInfo {
         this.dtype = dtype;
     }
 
-    public SymbolInfo(String id, SymbolType symbolType) {
-        this(id, symbolType, null);
-    }
-
     public String getId() {
         return id;
     }
