@@ -23,7 +23,7 @@ public interface IASTVisitor {
 
     void visitDef(DefASTNode defNode);
 
-    void visitTypeConv(TypeConvASTNode typeConvNode);
+    void visitDtype(DtypeASTNode dtypeNode);
 
     void visitFunCall(FunCallASTNode funCallNode);
 
