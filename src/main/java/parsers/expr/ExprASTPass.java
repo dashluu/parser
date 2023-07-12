@@ -42,24 +42,23 @@ public class ExprASTPass {
     }
 
     /**
-     * Checks a data type and constructs an AST for a type conversion operation.
+     * Checks a data type and constructs an AST node for the data type.
      *
-     * @return a ParseResult object as the result of constructing the AST.
+     * @return a ParseResult object as the result of constructing the AST node.
      */
-    private ParseResult<ASTNode> doTypeConv() {
-        // Type conversion operator
-        SyntaxInfo syntaxInfo = syntaxBuff.forward();
-        Tok typeConvTok = syntaxInfo.getTok();
-        // Target type to be converted to
-        syntaxInfo = syntaxBuff.forward();
+    private ParseResult<ASTNode> doDtype() {
+        // Peek first since the operation might fail(for this function only)
+        SyntaxInfo syntaxInfo = syntaxBuff.peek();
         Tok dtypeTok = syntaxInfo.getTok();
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = typeTable.getType(dtypeId);
         if (dtype == null) {
-            return err.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
+            return ParseResult.fail(dtypeTok);
         }
-        TypeConvASTNode typeConvNode = new TypeConvASTNode(typeConvTok, dtype);
-        return ParseResult.ok(typeConvNode);
+
+        syntaxBuff.forward();
+        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeTok, dtype);
+        return ParseResult.ok(dtypeNode);
     }
 
     /**
@@ -81,9 +80,9 @@ public class ExprASTPass {
 
         TypeInfo dtype = symbol.getDtype();
         ASTNode idNode = switch (symbol.getSymbolType()) {
-            case VAR -> new VarIdASTNode(idTok, dtype, ((VarInfo) symbol).getStackMem());
-            case CONST -> new ConstIdASTNode(idTok, dtype, ((ConstInfo) symbol).getStackMem());
-            default -> new ParamASTNode(idTok, dtype, ((ParamInfo) symbol).getStackMem());
+            case VAR -> new VarIdASTNode(idTok, dtype);
+            case CONST -> new ConstIdASTNode(idTok, dtype);
+            default -> new ParamASTNode(idTok, dtype);
         };
 
         return ParseResult.ok(idNode);
@@ -120,7 +119,7 @@ public class ExprASTPass {
     }
 
     /**
-     * Constructs an AST for a function call.
+     * Checks a function call and constructs an AST for a function call.
      *
      * @return a ParseResult object as the result of constructing the AST.
      */
@@ -134,9 +133,7 @@ public class ExprASTPass {
             return err.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
         }
 
-        TypeInfo retType = funInfo.getDtype();
-        long blockMem = funInfo.getBlockMem();
-        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, retType, blockMem);
+        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, funInfo.getDtype());
         int numArgs = funInfo.countParams();
         int i = 0;
         boolean firstArg = true;
@@ -149,7 +146,6 @@ public class ExprASTPass {
                 // ','
                 syntaxBuff.forward();
             }
-            // TODO: check the number of arguments
             argResult = doInfixExpr(null);
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
@@ -176,16 +172,22 @@ public class ExprASTPass {
      * @return a ParseResult object as the result of constructing the AST.
      */
     private ParseResult<ASTNode> doPrimary() {
-        Tok tok = syntaxBuff.peek().getTok();
         SyntaxTag tag = syntaxBuff.peek().getTag();
-        return switch (tag) {
-            case ID -> doId();
-            case FUN_CALL -> doFunCall();
-            case LITERAL -> doLiteral();
-            case LPAREN -> doParenGroup();
-            // This never occurs
-            default -> ParseResult.fail(tok);
-        };
+        ParseResult<ASTNode> result;
+
+        if (tag == SyntaxTag.ID) {
+            result = doDtype();
+            if (result.getStatus() == ParseStatus.OK) {
+                return result;
+            }
+            return doId();
+        } else if (tag == SyntaxTag.FUN_CALL) {
+            return doFunCall();
+        } else if (tag == SyntaxTag.LITERAL) {
+            return doLiteral();
+        }
+
+        return doParenGroup();
     }
 
     /**
@@ -201,29 +203,20 @@ public class ExprASTPass {
 
         SyntaxInfo syntaxInfo = syntaxBuff.peek();
         SyntaxTag tag = syntaxInfo.getTag();
-        if (tag != SyntaxTag.POSTFIX && tag != SyntaxTag.TYPE_CONV) {
+        if (tag != SyntaxTag.POSTFIX) {
             return primaryResult;
         }
 
         ASTNode root = primaryResult.getData();
-        ParseResult<ASTNode> postfixResult;
         UnASTNode postfixNode;
         boolean end = false;
 
         while (!end) {
             syntaxInfo = syntaxBuff.peek();
             tag = syntaxInfo.getTag();
-            end = tag != SyntaxTag.POSTFIX && tag != SyntaxTag.TYPE_CONV;
+            end = tag != SyntaxTag.POSTFIX;
             if (!end) {
-                if (tag == SyntaxTag.TYPE_CONV) {
-                    postfixResult = doTypeConv();
-                    if (postfixResult.getStatus() == ParseStatus.ERR) {
-                        return postfixResult;
-                    }
-                    postfixNode = (UnASTNode) postfixResult.getData();
-                } else {
-                    postfixNode = doPrefixPostfixOp();
-                }
+                postfixNode = doPrefixPostfixOp();
                 postfixNode.setChild(root);
                 root = postfixNode;
             }
@@ -319,7 +312,8 @@ public class ExprASTPass {
             leftNode = leftResult.getData();
             leftNodeType = leftNode.getNodeType();
 
-            if (opTok.getType() == TokType.ASSIGNMENT && leftNodeType != ASTNodeType.VAR_ID &&
+            if (opTok.getType() == TokType.ASSIGNMENT &&
+                    leftNodeType != ASTNodeType.VAR_ID &&
                     leftNodeType != ASTNodeType.PARAM) {
                 return err.raise(new ErrMsg("Expected a mutable id before assignment", opTok));
             }

@@ -15,7 +15,6 @@ import symbols.SymbolTable;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
-import types.TypeTable;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,7 +22,6 @@ import java.util.Iterator;
 public class ExprSemanChecker {
     private Scope scope;
     private final OpTable opTable = OpTable.getInst();
-    private final TypeTable typeTable = TypeTable.getInst();
     private final ParseErr err = ParseErr.getInst();
 
     /**
@@ -49,7 +47,8 @@ public class ExprSemanChecker {
     private ParseResult<ASTNode> recurCheckSeman(ASTNode exprNode) throws IOException {
         ASTNodeType exprNodeType = exprNode.getNodeType();
         if (exprNodeType == ASTNodeType.LITERAL || exprNodeType == ASTNodeType.VAR_ID ||
-                exprNodeType == ASTNodeType.CONST_ID || exprNodeType == ASTNodeType.PARAM) {
+                exprNodeType == ASTNodeType.CONST_ID || exprNodeType == ASTNodeType.PARAM ||
+                exprNodeType == ASTNodeType.DTYPE) {
             return ParseResult.ok(exprNode);
         }
 
@@ -59,8 +58,6 @@ public class ExprSemanChecker {
             result = typeCheckUnExpr((UnASTNode) exprNode);
         } else if (exprNode.getNodeType() == ASTNodeType.BIN_OP) {
             result = typeCheckBinExpr((BinASTNode) exprNode);
-        } else if (exprNode.getNodeType() == ASTNodeType.TYPE_CONV) {
-            result = typeCheckTypeConvExpr((UnASTNode) exprNode);
         } else {
             result = typeCheckArgList((KnaryASTNode) exprNode);
         }
@@ -141,41 +138,6 @@ public class ExprSemanChecker {
         // Set the current node's data type to that of the result
         exprNode.setDtype(resultDtype);
         return ParseResult.ok(exprNode);
-    }
-
-    /**
-     * Checks the type compatibilities in a type-conversion expression.
-     *
-     * @param convNode the type-conversion expression AST's root.
-     * @return a ParseResult object as the result of type checking a type conversion expression.
-     * @throws IOException if there is an IO exception.
-     */
-    private ParseResult<ASTNode> typeCheckTypeConvExpr(UnASTNode convNode) throws IOException {
-        Tok convTok = convNode.getTok();
-        ASTNode childNode = convNode.getChild();
-
-        // Recursively analyze the semantics of the child node
-        ParseResult<ASTNode> result = recurCheckSeman(childNode);
-        if (result.getStatus() == ParseStatus.ERR) {
-            return result;
-        }
-
-        // Get the operand's data type
-        TypeInfo srcDtype = childNode.getDtype();
-        // Get the dummy target data type
-        TypeInfo dummyDtype = convNode.getDtype();
-        // Get the real target type
-        TypeInfo destDtype = typeTable.getType(dummyDtype.id());
-
-        if (destDtype == null) {
-            return err.raise(new ErrMsg("Expected a valid type after type conversion operator", convTok));
-        } else if (typeTable.getTypeConv(srcDtype, dummyDtype) == null) {
-            return err.raise(new ErrMsg("Data of type '" + dummyDtype.id() +
-                    "' cannot be converted from data of type '" + srcDtype.id() + "'", convTok));
-        }
-
-        convNode.setDtype(destDtype);
-        return ParseResult.ok(convNode);
     }
 
     /**

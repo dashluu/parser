@@ -90,40 +90,6 @@ public class ExprSyntaxPass {
         return ParseResult.ok(null);
     }
 
-    /**
-     * Attempts to consume and check the syntax of a type conversion expression.
-     *
-     * @return a ParseResult object as the result of checking the syntax of a type conversion expression.
-     * @throws IOException if there is an IO exception.
-     */
-    private ParseResult<SyntaxInfo> eatTypeConv() throws IOException {
-        LexResult<Tok> tokResult = lexer.lookahead();
-        if (tokResult.getStatus() != LexStatus.OK) {
-            return err.raise(tokResult.getErrMsg());
-        }
-
-        Tok opTok = tokResult.getData();
-        if (opTok.getType() != TokType.TYPE_CONV) {
-            return ParseResult.fail(opTok);
-        }
-
-        lexer.consume();
-        syntaxBuff.add(new SyntaxInfo(opTok, SyntaxTag.TYPE_CONV));
-        tokResult = lexer.lookahead();
-        if (tokResult.getStatus() != LexStatus.OK) {
-            return err.raise(tokResult.getErrMsg());
-        }
-
-        Tok dtypeTok = tokResult.getData();
-        if (dtypeTok.getType() != TokType.ID) {
-            return err.raise(new ErrMsg("Expected a type id after type conversion operator", dtypeTok));
-        }
-
-        lexer.consume();
-        syntaxBuff.add(new SyntaxInfo(dtypeTok, SyntaxTag.TYPE_ID));
-        return ParseResult.ok(null);
-    }
-
     // Primary expressions
 
     /**
@@ -374,8 +340,6 @@ public class ExprSyntaxPass {
             opResult = eatPostfixOp();
             if (opResult.getStatus() == ParseStatus.ERR) {
                 return opResult;
-            } else if (opResult.getStatus() == ParseStatus.FAIL) {
-                opResult = eatTypeConv();
             }
             end = opResult.getStatus() == ParseStatus.FAIL;
         }
