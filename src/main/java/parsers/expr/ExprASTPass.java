@@ -4,10 +4,7 @@ import ast.*;
 import exceptions.ErrMsg;
 import operators.OpTable;
 import parsers.utils.*;
-import symbols.FunInfo;
-import symbols.SymbolInfo;
-import symbols.SymbolTable;
-import symbols.SymbolType;
+import symbols.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
@@ -84,9 +81,9 @@ public class ExprASTPass {
 
         TypeInfo dtype = symbol.getDtype();
         ASTNode idNode = switch (symbol.getSymbolType()) {
-            case VAR -> new VarIdASTNode(idTok, dtype);
-            case CONST -> new ConstIdASTNode(idTok, dtype);
-            default -> new ParamASTNode(idTok, dtype);
+            case VAR -> new VarIdASTNode(idTok, dtype, ((VarInfo) symbol).getStackMem());
+            case CONST -> new ConstIdASTNode(idTok, dtype, ((ConstInfo) symbol).getStackMem());
+            default -> new ParamASTNode(idTok, dtype, ((ParamInfo) symbol).getStackMem());
         };
 
         return ParseResult.ok(idNode);
@@ -137,7 +134,9 @@ public class ExprASTPass {
             return err.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
         }
 
-        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, funInfo.getDtype());
+        TypeInfo retType = funInfo.getDtype();
+        long blockMem = funInfo.getBlockMem();
+        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, retType, blockMem);
         int numArgs = funInfo.countParams();
         int i = 0;
         boolean firstArg = true;

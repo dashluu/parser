@@ -10,9 +10,11 @@ import java.util.List;
 // Implemented using the Iterator pattern
 public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
     private final List<TypeInfo> paramDtypes = new ArrayList<>();
+    private final long blockMem;
 
-    public FunInfo(String id, TypeInfo returnDtype) {
+    public FunInfo(String id, TypeInfo returnDtype, long blockMem) {
         super(id, SymbolType.FUN, returnDtype);
+        this.blockMem = blockMem;
     }
 
     /**
@@ -31,6 +33,10 @@ public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
      */
     public int countParams() {
         return paramDtypes.size();
+    }
+
+    public long getBlockMem() {
+        return blockMem;
     }
 
     /**

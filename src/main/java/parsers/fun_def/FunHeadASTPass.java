@@ -1,15 +1,9 @@
 package parsers.fun_def;
 
-import ast.ASTNode;
-import ast.FunDefASTNode;
-import ast.ParamASTNode;
-import ast.ParamListASTNode;
+import ast.*;
 import exceptions.ErrMsg;
 import parsers.utils.*;
-import symbols.FunInfo;
-import symbols.SymbolInfo;
-import symbols.SymbolTable;
-import symbols.SymbolType;
+import symbols.*;
 import toks.Tok;
 import types.TypeInfo;
 import types.TypeTable;
@@ -71,14 +65,17 @@ public class FunHeadASTPass {
         // Check if the function id has been defined
         String id = idTok.getVal();
         SymbolTable symbolTable = scope.getSymbolTable();
-        SymbolInfo symbol = symbolTable.getSymbol(id);
-        if (symbol != null) {
+        if (symbolTable.getSymbol(id) != null) {
             return err.raise(new ErrMsg("'" + id + "' is already defined", idTok));
         }
 
+        // Update the block memory
+        long blockMem = MemSys.getBlockMem();
+        MemSys.updateBlockMem();
         // Create a new function
-        symbolTable.registerSymbol(new FunInfo(id, null));
-        return ParseResult.ok(new FunDefASTNode(idTok, null));
+        FunInfo funInfo = new FunInfo(id, null, blockMem);
+        symbolTable.registerSymbol(funInfo);
+        return ParseResult.ok(new FunDefASTNode(idTok, null, blockMem));
     }
 
     /**
@@ -90,6 +87,7 @@ public class FunHeadASTPass {
         ParamListASTNode paramListNode = new ParamListASTNode();
         ParseResult<ASTNode> paramResult;
         boolean firstParam = true;
+        int i = 0;
         // '('
         syntaxBuff.forward();
 
@@ -98,12 +96,13 @@ public class FunHeadASTPass {
                 // ','
                 syntaxBuff.forward();
             }
-            paramResult = doParam();
+            paramResult = doParam(i);
             if (paramResult.getStatus() == ParseStatus.ERR) {
                 return paramResult;
             }
             paramListNode.addChild(paramResult.getData());
             firstParam = false;
+            ++i;
         }
 
         // ')'
@@ -114,9 +113,10 @@ public class FunHeadASTPass {
     /**
      * Constructs an AST node for a parameter.
      *
+     * @param i the index of the parameter in the list.
      * @return a ParseResult object as the result of constructing the AST node.
      */
-    private ParseResult<ASTNode> doParam() {
+    private ParseResult<ASTNode> doParam(int i) {
         // Name
         SyntaxInfo nameInfo = syntaxBuff.forward();
         // Data type
@@ -137,8 +137,8 @@ public class FunHeadASTPass {
         }
 
         // Create a new parameter
-        symbolTable.registerSymbol(new SymbolInfo(name, SymbolType.PARAM, dtype));
-        return ParseResult.ok(new ParamASTNode(nameTok, dtype));
+        symbolTable.registerSymbol(new ParamInfo(name, dtype, i));
+        return ParseResult.ok(new ParamDeclASTNode(nameTok, dtype));
     }
 
     /**

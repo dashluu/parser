@@ -4,9 +4,7 @@ import ast.*;
 import exceptions.ErrMsg;
 import parsers.expr.ExprASTPass;
 import parsers.utils.*;
-import symbols.SymbolInfo;
-import symbols.SymbolTable;
-import symbols.SymbolType;
+import symbols.*;
 import toks.Tok;
 import types.TypeInfo;
 import types.TypeTable;
@@ -82,13 +80,17 @@ public class DeclASTPass {
         Tok idTok = idInfo.getTok();
         String id = idTok.getVal();
         SymbolTable symbolTable = scope.getSymbolTable();
-        if (symbolTable.getSymbol(id) != null) {
+        SymbolInfo symbol = symbolTable.getSymbol(id);
+        if (symbol != null) {
             return err.raise(new ErrMsg("'" + id + "' is already defined", idTok));
-        } else {
-            SymbolType symbolType = isMutable ? SymbolType.VAR : SymbolType.CONST;
-            symbolTable.registerSymbol(new SymbolInfo(id, symbolType));
         }
 
+        // Update the stack memory
+        long dataMem = MemSys.getDataMem();
+        MemSys.updateDataMem();
+        // Add a variable or a constant to the symbol table
+        symbol = isMutable ? new VarInfo(id, null, dataMem) : new ConstInfo(id, null, dataMem);
+        symbolTable.registerSymbol(symbol);
         // Try processing data type
         TypeInfo dtype = null;
         SyntaxInfo dtypeInfo = syntaxBuff.peek();

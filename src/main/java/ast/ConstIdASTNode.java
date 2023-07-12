@@ -4,8 +4,20 @@ import toks.Tok;
 import types.TypeInfo;
 
 public class ConstIdASTNode extends ASTNode {
-    public ConstIdASTNode(Tok tok, TypeInfo dtype) {
+    private final long memId;
+
+    public ConstIdASTNode(Tok tok, TypeInfo dtype, long memId) {
         super(tok, ASTNodeType.CONST_ID, dtype);
+        this.memId = memId;
+    }
+
+    public long getMemId() {
+        return memId;
+    }
+
+    @Override
+    public String toJsonStr() {
+        return super.toJsonStr() + ",\"Memory ID\":\"" + memId + "\"";
     }
 
     @Override
