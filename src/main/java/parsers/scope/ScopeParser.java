@@ -79,7 +79,7 @@ public class ScopeParser {
         ParseResult<ScopeASTNode> blockResult;
         ASTNode stmtNode, funDefNode;
         ScopeASTNode blockNode;
-        ScopeASTNode scopeNode = new ScopeASTNode();
+        ScopeASTNode scopeNode = new ScopeASTNode(scope.getMemTable());
         boolean end = false;
 
         while (!end) {

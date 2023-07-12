@@ -6,6 +6,7 @@ import types.TypeInfo;
 // Code scope
 public class Scope {
     private final SymbolTable symbolTable;
+    private final MemTable memTable;
     private final Scope parent;
     // Hold the return type of the function surrounding the scope
     private TypeInfo retType;
@@ -14,6 +15,7 @@ public class Scope {
         this.parent = parent;
         this.retType = retType;
         this.symbolTable = new SymbolTable(parent == null ? null : parent.symbolTable);
+        this.memTable = new MemTable(parent == null ? null : parent.memTable);
     }
 
     public Scope(Scope parent) {
@@ -22,6 +24,10 @@ public class Scope {
 
     public SymbolTable getSymbolTable() {
         return symbolTable;
+    }
+
+    public MemTable getMemTable() {
+        return memTable;
     }
 
     public Scope getParent() {

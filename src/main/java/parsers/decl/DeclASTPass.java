@@ -85,12 +85,12 @@ public class DeclASTPass {
             return err.raise(new ErrMsg("'" + id + "' is already defined", idTok));
         }
 
-        // Update the stack memory
-        long dataMem = MemSys.getDataMem();
-        MemSys.updateDataMem();
         // Add a variable or a constant to the symbol table
-        symbol = isMutable ? new VarInfo(id, null, dataMem) : new ConstInfo(id, null, dataMem);
+        symbol = isMutable ? new VarInfo(id, null) : new ConstInfo(id, null);
         symbolTable.registerSymbol(symbol);
+        // Add a variable or a constant to the memory table
+        MemTable memTable = scope.getMemTable();
+        memTable.registerMem(id, MemTable.nextDataMem());
         // Try processing data type
         TypeInfo dtype = null;
         SyntaxInfo dtypeInfo = syntaxBuff.peek();

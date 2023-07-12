@@ -7,13 +7,11 @@ import types.TypeInfo;
 public class FunDefASTNode extends ASTNode {
     private ParamListASTNode paramListNode;
     private ScopeASTNode bodyNode;
-    private final long blockId;
 
-    public FunDefASTNode(Tok tok, TypeInfo returnDtype, long blockId) {
+    public FunDefASTNode(Tok tok, TypeInfo returnDtype) {
         super(tok, ASTNodeType.FUN_DEF, returnDtype);
         paramListNode = null;
         bodyNode = null;
-        this.blockId = blockId;
     }
 
     public ParamListASTNode getParamListNode() {
@@ -32,13 +30,9 @@ public class FunDefASTNode extends ASTNode {
         this.bodyNode = bodyNode;
     }
 
-    public long getBlockId() {
-        return blockId;
-    }
-
     @Override
     public String toJsonStr() {
-        return super.toJsonStr() + ",\"Block ID\":\"" + blockId + "\"" +
+        return super.toJsonStr() +
                 ",\"Param list\":" + (paramListNode == null ? "\"null\"" : "{" + paramListNode.toJsonStr() + "}") +
                 ",\"Body\":" + (bodyNode == null ? "\"null\"" : "{" + bodyNode.toJsonStr() + "}");
     }
