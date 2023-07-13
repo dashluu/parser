@@ -376,20 +376,20 @@ public class ExprSyntaxPass {
      */
     private ParseResult<SyntaxInfo> eatInfixExpr() throws IOException {
         boolean firstOperand = true;
-        ParseResult<SyntaxInfo> leftResult, infixResult;
+        ParseResult<SyntaxInfo> lresult, infixResult;
         LexResult<Tok> opResult;
         Tok opTok;
 
         while (true) {
             // Parse left operand
-            leftResult = eatPrefixExpr();
-            if (leftResult.getStatus() == ParseStatus.ERR) {
-                return leftResult;
-            } else if (leftResult.getStatus() == ParseStatus.FAIL) {
+            lresult = eatPrefixExpr();
+            if (lresult.getStatus() == ParseStatus.ERR) {
+                return lresult;
+            } else if (lresult.getStatus() == ParseStatus.FAIL) {
                 if (firstOperand) {
-                    return leftResult;
+                    return lresult;
                 } else {
-                    return err.raise(new ErrMsg("Invalid expression", leftResult.getFailTok()));
+                    return err.raise(new ErrMsg("Invalid expression", lresult.getFailTok()));
                 }
             }
 
@@ -405,7 +405,7 @@ public class ExprSyntaxPass {
             if (infixResult.getStatus() == ParseStatus.ERR) {
                 return infixResult;
             } else if (infixResult.getStatus() == ParseStatus.FAIL) {
-                return leftResult;
+                return lresult;
             }
 
             lexer.consume();

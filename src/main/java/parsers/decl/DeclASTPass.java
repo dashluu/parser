@@ -82,15 +82,13 @@ public class DeclASTPass {
         SymbolTable symbolTable = scope.getSymbolTable();
         SymbolInfo symbol = symbolTable.getSymbol(id);
         if (symbol != null) {
-            return err.raise(new ErrMsg("'" + id + "' is already defined", idTok));
+            return err.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Add a variable or a constant to the symbol table
-        symbol = isMutable ? new VarInfo(id, null) : new ConstInfo(id, null);
+        int label = LabelGen.getDataLabel();
+        symbol = isMutable ? new VarInfo(id, null, label) : new ConstInfo(id, null, label);
         symbolTable.registerSymbol(symbol);
-        // Add a variable or a constant to the memory table
-        MemTable memTable = scope.getMemTable();
-        memTable.registerMem(id, MemTable.nextDataMem());
         // Try processing data type
         TypeInfo dtype = null;
         SyntaxInfo dtypeInfo = syntaxBuff.peek();

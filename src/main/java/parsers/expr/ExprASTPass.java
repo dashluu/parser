@@ -80,9 +80,9 @@ public class ExprASTPass {
 
         TypeInfo dtype = symbol.getDtype();
         ASTNode idNode = switch (symbol.getSymbolType()) {
-            case VAR -> new VarIdASTNode(idTok, dtype);
-            case CONST -> new ConstIdASTNode(idTok, dtype);
-            default -> new ParamASTNode(idTok, dtype);
+            case VAR -> new VarIdASTNode(idTok, dtype, ((VarInfo) symbol).getLabel());
+            case CONST -> new ConstIdASTNode(idTok, dtype, ((ConstInfo) symbol).getLabel());
+            default -> new ParamASTNode(idTok, dtype, ((ParamInfo) symbol).getLabel());
         };
 
         return ParseResult.ok(idNode);
@@ -133,7 +133,9 @@ public class ExprASTPass {
             return err.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
         }
 
-        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, funInfo.getDtype());
+        TypeInfo retType = funInfo.getDtype();
+        int label = funInfo.getLabel();
+        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, retType, label);
         int numArgs = funInfo.countParams();
         int i = 0;
         boolean firstArg = true;
@@ -291,49 +293,49 @@ public class ExprASTPass {
      * @return a ParseResult object as the result of constructing the AST.
      */
     private ParseResult<ASTNode> doInfixExpr(Tok prevOpTok) {
-        ParseResult<ASTNode> leftResult = doPrefixExpr();
-        if (leftResult.getStatus() == ParseStatus.ERR) {
-            return leftResult;
+        ParseResult<ASTNode> lresult = doPrefixExpr();
+        if (lresult.getStatus() == ParseStatus.ERR) {
+            return lresult;
         }
 
         SyntaxInfo syntaxInfo;
         Tok opTok;
-        ASTNodeType leftNodeType;
-        ASTNode leftNode, rightNode;
-        BinOpASTNode binNode;
+        ASTNodeType lnodeType;
+        ASTNode lnode, rnode;
+        BinOpASTNode binOpNode;
 
         while (true) {
             syntaxInfo = syntaxBuff.peek();
             if (syntaxInfo.getTag() != SyntaxTag.INFIX) {
-                return leftResult;
+                return lresult;
             }
 
             opTok = syntaxInfo.getTok();
-            leftNode = leftResult.getData();
-            leftNodeType = leftNode.getNodeType();
+            lnode = lresult.getData();
+            lnodeType = lnode.getNodeType();
 
             if (opTok.getType() == TokType.ASSIGNMENT &&
-                    leftNodeType != ASTNodeType.VAR_ID &&
-                    leftNodeType != ASTNodeType.PARAM) {
+                    lnodeType != ASTNodeType.VAR_ID &&
+                    lnodeType != ASTNodeType.PARAM) {
                 return err.raise(new ErrMsg("Expected a mutable id before assignment", opTok));
             }
 
             if (prevOpTok != null && opTable.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {
                 // The current operator has lower precedence than the previous operator
-                return leftResult;
+                return lresult;
             }
 
             syntaxBuff.forward();
-            binNode = new BinOpASTNode(opTok, null);
+            binOpNode = new BinOpASTNode(opTok, null);
             ParseResult<ASTNode> rightResult = doInfixExpr(opTok);
             if (rightResult.getStatus() == ParseStatus.ERR) {
                 return rightResult;
             }
 
-            rightNode = rightResult.getData();
-            binNode.setLeft(leftNode);
-            binNode.setRight(rightNode);
-            leftResult = ParseResult.ok(binNode);
+            rnode = rightResult.getData();
+            binOpNode.setLeft(lnode);
+            binOpNode.setRight(rnode);
+            lresult = ParseResult.ok(binOpNode);
         }
     }
 }
