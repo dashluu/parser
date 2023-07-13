@@ -3,7 +3,14 @@ package symbols;
 import types.TypeInfo;
 
 public class ConstInfo extends SymbolInfo {
-    public ConstInfo(String id, TypeInfo dtype) {
+    private final int label;
+
+    public ConstInfo(String id, TypeInfo dtype, int label) {
         super(id, SymbolType.CONST, dtype);
+        this.label = label;
+    }
+
+    public int getLabel() {
+        return label;
     }
 }

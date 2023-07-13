@@ -7,11 +7,13 @@ import types.TypeInfo;
 public class FunDefASTNode extends ASTNode {
     private ParamListASTNode paramListNode;
     private ScopeASTNode bodyNode;
+    private final int label;
 
-    public FunDefASTNode(Tok tok, TypeInfo returnDtype) {
+    public FunDefASTNode(Tok tok, TypeInfo returnDtype, int label) {
         super(tok, ASTNodeType.FUN_DEF, returnDtype);
         paramListNode = null;
         bodyNode = null;
+        this.label = label;
     }
 
     public ParamListASTNode getParamListNode() {
@@ -28,6 +30,10 @@ public class FunDefASTNode extends ASTNode {
 
     public void setBodyNode(ScopeASTNode bodyNode) {
         this.bodyNode = bodyNode;
+    }
+
+    public int getLabel() {
+        return label;
     }
 
     @Override

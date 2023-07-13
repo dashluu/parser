@@ -10,9 +10,11 @@ import java.util.List;
 // Implemented using the Iterator pattern
 public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
     private final List<TypeInfo> paramDtypes = new ArrayList<>();
+    private final int label;
 
-    public FunInfo(String id, TypeInfo returnDtype) {
+    public FunInfo(String id, TypeInfo returnDtype, int label) {
         super(id, SymbolType.FUN, returnDtype);
+        this.label = label;
     }
 
     /**
@@ -31,6 +33,10 @@ public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
      */
     public int countParams() {
         return paramDtypes.size();
+    }
+
+    public int getLabel() {
+        return label;
     }
 
     /**
