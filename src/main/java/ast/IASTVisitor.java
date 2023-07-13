@@ -32,4 +32,10 @@ public interface IASTVisitor {
     void visitRet(RetASTNode retNode);
 
     void visitScope(ScopeASTNode scopeNode);
+
+    void visitIf(IfASTNode ifNode);
+
+    void visitElif(ElifASTNode elifNode);
+
+    void visitElse(ElseASTNode elseNode);
 }
