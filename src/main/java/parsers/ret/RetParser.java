@@ -15,7 +15,6 @@ import java.io.IOException;
 public class RetParser {
     private TokParser tokParser;
     private ExprParser exprParser;
-    private final RetSemanChecker semanChecker = new RetSemanChecker();
     private final ParseErr err = ParseErr.getInst();
 
     /**
@@ -71,10 +70,14 @@ public class RetParser {
             exprDtype = exprNode.getDtype();
         }
 
-        // Create and return a new node as the parent of the expression node
-        RetASTNode retNode = new RetASTNode(kwResult.getData(), exprDtype);
+        // Check if the return type is as expected
+        Tok kwTok = kwResult.getData();
+        RetASTNode retNode = new RetASTNode(kwTok, exprDtype);
+        if (!retNode.getDtype().equals(retType)) {
+            return ParseErr.getInst().raise(new ErrMsg("Return type is not '" + retType.id() + "'", kwTok));
+        }
+
         retNode.setChild(exprNode);
-        // Check the semantics of the return statement
-        return semanChecker.checkSeman(retNode, scope);
+        return ParseResult.ok(retNode);
     }
 }
