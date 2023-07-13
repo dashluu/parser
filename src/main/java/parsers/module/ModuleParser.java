@@ -1,8 +1,9 @@
 package parsers.module;
 
-import ast.ScopeASTNode;
+import ast.ASTNode;
 import exceptions.ErrMsg;
 import lexers.Lexer;
+import parsers.branch.BranchParser;
 import parsers.decl.DeclASTPass;
 import parsers.decl.DeclParser;
 import parsers.decl.DeclSemanChecker;
@@ -34,6 +35,7 @@ public class ModuleParser {
     private final DeclParser declParser;
     private final RetParser retParser;
     private final StmtParser stmtParser;
+    private final BranchParser brParser;
     private final FunHeadSyntaxPass funHeadSyntaxPass;
     private final FunHeadASTPass funHeadASTPass;
     private final FunDefParser funDefParser;
@@ -53,6 +55,7 @@ public class ModuleParser {
         declParser = new DeclParser();
         retParser = new RetParser();
         stmtParser = new StmtParser();
+        brParser = new BranchParser();
         funHeadSyntaxPass = new FunHeadSyntaxPass();
         funHeadASTPass = new FunHeadASTPass();
         funDefParser = new FunDefParser();
@@ -69,9 +72,10 @@ public class ModuleParser {
         declParser.init(declSyntaxPass, declASTPass, declSemanChecker);
         retParser.init(tokParser, exprParser);
         stmtParser.init(lexer, tokParser, exprParser, declParser, retParser);
+        brParser.init(tokParser, exprParser, scopeParser);
         funHeadSyntaxPass.init(tokParser);
         funDefParser.init(funHeadSyntaxPass, funHeadASTPass, scopeParser);
-        scopeParser.init(tokParser, stmtParser, funDefParser);
+        scopeParser.init(tokParser, stmtParser, funDefParser, brParser);
     }
 
     /**
@@ -80,9 +84,9 @@ public class ModuleParser {
      * @return a ParseResult object as the result of parsing the module.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ScopeASTNode> parseModule() throws IOException {
+    public ParseResult<ASTNode> parseModule() throws IOException {
         Scope globalScope = new Scope(null);
-        ParseResult<ScopeASTNode> moduleResult = scopeParser.parseScope(globalScope);
+        ParseResult<ASTNode> moduleResult = scopeParser.parseScope(globalScope);
 
         if (moduleResult.getStatus() == ParseStatus.ERR) {
             return moduleResult;
