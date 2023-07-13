@@ -24,12 +24,15 @@ public class FunHeadASTPass {
     public ParseResult<ASTNode> doFunHead(SyntaxBuff syntaxBuff, Scope funScope) {
         this.syntaxBuff = syntaxBuff;
         this.funScope = funScope;
-        ParseResult<ASTNode> idResult = doFunId();
+        ParseResult<Pair<FunInfo, ASTNode>> idResult = doFunId();
         if (idResult.getStatus() == ParseStatus.ERR) {
-            return idResult;
+            return ParseResult.err();
         }
 
-        ParseResult<ASTNode> paramListResult = doParamList();
+        Pair<FunInfo, ASTNode> pair = idResult.getData();
+        FunInfo funInfo = pair.first();
+        FunDefASTNode funDefNode = (FunDefASTNode) pair.second();
+        ParseResult<ASTNode> paramListResult = doParamList(funInfo);
         if (paramListResult.getStatus() == ParseStatus.ERR) {
             return paramListResult;
         }
@@ -44,7 +47,6 @@ public class FunHeadASTPass {
             retType = retTypeResult.getData();
         }
 
-        FunDefASTNode funDefNode = (FunDefASTNode) idResult.getData();
         funDefNode.setDtype(retType);
         ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
         funDefNode.setParamListNode(paramListNode);
@@ -53,29 +55,30 @@ public class FunHeadASTPass {
         String id = funDefNode.getTok().getVal();
         SymbolInfo symbol = symbolTable.getSymbol(id);
         symbol.setDtype(retType);
-        return idResult;
+        return ParseResult.ok(funDefNode);
     }
 
     /**
-     * Constructs an AST node for a function definition.
+     * Constructs an AST node for a function definition and initializes a new function symbol.
      *
-     * @return a ParseResult object as the result of constructing the AST node.
+     * @return a ParseResult object as the result of constructing the AST node and initializing a new function symbol.
      */
-    private ParseResult<ASTNode> doFunId() {
+    private ParseResult<Pair<FunInfo, ASTNode>> doFunId() {
         SyntaxInfo syntaxInfo = syntaxBuff.forward();
         Tok idTok = syntaxInfo.getTok();
         // Check if the function id has been defined
         String id = idTok.getVal();
         SymbolTable symbolTable = funScope.getSymbolTable();
         if (symbolTable.getSymbol(id) != null) {
-            return err.raise(new ErrMsg("'" + id + "' is already defined", idTok));
+            return err.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new function
-        symbolTable.registerSymbol(new FunInfo(id, null));
-        MemTable memTable = funScope.getMemTable();
-        memTable.registerMem(id, MemTable.nextBlockMem());
-        return ParseResult.ok(new FunDefASTNode(idTok, null));
+        int label = LabelGen.getBlockLabel();
+        FunInfo funInfo = new FunInfo(id, null, label);
+        symbolTable.registerSymbol(funInfo);
+        ASTNode funDefNode = new FunDefASTNode(idTok, null, label);
+        return ParseResult.ok(new Pair<>(funInfo, funDefNode));
     }
 
     /**
@@ -83,9 +86,10 @@ public class FunHeadASTPass {
      *
      * @return a ParseResult object as the result of constructing the AST.
      */
-    private ParseResult<ASTNode> doParamList() {
+    private ParseResult<ASTNode> doParamList(FunInfo funInfo) {
         ParamListASTNode paramListNode = new ParamListASTNode();
         ParseResult<ASTNode> paramResult;
+        ASTNode paramNode;
         boolean firstParam = true;
         int i = 0;
         Scope paramScope = new Scope(funScope);
@@ -97,11 +101,15 @@ public class FunHeadASTPass {
                 // ','
                 syntaxBuff.forward();
             }
+
             paramResult = doParam(i, paramScope);
             if (paramResult.getStatus() == ParseStatus.ERR) {
                 return paramResult;
             }
-            paramListNode.addChild(paramResult.getData());
+
+            paramNode = paramResult.getData();
+            funInfo.addParamDtype(paramNode.getDtype());
+            paramListNode.addChild(paramNode);
             firstParam = false;
             ++i;
         }
@@ -136,14 +144,12 @@ public class FunHeadASTPass {
         String name = nameTok.getVal();
         SymbolInfo symbol = symbolTable.getSymbol(name);
         if (symbol != null && symbol.getSymbolType() == SymbolType.PARAM) {
-            return err.raise(new ErrMsg("'" + name + "' is already defined", nameTok));
+            return err.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
         }
 
         // Create a new parameter
-        symbol = new ParamInfo(name, dtype);
+        symbol = new ParamInfo(name, dtype, i);
         symbolTable.registerSymbol(symbol);
-        MemTable memTable = paramScope.getMemTable();
-        memTable.registerMem(name, i);
         return ParseResult.ok(new ParamDeclASTNode(nameTok, dtype));
     }
 
