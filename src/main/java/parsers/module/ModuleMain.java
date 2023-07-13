@@ -1,7 +1,6 @@
 package parsers.module;
 
 import ast.ASTNode;
-import ast.ScopeASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.utils.ParseErr;
@@ -23,7 +22,7 @@ public class ModuleMain {
             Lexer lexer = new Lexer(reader);
             ModuleParser moduleParser = new ModuleParser(lexer);
             moduleParser.init();
-            ParseResult<ScopeASTNode> result = moduleParser.parseModule();
+            ParseResult<ASTNode> result = moduleParser.parseModule();
             if (result.getStatus() == ParseStatus.ERR) {
                 ParseErr err = ParseErr.getInst();
                 throw new SyntaxErr(err.getMsg());
