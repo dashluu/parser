@@ -56,17 +56,17 @@ public class FunDefParser {
         FunDefASTNode funDefNode = (FunDefASTNode) astResult.getData();
         TypeInfo retType = funDefNode.getDtype();
         bodyScope.setRetType(retType);
-        ParseResult<ScopeASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
+        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
+            return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
-            Tok funDefTok = funDefNode.getTok();
-            return err.raise(new ErrMsg("Invalid body for function '" + funDefTok.getVal() + "'", funDefTok));
+            return err.raise(new ErrMsg("Invalid body for function '" + funDefNode.getTok().getVal() + "'",
+                    bodyResult.getFailTok()));
         }
 
         // Check if a return statement is missing
         // Valid only if the return type isn't void
-        ScopeASTNode bodyNode = bodyResult.getData();
+        ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         Tok idTok = funDefNode.getTok();
         if (!bodyNode.getRetFlag() && retType != TypeTable.VOID) {
             return err.raise(new ErrMsg("Missing a return statement in the function '" + idTok.getVal() + "'",
