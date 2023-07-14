@@ -11,9 +11,9 @@ import types.TypeInfo;
 import types.TypeTable;
 
 public class ExprASTPass {
-    private final ParseErr err = ParseErr.getInst();
-    private final TypeTable typeTable = TypeTable.getInst();
-    private final OpTable opTable = OpTable.getInst();
+    private static final ParseErr err = ParseErr.getInst();
+    private static final TypeTable typeTable = TypeTable.getInst();
+    private static final OpTable opTable = OpTable.getInst();
     private SyntaxBuff syntaxBuff;
     private Scope scope;
 
@@ -80,9 +80,9 @@ public class ExprASTPass {
 
         TypeInfo dtype = symbol.getDtype();
         ASTNode idNode = switch (symbol.getSymbolType()) {
-            case VAR -> new VarIdASTNode(idTok, dtype, ((VarInfo) symbol).getLabel());
-            case CONST -> new ConstIdASTNode(idTok, dtype, ((ConstInfo) symbol).getLabel());
-            default -> new ParamASTNode(idTok, dtype, ((ParamInfo) symbol).getLabel());
+            case VAR -> new VarIdASTNode(idTok, dtype);
+            case CONST -> new ConstIdASTNode(idTok, dtype);
+            default -> new ParamASTNode(idTok, dtype);
         };
 
         return ParseResult.ok(idNode);
@@ -134,8 +134,7 @@ public class ExprASTPass {
         }
 
         TypeInfo retType = funInfo.getDtype();
-        int label = funInfo.getLabel();
-        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, retType, label);
+        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, retType);
         int numArgs = funInfo.countParams();
         int i = 0;
         boolean firstArg = true;
