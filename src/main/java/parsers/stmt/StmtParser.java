@@ -20,7 +20,7 @@ public class StmtParser {
     private ExprParser exprParser;
     private DeclParser declParser;
     private RetParser retParser;
-    private final ParseErr err = ParseErr.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
