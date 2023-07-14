@@ -74,10 +74,9 @@ public class FunHeadASTPass {
         }
 
         // Create a new function
-        int label = LabelGen.getBlockLabel();
-        FunInfo funInfo = new FunInfo(id, null, label);
+        FunInfo funInfo = new FunInfo(id, null);
         symbolTable.registerSymbol(funInfo);
-        ASTNode funDefNode = new FunDefASTNode(idTok, null, label);
+        ASTNode funDefNode = new FunDefASTNode(idTok, null);
         return ParseResult.ok(new Pair<>(funInfo, funDefNode));
     }
 
@@ -91,7 +90,6 @@ public class FunHeadASTPass {
         ParseResult<ASTNode> paramResult;
         ASTNode paramNode;
         boolean firstParam = true;
-        int i = 0;
         Scope paramScope = new Scope(funScope);
         // '('
         syntaxBuff.forward();
@@ -102,7 +100,7 @@ public class FunHeadASTPass {
                 syntaxBuff.forward();
             }
 
-            paramResult = doParam(i, paramScope);
+            paramResult = doParam(paramScope);
             if (paramResult.getStatus() == ParseStatus.ERR) {
                 return paramResult;
             }
@@ -111,7 +109,6 @@ public class FunHeadASTPass {
             funInfo.addParamDtype(paramNode.getDtype());
             paramListNode.addChild(paramNode);
             firstParam = false;
-            ++i;
         }
 
         // ')'
@@ -122,11 +119,10 @@ public class FunHeadASTPass {
     /**
      * Constructs an AST node for a parameter.
      *
-     * @param i          the index of the parameter in the list.
      * @param paramScope the scope surrounding the parameters, which is different from the scope surrounding the function.
      * @return a ParseResult object as the result of constructing the AST node.
      */
-    private ParseResult<ASTNode> doParam(int i, Scope paramScope) {
+    private ParseResult<ASTNode> doParam(Scope paramScope) {
         // Name
         SyntaxInfo nameInfo = syntaxBuff.forward();
         // Data type
@@ -148,7 +144,7 @@ public class FunHeadASTPass {
         }
 
         // Create a new parameter
-        symbol = new ParamInfo(name, dtype, i);
+        symbol = new ParamInfo(name, dtype);
         symbolTable.registerSymbol(symbol);
         return ParseResult.ok(new ParamDeclASTNode(nameTok, dtype));
     }
