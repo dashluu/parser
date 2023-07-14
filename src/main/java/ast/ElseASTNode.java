@@ -2,9 +2,9 @@ package ast;
 
 import toks.Tok;
 
-public class ElseASTNode extends BranchNode {
-    public ElseASTNode(Tok tok, int label) {
-        super(tok, ASTNodeType.ELSE, label);
+public class ElseASTNode extends KnaryASTNode {
+    public ElseASTNode(Tok tok) {
+        super(tok, ASTNodeType.ELSE, null);
     }
 
     @Override
