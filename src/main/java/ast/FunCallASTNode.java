@@ -4,15 +4,8 @@ import toks.Tok;
 import types.TypeInfo;
 
 public class FunCallASTNode extends KnaryASTNode {
-    private final int label;
-
-    public FunCallASTNode(Tok tok, TypeInfo dtype, int label) {
+    public FunCallASTNode(Tok tok, TypeInfo dtype) {
         super(tok, ASTNodeType.FUN_CALL, dtype);
-        this.label = label;
-    }
-
-    public int getLabel() {
-        return label;
     }
 
     @Override

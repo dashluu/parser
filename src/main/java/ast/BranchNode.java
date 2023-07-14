@@ -5,11 +5,9 @@ import toks.Tok;
 public abstract class BranchNode extends ASTNode {
     protected ASTNode condNode;
     protected ScopeASTNode bodyNode;
-    protected final int label;
 
-    public BranchNode(Tok tok, ASTNodeType nodeType, int label) {
+    public BranchNode(Tok tok, ASTNodeType nodeType) {
         super(tok, nodeType, null);
-        this.label = label;
     }
 
     public ASTNode getCondNode() {
@@ -26,9 +24,5 @@ public abstract class BranchNode extends ASTNode {
 
     public void setBodyNode(ScopeASTNode bodyNode) {
         this.bodyNode = bodyNode;
-    }
-
-    public int getLabel() {
-        return label;
     }
 }
