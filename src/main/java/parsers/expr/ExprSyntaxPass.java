@@ -15,8 +15,8 @@ public class ExprSyntaxPass {
     private Lexer lexer;
     private TokParser tokParser;
     private SyntaxBuff syntaxBuff;
-    private final ParseErr err = ParseErr.getInst();
-    private final OpTable opTable = OpTable.getInst();
+    private static final ParseErr err = ParseErr.getInst();
+    private static final OpTable opTable = OpTable.getInst();
 
     /**
      * Initializes the dependencies.

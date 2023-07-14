@@ -21,8 +21,8 @@ import java.util.Iterator;
 
 public class ExprSemanChecker {
     private Scope scope;
-    private final OpTable opTable = OpTable.getInst();
-    private final ParseErr err = ParseErr.getInst();
+    private static final OpTable opTable = OpTable.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Checks the semantics of an expression.
