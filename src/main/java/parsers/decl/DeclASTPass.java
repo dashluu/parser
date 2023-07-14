@@ -13,8 +13,8 @@ public class DeclASTPass {
     private SyntaxBuff syntaxBuff;
     private Scope scope;
     private ExprASTPass exprASTPass;
-    private final ParseErr err = ParseErr.getInst();
-    private final TypeTable typeTable = TypeTable.getInst();
+    private static final ParseErr err = ParseErr.getInst();
+    private static final TypeTable typeTable = TypeTable.getInst();
 
     /**
      * Initializes the dependencies.
@@ -34,6 +34,7 @@ public class DeclASTPass {
     public ParseResult<ASTNode> doDecl(SyntaxBuff syntaxBuff, Scope scope) {
         this.syntaxBuff = syntaxBuff;
         this.scope = scope;
+
         // If the cursor isn't at the front, there is an assignment
         boolean hasAsgnmt = !syntaxBuff.atFront();
 
@@ -56,10 +57,11 @@ public class DeclASTPass {
             return lhsResult;
         }
 
-        ParseResult<ASTNode> asgnmt = doAsgnmt();
         ASTNode lhsNode = lhsResult.getData();
         ASTNode exprNode = exprResult.getData();
-        BinASTNode asgnmtNode = (BinASTNode) asgnmt.getData();
+        boolean mutable = lhsNode.getNodeType() == ASTNodeType.VAR_DECL;
+        ParseResult<ASTNode> asgnmtResult = doAsgnmt(mutable);
+        BinASTNode asgnmtNode = (BinASTNode) asgnmtResult.getData();
         asgnmtNode.setLeft(lhsNode);
         asgnmtNode.setRight(exprNode);
         return ParseResult.ok(asgnmtNode);
@@ -73,7 +75,7 @@ public class DeclASTPass {
     private ParseResult<ASTNode> doLhs() {
         // Pop head directly
         SyntaxInfo headInfo = syntaxBuff.forward();
-        boolean isMutable = headInfo.getTag() == SyntaxTag.VAR_DECL;
+        boolean mutable = headInfo.getTag() == SyntaxTag.VAR_DECL;
 
         // Pop id directly
         SyntaxInfo idInfo = syntaxBuff.forward();
@@ -86,8 +88,7 @@ public class DeclASTPass {
         }
 
         // Add a variable or a constant to the symbol table
-        int label = LabelGen.getDataLabel();
-        symbol = isMutable ? new VarInfo(id, null, label) : new ConstInfo(id, null, label);
+        symbol = mutable ? new VarInfo(id, null) : new ConstInfo(id, null);
         symbolTable.registerSymbol(symbol);
         // Try processing data type
         TypeInfo dtype = null;
@@ -102,21 +103,26 @@ public class DeclASTPass {
             syntaxBuff.forward();
         }
 
-        ASTNode idNode = isMutable ? new VarDeclASTNode(idTok, dtype) : new ConstDeclASTNode(idTok, dtype);
+        ASTNode idNode = mutable ? new VarDeclASTNode(idTok, dtype) : new ConstDeclASTNode(idTok, dtype);
         return ParseResult.ok(idNode);
     }
 
     /**
      * Constructs an AST node for the assignment operator.
      *
+     * @param mutable boolean value for declaration's mutability.
      * @return a ParseResult object as the result of constructing the AST node.
      */
-    private ParseResult<ASTNode> doAsgnmt() {
+    private ParseResult<ASTNode> doAsgnmt(boolean mutable) {
         SyntaxInfo syntaxInfo = syntaxBuff.peek();
         if (syntaxInfo.getTag() != SyntaxTag.ASGNMT) {
             return ParseResult.fail(syntaxInfo.getTok());
         }
-        DefASTNode asgnmtNode = new DefASTNode(syntaxInfo.getTok(), null);
+
+        Tok asgnmtTok = syntaxInfo.getTok();
+        ASTNode asgnmtNode = mutable ?
+                new VarDefASTNode(asgnmtTok, null) :
+                new ConstDefASTNode(asgnmtTok, null);
         return ParseResult.ok(asgnmtNode);
     }
 }
