@@ -2,15 +2,9 @@ package symbols;
 
 import types.TypeInfo;
 
+// A class for storing parameter information in the symbol table
 public class ParamInfo extends SymbolInfo {
-    private final int label;
-
-    public ParamInfo(String id, TypeInfo dtype, int label) {
+    public ParamInfo(String id, TypeInfo dtype) {
         super(id, SymbolType.PARAM, dtype);
-        this.label = label;
-    }
-
-    public int getLabel() {
-        return label;
     }
 }

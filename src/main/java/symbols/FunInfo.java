@@ -6,15 +6,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-// A class that stores function information
+// A class for storing function information in the symbol table
 // Implemented using the Iterator pattern
 public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
     private final List<TypeInfo> paramDtypes = new ArrayList<>();
-    private final int label;
 
-    public FunInfo(String id, TypeInfo returnDtype, int label) {
+    public FunInfo(String id, TypeInfo returnDtype) {
         super(id, SymbolType.FUN, returnDtype);
-        this.label = label;
     }
 
     /**
@@ -33,10 +31,6 @@ public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
      */
     public int countParams() {
         return paramDtypes.size();
-    }
-
-    public int getLabel() {
-        return label;
     }
 
     /**

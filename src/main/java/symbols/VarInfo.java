@@ -2,15 +2,9 @@ package symbols;
 
 import types.TypeInfo;
 
+// A class for storing variable information in the symbol table
 public class VarInfo extends SymbolInfo {
-    private final int label;
-
-    public VarInfo(String id, TypeInfo dtype, int label) {
+    public VarInfo(String id, TypeInfo dtype) {
         super(id, SymbolType.VAR, dtype);
-        this.label = label;
-    }
-
-    public int getLabel() {
-        return label;
     }
 }

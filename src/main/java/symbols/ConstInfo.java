@@ -2,15 +2,9 @@ package symbols;
 
 import types.TypeInfo;
 
+// A class for storing constant information in the symbol table
 public class ConstInfo extends SymbolInfo {
-    private final int label;
-
-    public ConstInfo(String id, TypeInfo dtype, int label) {
+    public ConstInfo(String id, TypeInfo dtype) {
         super(id, SymbolType.CONST, dtype);
-        this.label = label;
-    }
-
-    public int getLabel() {
-        return label;
     }
 }
