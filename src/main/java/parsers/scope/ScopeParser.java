@@ -4,11 +4,10 @@ import ast.ASTNode;
 import ast.ASTNodeType;
 import ast.ScopeASTNode;
 import exceptions.ErrMsg;
-import parsers.branch.BranchParser;
+import parsers.branch.IfElseParser;
 import parsers.fun_def.FunDefParser;
 import parsers.stmt.StmtParser;
 import parsers.utils.*;
-import symbols.LabelGen;
 import toks.Tok;
 import toks.TokType;
 
@@ -18,7 +17,7 @@ public class ScopeParser {
     private TokParser tokParser;
     private StmtParser stmtParser;
     private FunDefParser funDefParser;
-    private BranchParser brParser;
+    private IfElseParser ifElseParser;
     private final ParseErr err = ParseErr.getInst();
 
     /**
@@ -27,13 +26,13 @@ public class ScopeParser {
      * @param tokParser    a parser that consumes valid tokens.
      * @param stmtParser   a statement parser.
      * @param funDefParser a function definition parser.
-     * @param brParser     a branch parser.
+     * @param ifElseParser an if-elif-else sequence parser.
      */
-    public void init(TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser, BranchParser brParser) {
+    public void init(TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser, IfElseParser ifElseParser) {
         this.tokParser = tokParser;
         this.stmtParser = stmtParser;
         this.funDefParser = funDefParser;
-        this.brParser = brParser;
+        this.ifElseParser = ifElseParser;
     }
 
     /**
@@ -80,11 +79,10 @@ public class ScopeParser {
      */
     public ParseResult<ASTNode> parseScope(Scope scope) throws IOException {
         ParseStatus status;
-        ParseResult<ASTNode> stmtResult, funDefResult, blockResult, brResult;
-        ASTNode stmtNode, funDefNode, prevNode = null;
+        ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult;
+        ASTNode stmtNode, funDefNode;
         ScopeASTNode blockNode;
         ScopeASTNode scopeNode = new ScopeASTNode();
-        ASTNodeType prevNodeType;
         boolean end = false;
 
         while (!end) {
@@ -95,15 +93,6 @@ public class ScopeParser {
                 return ParseResult.err();
             } else if (status != ParseStatus.EMPTY && !(end = status == ParseStatus.FAIL)) {
                 stmtNode = stmtResult.getData();
-                if (prevNode != null) {
-                    prevNodeType = prevNode.getNodeType();
-                    if (prevNodeType == ASTNodeType.FUN_DEF || prevNodeType == ASTNodeType.IF ||
-                            prevNodeType == ASTNodeType.ELIF || prevNodeType == ASTNodeType.ELSE) {
-                        // Update block label if the previous AST node is a control-flow node
-                        LabelGen.getBlockLabel();
-                    }
-                }
-                prevNode = stmtNode;
                 // Ignore statements following a return statement
                 if (!scopeNode.getRetFlag()) {
                     scopeNode.addChild(stmtNode);
@@ -123,21 +112,18 @@ public class ScopeParser {
                 } else if (!(end = status == ParseStatus.FAIL)) {
                     funDefNode = funDefResult.getData();
                     scopeNode.addChild(funDefNode);
-                    prevNode = funDefNode;
                 }
             }
 
             if (end) {
-                // Try parsing a sequence of branches
-                brResult = brParser.parseBranchSeq(scopeNode, scope);
-                status = brResult.getStatus();
-                // No need to check if the status is 'fail' here since the branches were added to the scope
-                // if successful during parsing
+                // Try parsing a sequence of if-elif-else blocks
+                // The blocks are added to the scope if successful
+                ifElseResult = ifElseParser.parseIfElse(scopeNode, scope);
+                status = ifElseResult.getStatus();
                 if (status == ParseStatus.ERR) {
-                    return brResult;
-                } else if (!(end = status == ParseStatus.FAIL)) {
-                    prevNode = brResult.getData();
+                    return ifElseResult;
                 }
+                end = status == ParseStatus.FAIL;
             }
 
             if (end) {
@@ -150,7 +136,6 @@ public class ScopeParser {
                     blockNode = (ScopeASTNode) blockResult.getData();
                     scopeNode.addChild(blockNode);
                     scopeNode.setRetFlag(scopeNode.getRetFlag() || blockNode.getRetFlag());
-                    prevNode = blockResult.getData();
                 }
             }
 
