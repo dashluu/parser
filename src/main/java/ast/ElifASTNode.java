@@ -3,8 +3,8 @@ package ast;
 import toks.Tok;
 
 public class ElifASTNode extends BranchNode {
-    public ElifASTNode(Tok tok, int label) {
-        super(tok, ASTNodeType.ELIF, label);
+    public ElifASTNode(Tok tok) {
+        super(tok, ASTNodeType.ELIF);
     }
 
     @Override

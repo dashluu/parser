@@ -3,8 +3,8 @@ package ast;
 import toks.Tok;
 
 public class IfASTNode extends BranchNode {
-    public IfASTNode(Tok tok, int label) {
-        super(tok, ASTNodeType.IF, label);
+    public IfASTNode(Tok tok) {
+        super(tok, ASTNodeType.IF);
     }
 
     @Override
