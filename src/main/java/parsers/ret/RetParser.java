@@ -15,7 +15,7 @@ import java.io.IOException;
 public class RetParser {
     private TokParser tokParser;
     private ExprParser exprParser;
-    private final ParseErr err = ParseErr.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
