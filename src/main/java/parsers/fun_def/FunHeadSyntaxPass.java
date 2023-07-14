@@ -10,7 +10,7 @@ import java.io.IOException;
 public class FunHeadSyntaxPass {
     private SyntaxBuff syntaxBuff;
     private TokParser tokParser;
-    private final ParseErr err = ParseErr.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
