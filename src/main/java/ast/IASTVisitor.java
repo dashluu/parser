@@ -7,9 +7,13 @@ public interface IASTVisitor {
 
     void visitVarDecl(VarDeclASTNode varDeclNode);
 
+    void visitVarDef(VarDefASTNode varDefNode);
+
     void visitConstId(ConstIdASTNode constIdNode);
 
     void visitConstDecl(ConstDeclASTNode constDeclNode);
+
+    void visitConstDef(ConstDefASTNode constDefNode);
 
     void visitParam(ParamASTNode paramNode);
 
@@ -20,8 +24,6 @@ public interface IASTVisitor {
     void visitUnOp(UnOpASTNode unOpASTNode);
 
     void visitBinOp(BinOpASTNode binOpNode);
-
-    void visitDef(DefASTNode defNode);
 
     void visitDtype(DtypeASTNode dtypeNode);
 
