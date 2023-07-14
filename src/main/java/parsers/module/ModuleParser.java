@@ -2,6 +2,8 @@ package parsers.module;
 
 import ast.ASTNode;
 import exceptions.ErrMsg;
+import lexers.LexResult;
+import lexers.LexStatus;
 import lexers.Lexer;
 import parsers.branch.BranchParser;
 import parsers.decl.DeclASTPass;
@@ -19,6 +21,8 @@ import parsers.ret.RetParser;
 import parsers.scope.ScopeParser;
 import parsers.stmt.StmtParser;
 import parsers.utils.*;
+import toks.Tok;
+import toks.TokType;
 
 import java.io.IOException;
 
@@ -62,6 +66,9 @@ public class ModuleParser {
         scopeParser = new ScopeParser();
     }
 
+    /**
+     * Resolves the dependencies between the components.
+     */
     public void init() {
         tokParser.init(lexer);
         exprSyntaxPass.init(lexer, tokParser);
@@ -91,7 +98,21 @@ public class ModuleParser {
         if (moduleResult.getStatus() == ParseStatus.ERR) {
             return moduleResult;
         } else if (moduleResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Invalid syntax", moduleResult.getFailTok()));
+            Tok errTok = moduleResult.getFailTok();
+            return err.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
+        }
+
+        // Check if the end of stream is reached
+        // If not, there is a syntax error
+        LexResult<Tok> lexResult = lexer.lookahead();
+        if (lexResult.getStatus() != LexStatus.OK) {
+            // Lexer always yields an OK or error status
+            return err.raise(lexResult.getErrMsg());
+        } else {
+            Tok errTok = lexResult.getData();
+            if (errTok.getType() != TokType.EOS) {
+                return err.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
+            }
         }
 
         return moduleResult;
