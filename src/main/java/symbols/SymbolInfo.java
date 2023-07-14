@@ -2,9 +2,12 @@ package symbols;
 
 import types.TypeInfo;
 
+// The base class for storing symbol information in the symbol table
 public class SymbolInfo {
     protected final String id;
     protected final SymbolType symbolType;
+    // The data type of the symbol
+    // For a function, this is its return type
     protected TypeInfo dtype;
 
     public SymbolInfo(String id, SymbolType symbolType, TypeInfo dtype) {
