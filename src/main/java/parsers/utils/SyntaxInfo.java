@@ -2,6 +2,7 @@ package parsers.utils;
 
 import toks.Tok;
 
+// A class for storing syntax information during the first pass of parsing
 public class SyntaxInfo {
     private final Tok tok;
     private SyntaxTag tag;
