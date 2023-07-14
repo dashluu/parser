@@ -12,7 +12,7 @@ public class DeclSyntaxPass {
     private TokParser tokParser;
     private SyntaxBuff syntaxBuff;
     private ExprSyntaxPass exprSyntaxPass;
-    private final ParseErr err = ParseErr.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.

@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class DeclSemanChecker {
     private ExprSemanChecker exprSemanChecker;
-    private final ParseErr err = ParseErr.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
