@@ -44,7 +44,9 @@ public class IfElseParser extends CondBranchParser {
             }
         } while (!end);
 
-        return result;
+        // Do not change this to result
+        // If-elif-else does not necessarily end with an elif or else block
+        return ParseResult.ok(result.getData());
     }
 
     /**
