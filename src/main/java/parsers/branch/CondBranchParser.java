@@ -5,20 +5,19 @@ import exceptions.ErrMsg;
 import parsers.expr.ExprParser;
 import parsers.scope.ScopeParser;
 import parsers.utils.*;
-import symbols.LabelGen;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;
 
 import java.io.IOException;
 
-public class BranchParser {
-    private TokParser tokParser;
-    private ExprParser exprParser;
-    private ScopeParser scopeParser;
+public abstract class CondBranchParser {
+    protected TokParser tokParser;
+    protected ExprParser exprParser;
+    protected ScopeParser scopeParser;
     // Branch scope
-    private Scope brScope;
-    private final ParseErr err = ParseErr.getInst();
+    protected Scope brScope;
+    protected static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -34,48 +33,16 @@ public class BranchParser {
     }
 
     /**
-     * Parses a branch sequence, that is, a sequence of if-elif-else blocks.
-     *
-     * @param brScope the scope surrounding the branch sequence.
-     * @return a ParseResult object as the result of parsing the branch sequence.
-     * @throws IOException if there is an IO exception.
-     */
-    public ParseResult<ASTNode> parseBranchSeq(ScopeASTNode brScopeNode, Scope brScope) throws IOException {
-        this.brScope = brScope;
-        ParseResult<ASTNode> result = parseBlock(TokType.IF);
-        if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.FAIL) {
-            return result;
-        }
-
-        boolean end = false;
-
-        do {
-            result = parseBlock(TokType.ELIF);
-            if (result.getStatus() == ParseStatus.ERR) {
-                return result;
-            } else if (result.getStatus() == ParseStatus.OK) {
-                brScopeNode.addChild(result.getData());
-            } else {
-                result = parseBlock(TokType.ELSE);
-                if (result.getStatus() == ParseStatus.ERR) {
-                    return result;
-                } else if (!(end = result.getStatus() == ParseStatus.FAIL)) {
-                    brScopeNode.addChild(result.getData());
-                }
-            }
-        } while (!end);
-
-        return ParseResult.ok(result.getData());
-    }
-
-    /**
-     * Parses a branch block, which includes its condition and body.
+     * Parses a conditional branch block, which includes its condition and body.
      *
      * @param tokType the token type of the branch keyword.
-     * @return a ParseResult object as the result of parsing the branch block.
+     * @param brScope the scope surrounding the branch block.
+     * @return a ParseResult object as the result of parsing the conditional branch block.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseBlock(TokType tokType) throws IOException {
+    protected ParseResult<ASTNode> parseBranch(TokType tokType, Scope brScope) throws IOException {
+        this.brScope = brScope;
+
         // Parse the condition
         ParseResult<ASTNode> condResult = parseCond(tokType);
         if (condResult.getStatus() == ParseStatus.ERR) {
@@ -106,8 +73,8 @@ public class BranchParser {
      * @return a ParseResult object as the result of parsing a branch condition.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseCond(TokType tokType) throws IOException {
-        // 'keyword'
+    protected ParseResult<ASTNode> parseCond(TokType tokType) throws IOException {
+        // keyword
         ParseResult<Tok> kwResult = tokParser.parseTok(tokType);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -147,12 +114,8 @@ public class BranchParser {
         }
 
         Tok kwTok = kwResult.getData();
-        int label = LabelGen.getBlockLabel();
-        BranchNode brNode = switch (tokType) {
-            case IF -> new IfASTNode(kwTok, label);
-            case ELIF -> new ElifASTNode(kwTok, label);
-            default -> new ElseASTNode(kwTok, label);
-        };
+        // TODO: add loop later
+        BranchNode brNode = tokType == TokType.IF ? new IfASTNode(kwTok) : new ElifASTNode(kwTok);
         brNode.setCondNode(exprNode);
         return ParseResult.ok(brNode);
     }
