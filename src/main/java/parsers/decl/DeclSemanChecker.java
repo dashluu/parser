@@ -38,7 +38,8 @@ public class DeclSemanChecker {
      * @throws IOException if there is an IO exception.
      */
     public ParseResult<ASTNode> checkSeman(ASTNode declNode, Scope scope) throws IOException {
-        if (declNode.getNodeType() != ASTNodeType.DEF) {
+        ASTNodeType declNodeType = declNode.getNodeType();
+        if (declNodeType != ASTNodeType.VAR_DEF && declNodeType != ASTNodeType.CONST_DEF) {
             return ParseResult.ok(declNode);
         }
         BinASTNode asgnmtNode = (BinASTNode) declNode;
