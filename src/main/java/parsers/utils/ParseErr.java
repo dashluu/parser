@@ -2,6 +2,7 @@ package parsers.utils;
 
 import exceptions.ErrMsg;
 
+// A class for storing information about parsing errors
 public class ParseErr {
     private ErrMsg msg;
     private final static ParseErr INSTANCE = new ParseErr();
@@ -9,6 +10,11 @@ public class ParseErr {
     private ParseErr() {
     }
 
+    /**
+     * Gets the only instance of ParseErr.
+     *
+     * @return a ParseErr object.
+     */
     public static ParseErr getInst() {
         return INSTANCE;
     }
@@ -25,7 +31,7 @@ public class ParseErr {
     }
 
     /**
-     * Updates the error to the earliest one as possible and also returns a signal.
+     * Updates the error to the earliest one as possible and also returns an error signal.
      *
      * @param msg the error message
      * @param <E> type argument to the ParseResult object.
@@ -40,6 +46,11 @@ public class ParseErr {
         return msg;
     }
 
+    /**
+     * Checks if there is an error during parsing.
+     *
+     * @return true if there is an error and false otherwise.
+     */
     public boolean hasErr() {
         return msg != null;
     }
