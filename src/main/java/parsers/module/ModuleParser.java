@@ -5,7 +5,7 @@ import exceptions.ErrMsg;
 import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
-import parsers.branch.BranchParser;
+import parsers.branch.IfElseParser;
 import parsers.decl.DeclASTPass;
 import parsers.decl.DeclParser;
 import parsers.decl.DeclSemanChecker;
@@ -39,7 +39,7 @@ public class ModuleParser {
     private final DeclParser declParser;
     private final RetParser retParser;
     private final StmtParser stmtParser;
-    private final BranchParser brParser;
+    private final IfElseParser ifElseParser;
     private final FunHeadSyntaxPass funHeadSyntaxPass;
     private final FunHeadASTPass funHeadASTPass;
     private final FunDefParser funDefParser;
@@ -59,7 +59,7 @@ public class ModuleParser {
         declParser = new DeclParser();
         retParser = new RetParser();
         stmtParser = new StmtParser();
-        brParser = new BranchParser();
+        ifElseParser = new IfElseParser();
         funHeadSyntaxPass = new FunHeadSyntaxPass();
         funHeadASTPass = new FunHeadASTPass();
         funDefParser = new FunDefParser();
@@ -79,10 +79,10 @@ public class ModuleParser {
         declParser.init(declSyntaxPass, declASTPass, declSemanChecker);
         retParser.init(tokParser, exprParser);
         stmtParser.init(lexer, tokParser, exprParser, declParser, retParser);
-        brParser.init(tokParser, exprParser, scopeParser);
+        ifElseParser.init(tokParser, exprParser, scopeParser);
         funHeadSyntaxPass.init(tokParser);
         funDefParser.init(funHeadSyntaxPass, funHeadASTPass, scopeParser);
-        scopeParser.init(tokParser, stmtParser, funDefParser, brParser);
+        scopeParser.init(tokParser, stmtParser, funDefParser, ifElseParser);
     }
 
     /**
