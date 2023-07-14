@@ -18,7 +18,7 @@ public class ScopeParser {
     private StmtParser stmtParser;
     private FunDefParser funDefParser;
     private IfElseParser ifElseParser;
-    private final ParseErr err = ParseErr.getInst();
+    private static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
