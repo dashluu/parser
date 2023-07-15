@@ -52,7 +52,7 @@ public class ScopeParser {
         }
 
         // Try parsing code in a new scope
-        Scope newScope = new Scope(scope, scope.getRetType());
+        Scope newScope = new Scope(scope);
         ParseResult<ASTNode> scopeResult = parseScope(newScope);
         // No need to check if it failed since the result is either an error or OK
         if (scopeResult.getStatus() == ParseStatus.ERR) {
