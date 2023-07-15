@@ -26,6 +26,7 @@ public class IfElseParser extends CondBranchParser {
             return result;
         }
 
+        brScopeNode.addChild(result.getData());
         boolean end = false;
 
         do {
@@ -44,9 +45,9 @@ public class IfElseParser extends CondBranchParser {
             }
         } while (!end);
 
-        // Do not change this to result
+        // Do not change the return value to result
         // If-elif-else does not necessarily end with an elif or else block
-        return ParseResult.ok(result.getData());
+        return ParseResult.ok(null);
     }
 
     /**
