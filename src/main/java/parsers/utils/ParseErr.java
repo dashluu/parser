@@ -20,6 +20,13 @@ public class ParseErr {
     }
 
     /**
+     * Resets the error message.
+     */
+    public void reset() {
+        msg = null;
+    }
+
+    /**
      * Updates the error to the earliest one as possible.
      *
      * @param aMsg the error message.
