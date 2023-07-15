@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class DeclSemanChecker {
     private ExprSemanChecker exprSemanChecker;
-    private static final ParseErr err = ParseErr.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -68,10 +68,10 @@ public class DeclSemanChecker {
 
         // Compare and check if the lhs and rhs have the same data type
         if (rhsDtype == null) {
-            return err.raise(new ErrMsg("No type detected on the right-hand side", asgmtTok));
+            return ERR.raise(new ErrMsg("No type detected on the right-hand side", asgmtTok));
         } else if (lhsDtype != rhsDtype) {
             if (lhsDtype != null) {
-                return err.raise(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
+                return ERR.raise(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
                         "' to data of type '" + lhsDtype.id() + "'", asgmtTok));
             } else {
                 // If the lhs's data type is null, we assign rhs's data type directly to lhs

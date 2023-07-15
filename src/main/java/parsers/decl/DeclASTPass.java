@@ -13,8 +13,8 @@ public class DeclASTPass {
     private SyntaxBuff syntaxBuff;
     private Scope scope;
     private ExprASTPass exprASTPass;
-    private static final ParseErr err = ParseErr.getInst();
-    private static final TypeTable typeTable = TypeTable.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
+    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
 
     /**
      * Initializes the dependencies.
@@ -49,7 +49,7 @@ public class DeclASTPass {
         }
 
         ParseResult<ASTNode> lhsResult = doLhs();
-        if (err.hasErr()) {
+        if (ERR.hasErr()) {
             // This error can be propagated from either the lhs or the expression
             return ParseResult.err();
         } else if (!hasAsgnmt) {
@@ -84,7 +84,7 @@ public class DeclASTPass {
         SymbolTable symbolTable = scope.getSymbolTable();
         SymbolInfo symbol = symbolTable.getLocalSymbol(id);
         if (symbol != null) {
-            return err.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return ERR.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Add a variable or a constant to the symbol table
@@ -96,9 +96,9 @@ public class DeclASTPass {
         if (dtypeInfo.getTag() == SyntaxTag.TYPE_ID) {
             Tok dtypeTok = dtypeInfo.getTok();
             String dtypeId = dtypeTok.getVal();
-            dtype = typeTable.getType(dtypeId);
+            dtype = TYPE_TABLE.getType(dtypeId);
             if (dtype == null) {
-                return err.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
+                return ERR.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
             }
             syntaxBuff.forward();
         }

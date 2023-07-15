@@ -12,7 +12,7 @@ public class DeclSyntaxPass {
     private TokParser tokParser;
     private SyntaxBuff syntaxBuff;
     private ExprSyntaxPass exprSyntaxPass;
-    private static final ParseErr err = ParseErr.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -57,7 +57,7 @@ public class DeclSyntaxPass {
         if (idResult.getStatus() == ParseStatus.ERR) {
             return idResult;
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Expected an id", idResult.getFailTok()));
+            return ERR.raise(new ErrMsg("Expected an id", idResult.getFailTok()));
         }
 
         // Consume data type
@@ -76,7 +76,7 @@ public class DeclSyntaxPass {
                 return dtypeResult;
             }
             String id = idResult.getData().getTok().getVal();
-            return err.raise(new ErrMsg("Cannot determine the data type of '" + id + "'", asgnmtResult.getFailTok()));
+            return ERR.raise(new ErrMsg("Cannot determine the data type of '" + id + "'", asgnmtResult.getFailTok()));
         }
 
         // Move the cursor to the back which is also the position of the assignment operator
@@ -86,7 +86,7 @@ public class DeclSyntaxPass {
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Invalid declaration expression", exprResult.getFailTok()));
+            return ERR.raise(new ErrMsg("Invalid declaration expression", exprResult.getFailTok()));
         }
 
         return exprResult;
@@ -169,7 +169,7 @@ public class DeclSyntaxPass {
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (result.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Expected a type id for type annotation", result.getFailTok()));
+            return ERR.raise(new ErrMsg("Expected a type id for type annotation", result.getFailTok()));
         }
 
         syntaxBuff.add(new SyntaxInfo(result.getData(), SyntaxTag.TYPE_ID));
