@@ -26,10 +26,10 @@ public class SymbolTable {
     /**
      * Finds the symbol associated with the given key by moving up the chain of symbol tables.
      *
-     * @param id the string that identifies a symbol in the table.
+     * @param id the string that identifies a symbol in one of the tables.
      * @return a symbol if one exists and null otherwise.
      */
-    public SymbolInfo getSymbol(String id) {
+    public SymbolInfo getClosureSymbol(String id) {
         SymbolTable table = this;
         SymbolInfo symbolInfo = null;
         while (table != null && symbolInfo == null) {
@@ -37,5 +37,15 @@ public class SymbolTable {
             table = table.parent;
         }
         return symbolInfo;
+    }
+
+    /**
+     * Finds the symbol associated with the given key in the current scope's symbol table only.
+     *
+     * @param id the string that identifies a symbol in the table.
+     * @return a symbol if one exists and null otherwise.
+     */
+    public SymbolInfo getLocalSymbol(String id) {
+        return symbolMap.get(id);
     }
 }
