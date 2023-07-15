@@ -11,9 +11,9 @@ import types.TypeInfo;
 import types.TypeTable;
 
 public class ExprASTPass {
-    private static final ParseErr err = ParseErr.getInst();
-    private static final TypeTable typeTable = TypeTable.getInst();
-    private static final OpTable opTable = OpTable.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
+    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
+    private static final OpTable OP_TABLE = OpTable.getInst();
     private SyntaxBuff syntaxBuff;
     private Scope scope;
 
@@ -51,7 +51,7 @@ public class ExprASTPass {
         SyntaxInfo syntaxInfo = syntaxBuff.peek();
         Tok dtypeTok = syntaxInfo.getTok();
         String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = typeTable.getType(dtypeId);
+        TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
         if (dtype == null) {
             return ParseResult.fail(dtypeTok);
         }
@@ -73,9 +73,9 @@ public class ExprASTPass {
         SymbolTable symbolTable = scope.getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(id);
         if (symbol == null) {
-            return err.raise(new ErrMsg("Invalid id '" + id + "'", idTok));
+            return ERR.raise(new ErrMsg("Invalid id '" + id + "'", idTok));
         } else if (symbol.getSymbolType() == SymbolType.FUN) {
-            return err.raise(new ErrMsg("Unexpected function '" + id + "'", idTok));
+            return ERR.raise(new ErrMsg("Unexpected function '" + id + "'", idTok));
         }
 
         TypeInfo dtype = symbol.getDtype();
@@ -98,7 +98,7 @@ public class ExprASTPass {
         Tok literalTok = syntaxInfo.getTok();
         TokType literalTokType = literalTok.getType();
         // Data type exists so no need to check
-        TypeInfo dtype = typeTable.getType(literalTokType);
+        TypeInfo dtype = TYPE_TABLE.getType(literalTokType);
         ASTNode literalNode = new LiteralASTNode(literalTok, dtype);
         return ParseResult.ok(literalNode);
     }
@@ -130,7 +130,7 @@ public class ExprASTPass {
         SymbolTable symbolTable = scope.getSymbolTable();
         FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         if (funInfo == null) {
-            return err.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
+            return ERR.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
         }
 
         TypeInfo retType = funInfo.getDtype();
@@ -158,7 +158,7 @@ public class ExprASTPass {
 
         // Check the number of arguments
         if (i != numArgs) {
-            return err.raise(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " + i +
+            return ERR.raise(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " + i +
                     " for function '" + funId + "'", funIdTok));
         }
 
@@ -316,10 +316,10 @@ public class ExprASTPass {
             if (opTok.getType() == TokType.ASSIGNMENT &&
                     lnodeType != ASTNodeType.VAR_ID &&
                     lnodeType != ASTNodeType.PARAM) {
-                return err.raise(new ErrMsg("Expected a mutable id before assignment", opTok));
+                return ERR.raise(new ErrMsg("Expected a mutable id before assignment", opTok));
             }
 
-            if (prevOpTok != null && opTable.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {
+            if (prevOpTok != null && OP_TABLE.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {
                 // The current operator has lower precedence than the previous operator
                 return lresult;
             }

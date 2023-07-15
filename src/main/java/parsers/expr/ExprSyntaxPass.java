@@ -15,8 +15,8 @@ public class ExprSyntaxPass {
     private Lexer lexer;
     private TokParser tokParser;
     private SyntaxBuff syntaxBuff;
-    private static final ParseErr err = ParseErr.getInst();
-    private static final OpTable opTable = OpTable.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
+    private static final OpTable OP_TABLE = OpTable.getInst();
 
     /**
      * Initializes the dependencies.
@@ -54,11 +54,11 @@ public class ExprSyntaxPass {
     private ParseResult<SyntaxInfo> eatPrefixOp() throws IOException {
         LexResult<Tok> opResult = lexer.lookahead();
         if (opResult.getStatus() != LexStatus.OK) {
-            return err.raise(opResult.getErrMsg());
+            return ERR.raise(opResult.getErrMsg());
         }
 
         Tok opTok = opResult.getData();
-        if (opTok.getType() == TokType.EOS || !opTable.isPrefixOp(opTok.getType())) {
+        if (opTok.getType() == TokType.EOS || !OP_TABLE.isPrefixOp(opTok.getType())) {
             return ParseResult.fail(opTok);
         }
 
@@ -76,12 +76,12 @@ public class ExprSyntaxPass {
     private ParseResult<SyntaxInfo> eatPostfixOp() throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead();
         if (tokResult.getStatus() != LexStatus.OK) {
-            return err.raise(tokResult.getErrMsg());
+            return ERR.raise(tokResult.getErrMsg());
         }
 
         Tok opTok = tokResult.getData();
         TokType opId = opTok.getType();
-        if (opTok.getType() == TokType.EOS || !opTable.isPostfixOp(opId) || opId == TokType.TYPE_CONV) {
+        if (opTok.getType() == TokType.EOS || !OP_TABLE.isPostfixOp(opId) || opId == TokType.TYPE_CONV) {
             return ParseResult.fail(opTok);
         }
 
@@ -177,7 +177,7 @@ public class ExprSyntaxPass {
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
-                        return err.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
+                        return ERR.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
                     }
                     syntaxBuff.add(new SyntaxInfo(commaResult.getData(), SyntaxTag.COMMA));
                 }
@@ -186,7 +186,7 @@ public class ExprSyntaxPass {
                 if (exprResult.getStatus() == ParseStatus.ERR) {
                     return exprResult;
                 } else if (exprResult.getStatus() == ParseStatus.FAIL) {
-                    return err.raise(new ErrMsg("Invalid argument expression", exprResult.getFailTok()));
+                    return ERR.raise(new ErrMsg("Invalid argument expression", exprResult.getFailTok()));
                 }
 
                 firstArg = false;
@@ -205,7 +205,7 @@ public class ExprSyntaxPass {
     private ParseResult<SyntaxInfo> eatLiteral() throws IOException {
         LexResult<Tok> literalResult = lexer.lookahead();
         if (literalResult.getStatus() != LexStatus.OK) {
-            return err.raise(literalResult.getErrMsg());
+            return ERR.raise(literalResult.getErrMsg());
         }
 
         Tok literalTok = literalResult.getData();
@@ -246,7 +246,7 @@ public class ExprSyntaxPass {
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Missing ')'", parenResult.getFailTok()));
+            return ERR.raise(new ErrMsg("Missing ')'", parenResult.getFailTok()));
         }
 
         syntaxBuff.add(new SyntaxInfo(parenResult.getData(), SyntaxTag.RPAREN));
@@ -305,7 +305,7 @@ public class ExprSyntaxPass {
                 return postfixResult;
             } else {
                 // There is at least one prefix operator but no postfix expression
-                return err.raise(new ErrMsg("Expected an expression following the prefix operator",
+                return ERR.raise(new ErrMsg("Expected an expression following the prefix operator",
                         postfixResult.getFailTok()));
             }
         }
@@ -362,8 +362,8 @@ public class ExprSyntaxPass {
             return ParseResult.fail(opTok);
         }
         // The lhs expression is guaranteed to be valid
-        if (!opTable.isInfixOp(opId)) {
-            return err.raise(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
+        if (!OP_TABLE.isInfixOp(opId)) {
+            return ERR.raise(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
         }
         return ParseResult.ok(null);
     }
@@ -389,7 +389,7 @@ public class ExprSyntaxPass {
                 if (firstOperand) {
                     return lresult;
                 } else {
-                    return err.raise(new ErrMsg("Invalid expression", lresult.getFailTok()));
+                    return ERR.raise(new ErrMsg("Invalid expression", lresult.getFailTok()));
                 }
             }
 
@@ -397,7 +397,7 @@ public class ExprSyntaxPass {
             // Parse operator
             opResult = lexer.lookahead();
             if (opResult.getStatus() != LexStatus.OK) {
-                return err.raise(opResult.getErrMsg());
+                return ERR.raise(opResult.getErrMsg());
             }
 
             opTok = opResult.getData();
