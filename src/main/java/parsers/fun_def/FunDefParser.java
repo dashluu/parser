@@ -16,7 +16,7 @@ public class FunDefParser {
     private FunHeadSyntaxPass headSyntaxPass;
     private FunHeadASTPass headAstPass;
     private ScopeParser scopeParser;
-    private static final ParseErr err = ParseErr.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -60,7 +60,7 @@ public class FunDefParser {
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Invalid body for function '" + funDefNode.getTok().getVal() + "'",
+            return ERR.raise(new ErrMsg("Invalid body for function '" + funDefNode.getTok().getVal() + "'",
                     bodyResult.getFailTok()));
         }
 
@@ -69,7 +69,7 @@ public class FunDefParser {
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         Tok idTok = funDefNode.getTok();
         if (!bodyNode.getRetFlag() && retType != TypeTable.VOID) {
-            return err.raise(new ErrMsg("Missing a return statement in the function '" + idTok.getVal() + "'",
+            return ERR.raise(new ErrMsg("Missing a return statement in the function '" + idTok.getVal() + "'",
                     idTok));
         }
 

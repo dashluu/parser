@@ -10,7 +10,7 @@ import java.io.IOException;
 public class FunHeadSyntaxPass {
     private SyntaxBuff syntaxBuff;
     private TokParser tokParser;
-    private static final ParseErr err = ParseErr.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -41,7 +41,7 @@ public class FunHeadSyntaxPass {
 
         if (scope.getRetType() != null) {
             // Function is defined inside another function
-            return err.raise(new ErrMsg("A function definition cannot exist inside another function",
+            return ERR.raise(new ErrMsg("A function definition cannot exist inside another function",
                     kwResult.getData()));
         }
 
@@ -50,7 +50,7 @@ public class FunHeadSyntaxPass {
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Missing function's name", idResult.getFailTok()));
+            return ERR.raise(new ErrMsg("Missing function's name", idResult.getFailTok()));
         }
 
         syntaxBuff.add(new SyntaxInfo(idResult.getData(), SyntaxTag.FUN_DEF));
@@ -59,7 +59,7 @@ public class FunHeadSyntaxPass {
         if (paramListResult.getStatus() == ParseStatus.ERR) {
             return paramListResult;
         } else if (paramListResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
+            return ERR.raise(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
         }
 
         // Try consuming the return type
@@ -109,7 +109,7 @@ public class FunHeadSyntaxPass {
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
-                        return err.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
+                        return ERR.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
                     }
                     syntaxBuff.add(new SyntaxInfo(commaResult.getData(), SyntaxTag.COMMA));
                 }
@@ -118,7 +118,7 @@ public class FunHeadSyntaxPass {
                 if (paramResult.getStatus() == ParseStatus.ERR) {
                     return paramResult;
                 } else if (paramResult.getStatus() == ParseStatus.FAIL) {
-                    return err.raise(new ErrMsg("Invalid parameter", paramResult.getFailTok()));
+                    return ERR.raise(new ErrMsg("Invalid parameter", paramResult.getFailTok()));
                 }
 
                 firstArg = false;
@@ -150,7 +150,7 @@ public class FunHeadSyntaxPass {
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return dtypeResult;
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Missing data type for parameter '" + nameTok.getVal() + "'",
+            return ERR.raise(new ErrMsg("Missing data type for parameter '" + nameTok.getVal() + "'",
                     dtypeResult.getFailTok()));
         }
 
@@ -178,7 +178,7 @@ public class FunHeadSyntaxPass {
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (result.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Expected a type id for type annotation", result.getFailTok()));
+            return ERR.raise(new ErrMsg("Expected a type id for type annotation", result.getFailTok()));
         }
 
         syntaxBuff.add(new SyntaxInfo(result.getData(), SyntaxTag.TYPE_ID));

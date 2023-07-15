@@ -11,8 +11,8 @@ import types.TypeTable;
 public class FunHeadASTPass {
     private SyntaxBuff syntaxBuff;
     private Scope funScope;
-    private final TypeTable typeTable = TypeTable.getInst();
-    private final ParseErr err = ParseErr.getInst();
+    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
+    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Constructs an AST for a function header.
@@ -70,7 +70,7 @@ public class FunHeadASTPass {
         String id = idTok.getVal();
         SymbolTable symbolTable = funScope.getSymbolTable();
         if (symbolTable.getLocalSymbol(id) != null) {
-            return err.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return ERR.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new function
@@ -129,9 +129,9 @@ public class FunHeadASTPass {
         SyntaxInfo dtypeInfo = syntaxBuff.forward();
         Tok dtypeTok = dtypeInfo.getTok();
         String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = typeTable.getType(dtypeId);
+        TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
         if (dtype == null) {
-            return err.raise(new ErrMsg("Invalid parameter's data type '" + dtypeId + "'", dtypeTok));
+            return ERR.raise(new ErrMsg("Invalid parameter's data type '" + dtypeId + "'", dtypeTok));
         }
 
         // Check if the parameter's name has been defined
@@ -140,7 +140,7 @@ public class FunHeadASTPass {
         String name = nameTok.getVal();
         SymbolInfo symbol = symbolTable.getClosureSymbol(name);
         if (symbol != null && symbol.getSymbolType() == SymbolType.PARAM) {
-            return err.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
+            return ERR.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
         }
 
         // Create a new parameter
@@ -163,9 +163,9 @@ public class FunHeadASTPass {
         SyntaxInfo syntaxInfo = syntaxBuff.forward();
         Tok dtypeTok = syntaxInfo.getTok();
         String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = typeTable.getType(dtypeId);
+        TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
         if (dtype == null) {
-            return err.raise(new ErrMsg("Invalid return type '" + dtypeId + "'", dtypeTok));
+            return ERR.raise(new ErrMsg("Invalid return type '" + dtypeId + "'", dtypeTok));
         }
 
         return ParseResult.ok(dtype);
