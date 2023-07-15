@@ -53,7 +53,7 @@ public class FunHeadASTPass {
         // Update the return type of the function in the symbol table
         SymbolTable symbolTable = funScope.getSymbolTable();
         String id = funDefNode.getTok().getVal();
-        SymbolInfo symbol = symbolTable.getSymbol(id);
+        SymbolInfo symbol = symbolTable.getClosureSymbol(id);
         symbol.setDtype(retType);
         return ParseResult.ok(funDefNode);
     }
@@ -69,7 +69,7 @@ public class FunHeadASTPass {
         // Check if the function id has been defined
         String id = idTok.getVal();
         SymbolTable symbolTable = funScope.getSymbolTable();
-        if (symbolTable.getSymbol(id) != null) {
+        if (symbolTable.getLocalSymbol(id) != null) {
             return err.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
@@ -138,7 +138,7 @@ public class FunHeadASTPass {
         SymbolTable symbolTable = paramScope.getSymbolTable();
         Tok nameTok = nameInfo.getTok();
         String name = nameTok.getVal();
-        SymbolInfo symbol = symbolTable.getSymbol(name);
+        SymbolInfo symbol = symbolTable.getClosureSymbol(name);
         if (symbol != null && symbol.getSymbolType() == SymbolType.PARAM) {
             return err.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
         }

@@ -82,7 +82,7 @@ public class DeclASTPass {
         Tok idTok = idInfo.getTok();
         String id = idTok.getVal();
         SymbolTable symbolTable = scope.getSymbolTable();
-        SymbolInfo symbol = symbolTable.getSymbol(id);
+        SymbolInfo symbol = symbolTable.getLocalSymbol(id);
         if (symbol != null) {
             return err.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }

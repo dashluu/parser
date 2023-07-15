@@ -79,7 +79,7 @@ public class DeclSemanChecker {
                 // Set the variable or constant's data type in the symbol table
                 SymbolTable symbolTable = scope.getSymbolTable();
                 String id = lhsNode.getTok().getVal();
-                SymbolInfo symbol = symbolTable.getSymbol(id);
+                SymbolInfo symbol = symbolTable.getClosureSymbol(id);
                 symbol.setDtype(rhsDtype);
             }
         }

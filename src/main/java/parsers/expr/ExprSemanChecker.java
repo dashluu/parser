@@ -150,7 +150,7 @@ public class ExprSemanChecker {
         Tok funCallTok = funCallNode.getTok();
         String funId = funCallTok.getVal();
         SymbolTable symbolTable = scope.getSymbolTable();
-        FunInfo funInfo = (FunInfo) symbolTable.getSymbol(funId);
+        FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         Iterator<TypeInfo> paramDtypesIter = funInfo.iterator();
         TypeInfo paramDtype;
         ParseResult<ASTNode> argResult;

@@ -71,7 +71,7 @@ public class ExprASTPass {
         Tok idTok = syntaxInfo.getTok();
         String id = idTok.getVal();
         SymbolTable symbolTable = scope.getSymbolTable();
-        SymbolInfo symbol = symbolTable.getSymbol(id);
+        SymbolInfo symbol = symbolTable.getClosureSymbol(id);
         if (symbol == null) {
             return err.raise(new ErrMsg("Invalid id '" + id + "'", idTok));
         } else if (symbol.getSymbolType() == SymbolType.FUN) {
@@ -128,7 +128,7 @@ public class ExprASTPass {
         Tok funIdTok = syntaxInfo.getTok();
         String funId = funIdTok.getVal();
         SymbolTable symbolTable = scope.getSymbolTable();
-        FunInfo funInfo = (FunInfo) symbolTable.getSymbol(funId);
+        FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         if (funInfo == null) {
             return err.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
         }
