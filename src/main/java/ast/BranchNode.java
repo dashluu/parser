@@ -25,4 +25,11 @@ public abstract class BranchNode extends ASTNode {
     public void setBodyNode(ScopeASTNode bodyNode) {
         this.bodyNode = bodyNode;
     }
+
+    @Override
+    public String toJsonStr() {
+        return super.toJsonStr() +
+                ",\"Condition\":" + (condNode == null ? "\"null\"" : "{" + condNode.toJsonStr() + "}") +
+                ",\"Body\":" + (bodyNode == null ? "\"null\"" : "{" + bodyNode.toJsonStr() + "}");
+    }
 }

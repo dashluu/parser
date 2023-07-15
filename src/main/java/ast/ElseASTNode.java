@@ -21,4 +21,9 @@ public class ElseASTNode extends ASTNode {
     public void accept(IASTVisitor visitor) {
         visitor.visitElse(this);
     }
+
+    @Override
+    public String toJsonStr() {
+        return super.toJsonStr() + ",\"Body\":" + (bodyNode == null ? "\"null\"" : "{" + bodyNode.toJsonStr() + "}");
+    }
 }
