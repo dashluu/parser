@@ -9,13 +9,9 @@ public class Scope {
     // Hold the return type of the function surrounding the scope
     private TypeInfo retType;
 
-    public Scope(Scope parent, TypeInfo retType) {
-        this.retType = retType;
-        this.symbolTable = new SymbolTable(parent == null ? null : parent.symbolTable);
-    }
-
     public Scope(Scope parent) {
-        this(parent, null);
+        this.retType = (parent == null ? null : parent.retType);
+        this.symbolTable = new SymbolTable(parent == null ? null : parent.symbolTable);
     }
 
     public SymbolTable getSymbolTable() {
