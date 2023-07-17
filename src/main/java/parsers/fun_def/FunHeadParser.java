@@ -1,36 +1,38 @@
 package parsers.fun_def;
 
+import ast.ASTNode;
+import ast.FunDefASTNode;
+import ast.ParamDeclASTNode;
+import ast.ParamListASTNode;
 import exceptions.ErrMsg;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
+import types.TypeInfo;
 
 import java.io.IOException;
 
-public class FunHeadSyntaxPass {
-    private SyntaxBuff syntaxBuff;
+public class FunHeadParser {
     private TokParser tokParser;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser a parser that consumes valid tokens.
+     * @param tokParser a token parser.
      */
     public void init(TokParser tokParser) {
         this.tokParser = tokParser;
     }
 
     /**
-     * Attempts to consume and check the syntax of a function header.
+     * Parses a function header.
      *
-     * @param syntaxBuff a buffer containing syntax information.
-     * @param scope      the scope surrounding the function header.
-     * @return a ParseResult object as the result of consuming a function header.
+     * @param funScope the scope surrounding the function header.
+     * @return a ParseResult object as the result of parsing a function header.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<SyntaxInfo> eatFunHead(SyntaxBuff syntaxBuff, Scope scope) throws IOException {
-        this.syntaxBuff = syntaxBuff;
-        // Consume the function keyword
+    public ParseResult<ASTNode> parseFunHead(Scope funScope) throws IOException {
+        // Parse the function keyword
         ParseResult<Tok> kwResult = tokParser.parseTok(TokType.FUN_DECL);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -38,13 +40,13 @@ public class FunHeadSyntaxPass {
             return ParseResult.fail(kwResult.getFailTok());
         }
 
-        if (scope.getRetDtype() != null) {
+        if (funScope.getRetDtype() != null) {
             // Function is defined inside another function
             return ParseErr.raise(new ErrMsg("A function definition cannot exist inside another function",
                     kwResult.getData()));
         }
 
-        // Consume the function id
+        // Parse the function id
         ParseResult<Tok> idResult = tokParser.parseTok(TokType.ID);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -52,33 +54,37 @@ public class FunHeadSyntaxPass {
             return ParseErr.raise(new ErrMsg("Missing function's name", idResult.getFailTok()));
         }
 
-        syntaxBuff.add(new SyntaxInfo(idResult.getData(), SyntaxTag.FUN_DEF));
-        // Try consuming a parameter list
-        ParseResult<SyntaxInfo> paramListResult = eatParamList();
+        // Try parsing a parameter list
+        ParseResult<ASTNode> paramListResult = parseParamList();
         if (paramListResult.getStatus() == ParseStatus.ERR) {
             return paramListResult;
         } else if (paramListResult.getStatus() == ParseStatus.FAIL) {
             return ParseErr.raise(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
         }
 
-        // Try consuming the return type
+        // Try parsing a dummy return type
         // No need to check if it fails since that indicates the function returns void
-        ParseResult<SyntaxInfo> retTypeResult = eatTypeAnn();
-        if (retTypeResult.getStatus() == ParseStatus.ERR) {
-            return retTypeResult;
+        ParseResult<TypeInfo> retDtypeResult = parseTypeAnn();
+        if (retDtypeResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
         }
 
-        return ParseResult.ok(null);
+        Tok idTok = idResult.getData();
+        TypeInfo retDtype = retDtypeResult.getData();
+        FunDefASTNode funDefNode = new FunDefASTNode(idTok, retDtype);
+        ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
+        funDefNode.setParamListNode(paramListNode);
+        return ParseResult.ok(funDefNode);
     }
 
     /**
-     * Attempts to consume and check the syntax of a function parameter list.
+     * Parses a function parameter list.
      *
-     * @return a ParseResult object as the result of consuming a function parameter list.
+     * @return a ParseResult object as the result of parsing a function parameter list.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<SyntaxInfo> eatParamList() throws IOException {
-        // Consume '('
+    private ParseResult<ASTNode> parseParamList() throws IOException {
+        // Parse '('
         ParseResult<Tok> parenResult = tokParser.parseTok(TokType.LPAREN);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -86,22 +92,19 @@ public class FunHeadSyntaxPass {
             return ParseResult.fail(parenResult.getFailTok());
         }
 
-        syntaxBuff.add(new SyntaxInfo(parenResult.getData(), SyntaxTag.LPAREN));
         ParseResult<Tok> commaResult;
-        ParseResult<SyntaxInfo> paramResult;
+        ParseResult<ASTNode> paramResult;
+        ParamListASTNode paramListNode = new ParamListASTNode();
         boolean end = false;
         // Boolean to indicate if this is the first parameter
         boolean firstArg = true;
 
         while (!end) {
-            // Consume ')'
+            // Parse ')'
             parenResult = tokParser.parseTok(TokType.RPAREN);
             if (parenResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
-            } else if (parenResult.getStatus() == ParseStatus.OK) {
-                end = true;
-                syntaxBuff.add(new SyntaxInfo(parenResult.getData(), SyntaxTag.RPAREN));
-            } else {
+            } else if (!(end = parenResult.getStatus() == ParseStatus.OK)) {
                 if (!firstArg) {
                     // If this is not the first parameter in the list, ',' must be present
                     commaResult = tokParser.parseTok(TokType.COMMA);
@@ -110,31 +113,31 @@ public class FunHeadSyntaxPass {
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
                         return ParseErr.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
                     }
-                    syntaxBuff.add(new SyntaxInfo(commaResult.getData(), SyntaxTag.COMMA));
                 }
 
-                paramResult = eatParam();
+                paramResult = parseParam();
                 if (paramResult.getStatus() == ParseStatus.ERR) {
-                    return paramResult;
+                    return ParseResult.err();
                 } else if (paramResult.getStatus() == ParseStatus.FAIL) {
                     return ParseErr.raise(new ErrMsg("Invalid parameter", paramResult.getFailTok()));
                 }
 
+                paramListNode.addChild(paramResult.getData());
                 firstArg = false;
             }
         }
 
-        return ParseResult.ok(null);
+        return ParseResult.ok(paramListNode);
     }
 
     /**
-     * Attempts to consume and check the syntax of a function parameter.
+     * Parses a function parameter in the form 'name:type'.
      *
-     * @return a ParseResult object as the result of consuming a function parameter.
+     * @return a ParseResult object as the result of parsing a function parameter.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<SyntaxInfo> eatParam() throws IOException {
-        // Parameter is in the form 'name:type'
+    private ParseResult<ASTNode> parseParam() throws IOException {
+        // Parse the parameter's name
         ParseResult<Tok> nameResult = tokParser.parseTok(TokType.ID);
         if (nameResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -143,27 +146,28 @@ public class FunHeadSyntaxPass {
         }
 
         Tok nameTok = nameResult.getData();
-        syntaxBuff.add(new SyntaxInfo(nameTok, SyntaxTag.PARAM));
-        // Consume the data type
-        ParseResult<SyntaxInfo> dtypeResult = eatTypeAnn();
+        // Parse the type annotation
+        ParseResult<TypeInfo> dtypeResult = parseTypeAnn();
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
-            return dtypeResult;
+            return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Missing data type for parameter '" + nameTok.getVal() + "'",
+            return ParseErr.raise(new ErrMsg("Missing a data type for parameter '" + nameTok.getVal() + "'",
                     dtypeResult.getFailTok()));
         }
 
-        return ParseResult.ok(null);
+        TypeInfo dtype = dtypeResult.getData();
+        ParamDeclASTNode paramNode = new ParamDeclASTNode(nameTok, dtype);
+        return ParseResult.ok(paramNode);
     }
 
     /**
-     * Attempts to consume and check the syntax of a type annotation.
+     * Parses a type annotation.
      *
-     * @return a ParseResult object as the result of checking the syntax of type annotation.
+     * @return a ParseResult object as the result of parsing a type annotation.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<SyntaxInfo> eatTypeAnn() throws IOException {
-        // Try consuming ':'
+    private ParseResult<TypeInfo> parseTypeAnn() throws IOException {
+        // Try parsing ':'
         ParseResult<Tok> result = tokParser.parseTok(TokType.COLON);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -171,8 +175,7 @@ public class FunHeadSyntaxPass {
             return ParseResult.fail(result.getFailTok());
         }
 
-        // Consume data type
-        // No need to add colon to the syntax buffer
+        // Parse a data type
         result = tokParser.parseTok(TokType.ID);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -180,7 +183,9 @@ public class FunHeadSyntaxPass {
             return ParseErr.raise(new ErrMsg("Expected a type id for type annotation", result.getFailTok()));
         }
 
-        syntaxBuff.add(new SyntaxInfo(result.getData(), SyntaxTag.TYPE_ID));
-        return ParseResult.ok(null);
+        // Create a dummy data type so we can check it in later phase
+        String dtypeId = result.getData().getVal();
+        TypeInfo dtype = new TypeInfo(dtypeId, -1);
+        return ParseResult.ok(dtype);
     }
 }

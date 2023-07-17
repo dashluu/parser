@@ -7,10 +7,10 @@ import types.TypeInfo;
 public class Scope {
     private final SymbolTable symbolTable;
     // Hold the return type of the function surrounding the scope
-    private TypeInfo retType;
+    private TypeInfo retDtype;
 
     public Scope(Scope parent) {
-        this.retType = (parent == null ? null : parent.retType);
+        this.retDtype = (parent == null ? null : parent.retDtype);
         this.symbolTable = new SymbolTable(parent == null ? null : parent.symbolTable);
     }
 
@@ -18,11 +18,11 @@ public class Scope {
         return symbolTable;
     }
 
-    public void setRetType(TypeInfo retType) {
-        this.retType = retType;
+    public void setRetDtype(TypeInfo retDtype) {
+        this.retDtype = retDtype;
     }
 
-    public TypeInfo getRetType() {
-        return retType;
+    public TypeInfo getRetDtype() {
+        return retDtype;
     }
 }

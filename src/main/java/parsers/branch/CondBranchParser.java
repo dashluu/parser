@@ -55,7 +55,7 @@ public abstract class CondBranchParser {
         Scope bodyScope = new Scope(brScope);
         ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
+            return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
             return ParseErr.raise(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
         }

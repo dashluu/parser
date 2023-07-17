@@ -57,7 +57,7 @@ public class FunDefParser {
         Scope bodyScope = new Scope(funScope);
         FunDefASTNode funDefNode = (FunDefASTNode) astResult.getData();
         TypeInfo retType = funDefNode.getDtype();
-        bodyScope.setRetType(retType);
+        bodyScope.setRetDtype(retType);
         ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;

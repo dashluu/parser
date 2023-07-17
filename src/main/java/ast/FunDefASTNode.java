@@ -8,8 +8,8 @@ public class FunDefASTNode extends ASTNode {
     private ParamListASTNode paramListNode;
     private ScopeASTNode bodyNode;
 
-    public FunDefASTNode(Tok tok, TypeInfo returnDtype) {
-        super(tok, ASTNodeType.FUN_DEF, returnDtype);
+    public FunDefASTNode(Tok tok, TypeInfo retDtype) {
+        super(tok, ASTNodeType.FUN_DEF, retDtype);
         paramListNode = null;
         bodyNode = null;
     }

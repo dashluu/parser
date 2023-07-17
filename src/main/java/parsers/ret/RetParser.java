@@ -44,7 +44,7 @@ public class RetParser {
         }
 
         // Detect unexpected return statement in a non-function scope
-        TypeInfo retType = scope.getRetType();
+        TypeInfo retType = scope.getRetDtype();
         if (retType == null) {
             return ParseErr.raise(new ErrMsg("Return statements can only exist inside a function",
                     kwResult.getData()));
