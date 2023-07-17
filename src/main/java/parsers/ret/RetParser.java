@@ -15,7 +15,6 @@ import java.io.IOException;
 public class RetParser {
     private TokParser tokParser;
     private ExprParser exprParser;
-    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -47,7 +46,8 @@ public class RetParser {
         // Detect unexpected return statement in a non-function scope
         TypeInfo retType = scope.getRetType();
         if (retType == null) {
-            return ERR.raise(new ErrMsg("Return statements can only exist inside a function", kwResult.getData()));
+            return ParseErr.raise(new ErrMsg("Return statements can only exist inside a function",
+                    kwResult.getData()));
         }
 
         // Parse return expression
@@ -56,7 +56,7 @@ public class RetParser {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL && !retType.equals(TypeTable.VOID)) {
             // When the status is "failed", that means an expression is missing
-            return ERR.raise(new ErrMsg("Invalid return expression", exprResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Invalid return expression", exprResult.getFailTok()));
         }
 
         ASTNode exprNode = null;
@@ -74,7 +74,7 @@ public class RetParser {
         Tok kwTok = kwResult.getData();
         RetASTNode retNode = new RetASTNode(kwTok, exprDtype);
         if (!retNode.getDtype().equals(retType)) {
-            return ParseErr.getInst().raise(new ErrMsg("Return type is not '" + retType.id() + "'", kwTok));
+            return ParseErr.raise(new ErrMsg("Return type is not '" + retType.id() + "'", kwTok));
         }
 
         retNode.setChild(exprNode);

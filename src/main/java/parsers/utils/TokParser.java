@@ -30,7 +30,7 @@ public class TokParser {
     public ParseResult<Tok> parseTok(TokType tokType) throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead();
         if (tokResult.getStatus() != LexStatus.OK) {
-            return ParseErr.getInst().raise(tokResult.getErrMsg());
+            return ParseErr.raise(tokResult.getErrMsg());
         }
         Tok tok = tokResult.getData();
         if (tok.getType() != tokType) {

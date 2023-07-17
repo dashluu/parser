@@ -15,7 +15,6 @@ public class ExprSyntaxPass {
     private Lexer lexer;
     private TokParser tokParser;
     private SyntaxBuff syntaxBuff;
-    private static final ParseErr ERR = ParseErr.getInst();
     private static final OpTable OP_TABLE = OpTable.getInst();
 
     /**
@@ -54,7 +53,7 @@ public class ExprSyntaxPass {
     private ParseResult<SyntaxInfo> eatPrefixOp() throws IOException {
         LexResult<Tok> opResult = lexer.lookahead();
         if (opResult.getStatus() != LexStatus.OK) {
-            return ERR.raise(opResult.getErrMsg());
+            return ParseErr.raise(opResult.getErrMsg());
         }
 
         Tok opTok = opResult.getData();
@@ -76,7 +75,7 @@ public class ExprSyntaxPass {
     private ParseResult<SyntaxInfo> eatPostfixOp() throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead();
         if (tokResult.getStatus() != LexStatus.OK) {
-            return ERR.raise(tokResult.getErrMsg());
+            return ParseErr.raise(tokResult.getErrMsg());
         }
 
         Tok opTok = tokResult.getData();
@@ -177,7 +176,7 @@ public class ExprSyntaxPass {
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
-                        return ERR.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
+                        return ParseErr.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
                     }
                     syntaxBuff.add(new SyntaxInfo(commaResult.getData(), SyntaxTag.COMMA));
                 }
@@ -186,7 +185,7 @@ public class ExprSyntaxPass {
                 if (exprResult.getStatus() == ParseStatus.ERR) {
                     return exprResult;
                 } else if (exprResult.getStatus() == ParseStatus.FAIL) {
-                    return ERR.raise(new ErrMsg("Invalid argument expression", exprResult.getFailTok()));
+                    return ParseErr.raise(new ErrMsg("Invalid argument expression", exprResult.getFailTok()));
                 }
 
                 firstArg = false;
@@ -205,7 +204,7 @@ public class ExprSyntaxPass {
     private ParseResult<SyntaxInfo> eatLiteral() throws IOException {
         LexResult<Tok> literalResult = lexer.lookahead();
         if (literalResult.getStatus() != LexStatus.OK) {
-            return ERR.raise(literalResult.getErrMsg());
+            return ParseErr.raise(literalResult.getErrMsg());
         }
 
         Tok literalTok = literalResult.getData();
@@ -246,7 +245,7 @@ public class ExprSyntaxPass {
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
-            return ERR.raise(new ErrMsg("Missing ')'", parenResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Missing ')'", parenResult.getFailTok()));
         }
 
         syntaxBuff.add(new SyntaxInfo(parenResult.getData(), SyntaxTag.RPAREN));
@@ -305,7 +304,7 @@ public class ExprSyntaxPass {
                 return postfixResult;
             } else {
                 // There is at least one prefix operator but no postfix expression
-                return ERR.raise(new ErrMsg("Expected an expression following the prefix operator",
+                return ParseErr.raise(new ErrMsg("Expected an expression following the prefix operator",
                         postfixResult.getFailTok()));
             }
         }
@@ -363,7 +362,7 @@ public class ExprSyntaxPass {
         }
         // The lhs expression is guaranteed to be valid
         if (!OP_TABLE.isInfixOp(opId)) {
-            return ERR.raise(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
+            return ParseErr.raise(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
         }
         return ParseResult.ok(null);
     }
@@ -389,7 +388,7 @@ public class ExprSyntaxPass {
                 if (firstOperand) {
                     return lresult;
                 } else {
-                    return ERR.raise(new ErrMsg("Invalid expression", lresult.getFailTok()));
+                    return ParseErr.raise(new ErrMsg("Invalid expression", lresult.getFailTok()));
                 }
             }
 
@@ -397,7 +396,7 @@ public class ExprSyntaxPass {
             // Parse operator
             opResult = lexer.lookahead();
             if (opResult.getStatus() != LexStatus.OK) {
-                return ERR.raise(opResult.getErrMsg());
+                return ParseErr.raise(opResult.getErrMsg());
             }
 
             opTok = opResult.getData();

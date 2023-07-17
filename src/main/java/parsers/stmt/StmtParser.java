@@ -20,7 +20,6 @@ public class StmtParser {
     private ExprParser exprParser;
     private DeclParser declParser;
     private RetParser retParser;
-    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -94,7 +93,7 @@ public class StmtParser {
     private ParseResult<Tok> parseSemicolon() throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead();
         if (tokResult.getStatus() == LexStatus.ERR) {
-            return ERR.raise(tokResult.getErrMsg());
+            return ParseErr.raise(tokResult.getErrMsg());
         }
 
         Tok tok = tokResult.getData();
@@ -103,7 +102,7 @@ public class StmtParser {
         int lookaheadRow = tok.getRow();
         int col = tok.getCol();
         if (tokType != TokType.SEMICOLON || consumedRow != lookaheadRow) {
-            return ERR.raise(new ErrMsg("Expected ';' on line " + consumedRow + " but got '" +
+            return ParseErr.raise(new ErrMsg("Expected ';' on line " + consumedRow + " but got '" +
                     (tok.getType() == TokType.EOS ? "end of stream" : tok.getVal()) + "'",
                     lookaheadRow, col));
         }

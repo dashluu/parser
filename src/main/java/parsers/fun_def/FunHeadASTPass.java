@@ -12,7 +12,6 @@ public class FunHeadASTPass {
     private SyntaxBuff syntaxBuff;
     private Scope funScope;
     private static final TypeTable TYPE_TABLE = TypeTable.getInst();
-    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Constructs an AST for a function header.
@@ -70,7 +69,7 @@ public class FunHeadASTPass {
         String id = idTok.getVal();
         SymbolTable symbolTable = funScope.getSymbolTable();
         if (symbolTable.getLocalSymbol(id) != null) {
-            return ERR.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return ParseErr.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new function
@@ -131,7 +130,7 @@ public class FunHeadASTPass {
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
         if (dtype == null) {
-            return ERR.raise(new ErrMsg("Invalid parameter's data type '" + dtypeId + "'", dtypeTok));
+            return ParseErr.raise(new ErrMsg("Invalid parameter's data type '" + dtypeId + "'", dtypeTok));
         }
 
         // Check if the parameter's name has been defined
@@ -140,7 +139,7 @@ public class FunHeadASTPass {
         String name = nameTok.getVal();
         SymbolInfo symbol = symbolTable.getClosureSymbol(name);
         if (symbol != null && symbol.getSymbolType() == SymbolType.PARAM) {
-            return ERR.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
+            return ParseErr.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
         }
 
         // Create a new parameter
@@ -165,7 +164,7 @@ public class FunHeadASTPass {
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
         if (dtype == null) {
-            return ERR.raise(new ErrMsg("Invalid return type '" + dtypeId + "'", dtypeTok));
+            return ParseErr.raise(new ErrMsg("Invalid return type '" + dtypeId + "'", dtypeTok));
         }
 
         return ParseResult.ok(dtype);

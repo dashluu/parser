@@ -11,7 +11,6 @@ import types.TypeInfo;
 import types.TypeTable;
 
 public class ExprASTPass {
-    private static final ParseErr ERR = ParseErr.getInst();
     private static final TypeTable TYPE_TABLE = TypeTable.getInst();
     private static final OpTable OP_TABLE = OpTable.getInst();
     private SyntaxBuff syntaxBuff;
@@ -73,9 +72,9 @@ public class ExprASTPass {
         SymbolTable symbolTable = scope.getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(id);
         if (symbol == null) {
-            return ERR.raise(new ErrMsg("Invalid id '" + id + "'", idTok));
+            return ParseErr.raise(new ErrMsg("Invalid id '" + id + "'", idTok));
         } else if (symbol.getSymbolType() == SymbolType.FUN) {
-            return ERR.raise(new ErrMsg("Unexpected function '" + id + "'", idTok));
+            return ParseErr.raise(new ErrMsg("Unexpected function '" + id + "'", idTok));
         }
 
         TypeInfo dtype = symbol.getDtype();
@@ -130,7 +129,7 @@ public class ExprASTPass {
         SymbolTable symbolTable = scope.getSymbolTable();
         FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         if (funInfo == null) {
-            return ERR.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
+            return ParseErr.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
         }
 
         TypeInfo retType = funInfo.getDtype();
@@ -158,7 +157,7 @@ public class ExprASTPass {
 
         // Check the number of arguments
         if (i != numArgs) {
-            return ERR.raise(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " + i +
+            return ParseErr.raise(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " + i +
                     " for function '" + funId + "'", funIdTok));
         }
 
@@ -316,7 +315,7 @@ public class ExprASTPass {
             if (opTok.getType() == TokType.ASSIGNMENT &&
                     lnodeType != ASTNodeType.VAR_ID &&
                     lnodeType != ASTNodeType.PARAM) {
-                return ERR.raise(new ErrMsg("Expected a mutable id before assignment", opTok));
+                return ParseErr.raise(new ErrMsg("Expected a mutable id before assignment", opTok));
             }
 
             if (prevOpTok != null && OP_TABLE.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {

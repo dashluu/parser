@@ -40,4 +40,6 @@ public interface IASTVisitor {
     void visitElif(ElifASTNode elifNode);
 
     void visitElse(ElseASTNode elseNode);
+
+    void visitWhile(WhileASTNode whileNode);
 }

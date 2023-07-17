@@ -40,9 +40,8 @@ public class DeclMain {
 
             Scope global = new Scope(null);
             ParseResult<ASTNode> result = declParser.parseDecl(global);
-            if (result.getStatus() == ParseStatus.ERR) {
-                ParseErr err = ParseErr.getInst();
-                throw new SyntaxErr(err.getMsg());
+            if (ParseErr.hasErr()) {
+                throw new SyntaxErr(ParseErr.getMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode declNode = result.getData();
                 writer.write("{" + declNode.toJsonStr() + "}");

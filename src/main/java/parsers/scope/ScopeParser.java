@@ -5,6 +5,7 @@ import ast.ASTNodeType;
 import ast.ScopeASTNode;
 import exceptions.ErrMsg;
 import parsers.branch.IfElseParser;
+import parsers.branch.WhileParser;
 import parsers.fun_def.FunDefParser;
 import parsers.stmt.StmtParser;
 import parsers.utils.*;
@@ -18,7 +19,7 @@ public class ScopeParser {
     private StmtParser stmtParser;
     private FunDefParser funDefParser;
     private IfElseParser ifElseParser;
-    private static final ParseErr err = ParseErr.getInst();
+    private WhileParser whileParser;
 
     /**
      * Initializes the dependencies.
@@ -27,12 +28,15 @@ public class ScopeParser {
      * @param stmtParser   a statement parser.
      * @param funDefParser a function definition parser.
      * @param ifElseParser an if-elif-else sequence parser.
+     * @param whileParser  a while-loop parser.
      */
-    public void init(TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser, IfElseParser ifElseParser) {
+    public void init(TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser,
+                     IfElseParser ifElseParser, WhileParser whileParser) {
         this.tokParser = tokParser;
         this.stmtParser = stmtParser;
         this.funDefParser = funDefParser;
         this.ifElseParser = ifElseParser;
+        this.whileParser = whileParser;
     }
 
     /**
@@ -64,7 +68,7 @@ public class ScopeParser {
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Missing '}'", bracketResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Missing '}'", bracketResult.getFailTok()));
         }
 
         return scopeResult;
@@ -79,8 +83,8 @@ public class ScopeParser {
      */
     public ParseResult<ASTNode> parseScope(Scope scope) throws IOException {
         ParseStatus status;
-        ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult;
-        ASTNode stmtNode, funDefNode;
+        ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult, whileResult;
+        ASTNode stmtNode, funDefNode, whileNode;
         ScopeASTNode blockNode;
         ScopeASTNode scopeNode = new ScopeASTNode();
         boolean end = false;
@@ -90,7 +94,7 @@ public class ScopeParser {
             stmtResult = stmtParser.parseStmt(scope);
             status = stmtResult.getStatus();
             if (status == ParseStatus.ERR) {
-                return ParseResult.err();
+                return stmtResult;
             } else if (status != ParseStatus.EMPTY && !(end = status == ParseStatus.FAIL)) {
                 stmtNode = stmtResult.getData();
                 // Ignore statements following a return statement
@@ -108,7 +112,7 @@ public class ScopeParser {
                 funDefResult = funDefParser.parseFunDef(scope);
                 status = funDefResult.getStatus();
                 if (status == ParseStatus.ERR) {
-                    return ParseResult.err();
+                    return funDefResult;
                 } else if (!(end = status == ParseStatus.FAIL)) {
                     funDefNode = funDefResult.getData();
                     scopeNode.addChild(funDefNode);
@@ -124,6 +128,18 @@ public class ScopeParser {
                     return ifElseResult;
                 }
                 end = status == ParseStatus.FAIL;
+            }
+
+            if (end) {
+                // Try parsing a while loop
+                whileResult = whileParser.parseWhile(scope);
+                status = whileResult.getStatus();
+                if (status == ParseStatus.ERR) {
+                    return whileResult;
+                } else if (!(end = status == ParseStatus.FAIL)) {
+                    whileNode = whileResult.getData();
+                    scopeNode.addChild(whileNode);
+                }
             }
 
             if (end) {

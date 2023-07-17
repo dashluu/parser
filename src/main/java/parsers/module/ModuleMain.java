@@ -23,9 +23,8 @@ public class ModuleMain {
             ModuleParser moduleParser = new ModuleParser(lexer);
             moduleParser.init();
             ParseResult<ASTNode> result = moduleParser.parseModule();
-            if (result.getStatus() == ParseStatus.ERR) {
-                ParseErr err = ParseErr.getInst();
-                throw new SyntaxErr(err.getMsg());
+            if (ParseErr.hasErr()) {
+                throw new SyntaxErr(ParseErr.getMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode moduleNode = result.getData();
                 writer.write("{" + moduleNode.toJsonStr() + "}");

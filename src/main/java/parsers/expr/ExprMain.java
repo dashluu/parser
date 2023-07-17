@@ -30,10 +30,9 @@ public class ExprMain {
             parser.init(syntaxPass, astPass, semanChecker);
 
             Scope global = new Scope(null);
-            ParseErr err = ParseErr.getInst();
             ParseResult<ASTNode> result = parser.parseExpr(global);
-            if (err.hasErr()) {
-                throw new SyntaxErr(err.getMsg());
+            if (ParseErr.hasErr()) {
+                throw new SyntaxErr(ParseErr.getMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode exprNode = result.getData();
                 writer.write("{" + exprNode.toJsonStr() + "}");

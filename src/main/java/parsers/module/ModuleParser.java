@@ -6,6 +6,7 @@ import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
 import parsers.branch.IfElseParser;
+import parsers.branch.WhileParser;
 import parsers.decl.DeclASTPass;
 import parsers.decl.DeclParser;
 import parsers.decl.DeclSemanChecker;
@@ -40,11 +41,11 @@ public class ModuleParser {
     private final RetParser retParser;
     private final StmtParser stmtParser;
     private final IfElseParser ifElseParser;
+    private final WhileParser whileParser;
     private final FunHeadSyntaxPass funHeadSyntaxPass;
     private final FunHeadASTPass funHeadASTPass;
     private final FunDefParser funDefParser;
     private final ScopeParser scopeParser;
-    private final ParseErr err = ParseErr.getInst();
 
     public ModuleParser(Lexer lexer) {
         this.lexer = lexer;
@@ -60,6 +61,7 @@ public class ModuleParser {
         retParser = new RetParser();
         stmtParser = new StmtParser();
         ifElseParser = new IfElseParser();
+        whileParser = new WhileParser();
         funHeadSyntaxPass = new FunHeadSyntaxPass();
         funHeadASTPass = new FunHeadASTPass();
         funDefParser = new FunDefParser();
@@ -80,9 +82,10 @@ public class ModuleParser {
         retParser.init(tokParser, exprParser);
         stmtParser.init(lexer, tokParser, exprParser, declParser, retParser);
         ifElseParser.init(tokParser, exprParser, scopeParser);
+        whileParser.init(tokParser, exprParser, scopeParser);
         funHeadSyntaxPass.init(tokParser);
         funDefParser.init(funHeadSyntaxPass, funHeadASTPass, scopeParser);
-        scopeParser.init(tokParser, stmtParser, funDefParser, ifElseParser);
+        scopeParser.init(tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
     }
 
     /**
@@ -94,12 +97,11 @@ public class ModuleParser {
     public ParseResult<ASTNode> parseModule() throws IOException {
         Scope globalScope = new Scope(null);
         ParseResult<ASTNode> moduleResult = scopeParser.parseScope(globalScope);
-
         if (moduleResult.getStatus() == ParseStatus.ERR) {
             return moduleResult;
         } else if (moduleResult.getStatus() == ParseStatus.FAIL) {
             Tok errTok = moduleResult.getFailTok();
-            return err.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
+            return ParseErr.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
         }
 
         // Check if the end of stream is reached
@@ -107,11 +109,11 @@ public class ModuleParser {
         LexResult<Tok> lexResult = lexer.lookahead();
         if (lexResult.getStatus() != LexStatus.OK) {
             // Lexer always yields an OK or error status
-            return err.raise(lexResult.getErrMsg());
+            return ParseErr.raise(lexResult.getErrMsg());
         } else {
             Tok errTok = lexResult.getData();
             if (errTok.getType() != TokType.EOS) {
-                return err.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
+                return ParseErr.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
             }
         }
 

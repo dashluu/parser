@@ -17,7 +17,6 @@ public abstract class CondBranchParser {
     protected ScopeParser scopeParser;
     // Branch scope
     protected Scope brScope;
-    protected static final ParseErr err = ParseErr.getInst();
 
     /**
      * Initializes the dependencies.
@@ -58,7 +57,7 @@ public abstract class CondBranchParser {
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
         }
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
@@ -95,7 +94,7 @@ public abstract class CondBranchParser {
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Invalid branch expression", exprResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Invalid branch expression", exprResult.getFailTok()));
         }
 
         // ')'
@@ -103,19 +102,22 @@ public abstract class CondBranchParser {
         if (rparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (rparenResult.getStatus() == ParseStatus.FAIL) {
-            return err.raise(new ErrMsg("Missing ')'", rparenResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Missing ')'", rparenResult.getFailTok()));
         }
 
         ASTNode exprNode = exprResult.getData();
         // Check if expression has a boolean value
         if (!exprNode.getDtype().equals(TypeTable.BOOL)) {
-            return err.raise(new ErrMsg("Branch condition's expression is not of boolean type",
+            return ParseErr.raise(new ErrMsg("Branch condition's expression is not of boolean type",
                     lparenResult.getData()));
         }
 
         Tok kwTok = kwResult.getData();
-        // TODO: add loop later
-        BranchNode brNode = tokType == TokType.IF ? new IfASTNode(kwTok) : new ElifASTNode(kwTok);
+        BranchNode brNode = switch (tokType) {
+            case IF -> new IfASTNode(kwTok);
+            case ELIF -> new ElifASTNode(kwTok);
+            default -> new WhileASTNode(kwTok);
+        };
         brNode.setCondNode(exprNode);
         return ParseResult.ok(brNode);
     }

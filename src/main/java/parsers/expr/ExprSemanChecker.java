@@ -22,7 +22,6 @@ import java.util.Iterator;
 public class ExprSemanChecker {
     private Scope scope;
     private static final OpTable OP_TABLE = OpTable.getInst();
-    private static final ParseErr ERR = ParseErr.getInst();
 
     /**
      * Checks the semantics of an expression.
@@ -90,7 +89,7 @@ public class ExprSemanChecker {
         OpCompat opCompat = new UnOpCompat(opId, operandDtype);
         TypeInfo resultDtype = OP_TABLE.getCompatDtype(opCompat);
         if (resultDtype == null) {
-            return ERR.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
+            return ParseErr.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
                     operandDtype.id() + "'", opTok));
         }
 
@@ -131,7 +130,7 @@ public class ExprSemanChecker {
         OpCompat opCompat = new BinOpCompat(opId, leftDtype, rightDtype);
         TypeInfo resultDtype = OP_TABLE.getCompatDtype(opCompat);
         if (resultDtype == null) {
-            return ERR.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
+            return ParseErr.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
                     leftDtype.id() + "' and type '" + rightDtype.id() + "'", opTok));
         }
 
@@ -163,7 +162,7 @@ public class ExprSemanChecker {
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
             } else if (!child.getDtype().equals(paramDtype)) {
-                return ERR.raise(new ErrMsg("Expected type '" + paramDtype.id() + "' for argument " + i,
+                return ParseErr.raise(new ErrMsg("Expected type '" + paramDtype.id() + "' for argument " + i,
                         child.getTok()));
             }
             ++i;
