@@ -7,17 +7,13 @@ import lexers.LexStatus;
 import lexers.Lexer;
 import parsers.branch.IfElseParser;
 import parsers.branch.WhileParser;
-import parsers.decl.DeclASTPass;
 import parsers.decl.DeclParser;
 import parsers.decl.DeclSemanChecker;
-import parsers.decl.DeclSyntaxPass;
 import parsers.expr.ExprASTPass;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
 import parsers.expr.ExprSyntaxPass;
-import parsers.fun_def.FunDefParser;
-import parsers.fun_def.FunHeadASTPass;
-import parsers.fun_def.FunHeadSyntaxPass;
+import parsers.fun_def.*;
 import parsers.ret.RetParser;
 import parsers.scope.ScopeParser;
 import parsers.stmt.StmtParser;
@@ -34,16 +30,14 @@ public class ModuleParser {
     private final ExprASTPass exprASTPass;
     private final ExprSemanChecker exprSemanChecker;
     private final ExprParser exprParser;
-    private final DeclSyntaxPass declSyntaxPass;
-    private final DeclASTPass declASTPass;
     private final DeclSemanChecker declSemanChecker;
     private final DeclParser declParser;
     private final RetParser retParser;
     private final StmtParser stmtParser;
     private final IfElseParser ifElseParser;
     private final WhileParser whileParser;
-    private final FunHeadSyntaxPass funHeadSyntaxPass;
-    private final FunHeadASTPass funHeadASTPass;
+    private final FunHeadParser funHeadParser;
+    private final FunHeadSemanChecker funHeadSemanChecker;
     private final FunDefParser funDefParser;
     private final ScopeParser scopeParser;
 
@@ -54,16 +48,14 @@ public class ModuleParser {
         exprASTPass = new ExprASTPass();
         exprSemanChecker = new ExprSemanChecker();
         exprParser = new ExprParser();
-        declSyntaxPass = new DeclSyntaxPass();
-        declASTPass = new DeclASTPass();
         declSemanChecker = new DeclSemanChecker();
         declParser = new DeclParser();
         retParser = new RetParser();
         stmtParser = new StmtParser();
         ifElseParser = new IfElseParser();
         whileParser = new WhileParser();
-        funHeadSyntaxPass = new FunHeadSyntaxPass();
-        funHeadASTPass = new FunHeadASTPass();
+        funHeadParser = new FunHeadParser();
+        funHeadSemanChecker = new FunHeadSemanChecker();
         funDefParser = new FunDefParser();
         scopeParser = new ScopeParser();
     }
@@ -75,16 +67,13 @@ public class ModuleParser {
         tokParser.init(lexer);
         exprSyntaxPass.init(lexer, tokParser);
         exprParser.init(exprSyntaxPass, exprASTPass, exprSemanChecker);
-        declSyntaxPass.init(tokParser, exprSyntaxPass);
-        declASTPass.init(exprASTPass);
-        declSemanChecker.init(exprSemanChecker);
-        declParser.init(declSyntaxPass, declASTPass, declSemanChecker);
+        declParser.init(tokParser, exprParser, declSemanChecker);
         retParser.init(tokParser, exprParser);
         stmtParser.init(lexer, tokParser, exprParser, declParser, retParser);
         ifElseParser.init(tokParser, exprParser, scopeParser);
         whileParser.init(tokParser, exprParser, scopeParser);
-        funHeadSyntaxPass.init(tokParser);
-        funDefParser.init(funHeadSyntaxPass, funHeadASTPass, scopeParser);
+        funHeadParser.init(tokParser, funHeadSemanChecker);
+        funDefParser.init(funHeadParser, scopeParser);
         scopeParser.init(tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
     }
 

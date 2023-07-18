@@ -1,89 +1,162 @@
 package parsers.decl;
 
-import ast.ASTNode;
-import ast.ASTNodeType;
-import ast.BinASTNode;
+import ast.*;
 import exceptions.ErrMsg;
+import operators.BinOpCompat;
+import operators.OpCompat;
+import operators.OpTable;
 import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import parsers.utils.Scope;
-import parsers.expr.ExprSemanChecker;
+import symbols.ConstInfo;
 import symbols.SymbolInfo;
 import symbols.SymbolTable;
+import symbols.VarInfo;
 import toks.Tok;
+import toks.TokType;
 import types.TypeInfo;
-
-import java.io.IOException;
+import types.TypeTable;
 
 public class DeclSemanChecker {
-    private ExprSemanChecker exprSemanChecker;
-
-    /**
-     * Initializes the dependencies.
-     *
-     * @param exprSemanChecker an object that checks the right-hand side(rhs) expression's semantics.
-     */
-    public void init(ExprSemanChecker exprSemanChecker) {
-        this.exprSemanChecker = exprSemanChecker;
-    }
+    private Scope scope;
+    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
+    private static final OpTable OP_TABLE = OpTable.getInst();
 
     /**
      * Checks the semantics of a declaration statement.
      *
      * @param declNode the declaration AST's root.
-     * @param scope    the scope surrounding the declaration.
+     * @param scope    the scope surrounding the declaration statement.
      * @return a ParseResult object as the result of checking the declaration statement's semantics.
-     * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> checkSeman(ASTNode declNode, Scope scope) throws IOException {
+    public ParseResult<ASTNode> checkSeman(ASTNode declNode, Scope scope) {
+        this.scope = scope;
+
+        ParseResult<SymbolInfo> lhsResult;
         ASTNodeType declNodeType = declNode.getNodeType();
-        if (declNodeType != ASTNodeType.VAR_DEF && declNodeType != ASTNodeType.CONST_DEF) {
+        if (declNodeType == ASTNodeType.TYPE_ANN) {
+            // Declaration without rhs expression
+            lhsResult = checkTypeAnn((TypeAnnASTNode) declNode);
+            if (lhsResult.getStatus() == ParseStatus.ERR) {
+                return ParseResult.err();
+            }
             return ParseResult.ok(declNode);
         }
+
         BinASTNode asgnmtNode = (BinASTNode) declNode;
-        ASTNode exprNode = asgnmtNode.getRight();
-        // Check the semantics of the rhs expression
-        ParseResult<ASTNode> exprResult = exprSemanChecker.checkSeman(exprNode, scope);
-        if (exprResult.getStatus() == ParseStatus.ERR) {
-            return exprResult;
+        ASTNode lhsNode = asgnmtNode.getLeft();
+        if (lhsNode.getNodeType() == ASTNodeType.TYPE_ANN) {
+            lhsResult = checkTypeAnn((TypeAnnASTNode) lhsNode);
+        } else {
+            lhsResult = checkId(lhsNode);
         }
-        return typeCheckDef(asgnmtNode, scope);
+
+        if (lhsResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        }
+
+        SymbolInfo symbol = lhsResult.getData();
+        return typeCheckAsgnmt(symbol, asgnmtNode);
     }
 
     /**
-     * Checks type compatibility between the left-hand side and right-hand side of a declaration statement.
+     * Checks the type annotation of a declaration statement.
      *
-     * @param asgmtNode the declaration AST's root.
-     * @param scope     the current scope surrounding the declaration statement.
-     * @return a ParseResult object as the result of type checking both sides of the declaration.
+     * @param typeAnnNode the type annotation node that contains a node with the symbol's id on the left and a data type
+     *                    node on the right.
+     * @return a ParseResult object as the result of checking the declaration statement's type annotation.
      */
-    private ParseResult<ASTNode> typeCheckDef(BinASTNode asgmtNode, Scope scope) {
-        Tok asgmtTok = asgmtNode.getTok();
-        ASTNode lhsNode = asgmtNode.getLeft();
-        ASTNode exprNode = asgmtNode.getRight();
+    private ParseResult<SymbolInfo> checkTypeAnn(TypeAnnASTNode typeAnnNode) {
+        ASTNode idNode = typeAnnNode.getLeft();
+        ParseResult<SymbolInfo> idResult = checkId(idNode);
+        if (idResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        }
+
+        DtypeASTNode dtypeNode = typeAnnNode.getDtypeNode();
+        ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
+        if (dtypeResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        }
+
+        TypeInfo dtype = dtypeResult.getData();
+        typeAnnNode.setDtype(dtype);
+        idNode.setDtype(dtype);
+        dtypeNode.setDtype(dtype);
+        return ParseResult.ok(idResult.getData());
+    }
+
+    /**
+     * Checks if a declaration id is valid.
+     *
+     * @param idNode the AST node containing the declaration id.
+     * @return a ParseResult object as the result of checking the declaration id.
+     */
+    private ParseResult<SymbolInfo> checkId(ASTNode idNode) {
+        // Check if the declaration id has been defined
+        Tok idTok = idNode.getTok();
+        String id = idTok.getVal();
+        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolInfo symbol = symbolTable.getLocalSymbol(id);
+        if (symbol != null) {
+            return ParseErr.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+        }
+
+        // Create a new symbol
+        symbol = idNode.getNodeType() == ASTNodeType.VAR_DECL ?
+                new VarInfo(id, null) :
+                new ConstInfo(id, null);
+        symbolTable.registerSymbol(symbol);
+        return ParseResult.ok(symbol);
+    }
+
+    /**
+     * Checks if a data type is valid.
+     *
+     * @param dtypeNode the AST node that stores a data type token.
+     * @return a ParseResult object as the result of checking a data type.
+     */
+    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
+        Tok dtypeTok = dtypeNode.getTok();
+        String dtypeId = dtypeTok.getVal();
+        TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
+        if (dtype == null) {
+            return ParseErr.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
+        }
+        return ParseResult.ok(dtype);
+    }
+
+    /**
+     * Checks type compatibility between the left-hand side and right-hand side of the assignment, or the definition.
+     *
+     * @param lhsSymbol  the symbol on the left-hand side.
+     * @param asgnmtNode the declaration AST's root.
+     * @return a ParseResult object as the result of type checking both sides of the assignment.
+     */
+    private ParseResult<ASTNode> typeCheckAsgnmt(SymbolInfo lhsSymbol, BinASTNode asgnmtNode) {
+        Tok asgmtTok = asgnmtNode.getTok();
+        ASTNode lhsNode = asgnmtNode.getLeft();
+        ASTNode exprNode = asgnmtNode.getRight();
         TypeInfo lhsDtype = lhsNode.getDtype();
         TypeInfo rhsDtype = exprNode.getDtype();
 
-        // Compare and check if the lhs and rhs have the same data type
+        // Compare and check if the lhs and rhs have compatible types
         if (rhsDtype == null) {
             return ParseErr.raise(new ErrMsg("No type detected on the right-hand side", asgmtTok));
         } else if (lhsDtype != rhsDtype) {
             if (lhsDtype != null) {
-                return ParseErr.raise(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
-                        "' to data of type '" + lhsDtype.id() + "'", asgmtTok));
-            } else {
-                // If the lhs's data type is null, we assign rhs's data type directly to lhs
-                lhsNode.setDtype(rhsDtype);
-                // Set the variable or constant's data type in the symbol table
-                SymbolTable symbolTable = scope.getSymbolTable();
-                String id = lhsNode.getTok().getVal();
-                SymbolInfo symbol = symbolTable.getClosureSymbol(id);
-                symbol.setDtype(rhsDtype);
+                OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
+                if (OP_TABLE.getCompatDtype(opCompat) == null) {
+                    return ParseErr.raise(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
+                            "' to data of type '" + lhsDtype.id() + "'", asgmtTok));
+                }
             }
+            lhsNode.setDtype(rhsDtype);
+            lhsSymbol.setDtype(rhsDtype);
         }
 
-        asgmtNode.setDtype(rhsDtype);
-        return ParseResult.ok(asgmtNode);
+        asgnmtNode.setDtype(rhsDtype);
+        return ParseResult.ok(asgnmtNode);
     }
 }

@@ -4,6 +4,7 @@ import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.expr.ExprASTPass;
+import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
 import parsers.expr.ExprSyntaxPass;
 import parsers.utils.*;
@@ -26,17 +27,14 @@ public class DeclMain {
             ExprSyntaxPass exprSyntaxPass = new ExprSyntaxPass();
             ExprASTPass exprASTPass = new ExprASTPass();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
-            DeclSyntaxPass declSyntaxPass = new DeclSyntaxPass();
-            DeclASTPass declASTPass = new DeclASTPass();
+            ExprParser exprParser = new ExprParser();
             DeclSemanChecker declSemanChecker = new DeclSemanChecker();
             DeclParser declParser = new DeclParser();
 
             tokParser.init(lexer);
             exprSyntaxPass.init(lexer, tokParser);
-            declSyntaxPass.init(tokParser, exprSyntaxPass);
-            declASTPass.init(exprASTPass);
-            declSemanChecker.init(exprSemanChecker);
-            declParser.init(declSyntaxPass, declASTPass, declSemanChecker);
+            exprParser.init(exprSyntaxPass, exprASTPass, exprSemanChecker);
+            declParser.init(tokParser, exprParser, declSemanChecker);
 
             Scope global = new Scope(null);
             ParseResult<ASTNode> result = declParser.parseDecl(global);

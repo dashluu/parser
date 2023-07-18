@@ -27,6 +27,8 @@ public interface IASTVisitor {
 
     void visitDtype(DtypeASTNode dtypeNode);
 
+    void visitTypeAnn(TypeAnnASTNode typeAnnNode);
+
     void visitFunCall(FunCallASTNode funCallNode);
 
     void visitFunDef(FunDefASTNode funDefNode);

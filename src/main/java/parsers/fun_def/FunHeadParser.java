@@ -1,27 +1,27 @@
 package parsers.fun_def;
 
-import ast.ASTNode;
-import ast.FunDefASTNode;
-import ast.ParamDeclASTNode;
-import ast.ParamListASTNode;
+import ast.*;
 import exceptions.ErrMsg;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import types.TypeInfo;
+import types.TypeTable;
 
 import java.io.IOException;
 
 public class FunHeadParser {
     private TokParser tokParser;
+    private FunHeadSemanChecker semanChecker;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser a token parser.
+     * @param tokParser    a token parser.
+     * @param semanChecker a semantics checker for function headers.
      */
-    public void init(TokParser tokParser) {
+    public void init(TokParser tokParser, FunHeadSemanChecker semanChecker) {
         this.tokParser = tokParser;
+        this.semanChecker = semanChecker;
     }
 
     /**
@@ -62,19 +62,23 @@ public class FunHeadParser {
             return ParseErr.raise(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
         }
 
-        // Try parsing a dummy return type
-        // No need to check if it fails since that indicates the function returns void
-        ParseResult<TypeInfo> retDtypeResult = parseTypeAnn();
-        if (retDtypeResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
+        // Try parsing a return type annotation
+        // Failure indicates the function returns void
+        TypeAnnASTNode typeAnnNode;
+        ParseResult<ASTNode> typeAnnResult = parseTypeAnn();
+        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
+            return typeAnnResult;
+        } else if (typeAnnResult.getStatus() == ParseStatus.OK) {
+            typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
+        } else {
+            typeAnnNode = voidRetTypeAnnAST();
         }
 
-        Tok idTok = idResult.getData();
-        TypeInfo retDtype = retDtypeResult.getData();
-        FunDefASTNode funDefNode = new FunDefASTNode(idTok, retDtype);
+        FunDefASTNode funDefNode = new FunDefASTNode(idResult.getData(), null);
         ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
         funDefNode.setParamListNode(paramListNode);
-        return ParseResult.ok(funDefNode);
+        typeAnnNode.setLeft(funDefNode);
+        return semanChecker.checkSeman(typeAnnNode, funScope);
     }
 
     /**
@@ -117,7 +121,7 @@ public class FunHeadParser {
 
                 paramResult = parseParam();
                 if (paramResult.getStatus() == ParseStatus.ERR) {
-                    return ParseResult.err();
+                    return paramResult;
                 } else if (paramResult.getStatus() == ParseStatus.FAIL) {
                     return ParseErr.raise(new ErrMsg("Invalid parameter", paramResult.getFailTok()));
                 }
@@ -147,17 +151,18 @@ public class FunHeadParser {
 
         Tok nameTok = nameResult.getData();
         // Parse the type annotation
-        ParseResult<TypeInfo> dtypeResult = parseTypeAnn();
-        if (dtypeResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
+        ParseResult<ASTNode> typeAnnResult = parseTypeAnn();
+        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
+            return typeAnnResult;
+        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
             return ParseErr.raise(new ErrMsg("Missing a data type for parameter '" + nameTok.getVal() + "'",
-                    dtypeResult.getFailTok()));
+                    typeAnnResult.getFailTok()));
         }
 
-        TypeInfo dtype = dtypeResult.getData();
-        ParamDeclASTNode paramNode = new ParamDeclASTNode(nameTok, dtype);
-        return ParseResult.ok(paramNode);
+        TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
+        ParamDeclASTNode paramNode = new ParamDeclASTNode(nameTok, null);
+        typeAnnNode.setLeft(paramNode);
+        return ParseResult.ok(typeAnnNode);
     }
 
     /**
@@ -166,26 +171,43 @@ public class FunHeadParser {
      * @return a ParseResult object as the result of parsing a type annotation.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<TypeInfo> parseTypeAnn() throws IOException {
+    private ParseResult<ASTNode> parseTypeAnn() throws IOException {
         // Try parsing ':'
-        ParseResult<Tok> result = tokParser.parseTok(TokType.COLON);
-        if (result.getStatus() == ParseStatus.ERR) {
+        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON);
+        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (result.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(result.getFailTok());
+        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
+            return ParseResult.fail(typeAnnResult.getFailTok());
         }
 
         // Parse a data type
-        result = tokParser.parseTok(TokType.ID);
-        if (result.getStatus() == ParseStatus.ERR) {
+        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID);
+        if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (result.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected a type id for type annotation", result.getFailTok()));
+        } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
+            return ParseErr.raise(new ErrMsg("Expected a type id for type annotation", dtypeResult.getFailTok()));
         }
 
-        // Create a dummy data type so we can check it in later phase
-        String dtypeId = result.getData().getVal();
-        TypeInfo dtype = new TypeInfo(dtypeId, -1);
-        return ParseResult.ok(dtype);
+        Tok typeAnnTok = typeAnnResult.getData();
+        TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
+        Tok dtypeTok = dtypeResult.getData();
+        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
+        typeAnnNode.setDtypeNode(dtypeNode);
+        return ParseResult.ok(typeAnnNode);
+    }
+
+    /**
+     * Constructs a partial AST for void return type annotation.
+     *
+     * @return an AST node as the root of the constructed AST.
+     */
+    private TypeAnnASTNode voidRetTypeAnnAST() {
+        Tok typeAnnTok = new Tok(":", TokType.COLON);
+        TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
+        String voidId = TypeTable.VOID.id();
+        Tok dtypeTok = new Tok(voidId, TokType.ID);
+        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
+        typeAnnNode.setDtypeNode(dtypeNode);
+        return typeAnnNode;
     }
 }

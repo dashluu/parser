@@ -45,24 +45,25 @@ public class ExprSemanChecker {
      */
     private ParseResult<ASTNode> recurCheckSeman(ASTNode exprNode) throws IOException {
         ASTNodeType exprNodeType = exprNode.getNodeType();
-        if (exprNodeType == ASTNodeType.LITERAL || exprNodeType == ASTNodeType.VAR_ID ||
-                exprNodeType == ASTNodeType.CONST_ID || exprNodeType == ASTNodeType.PARAM ||
+        if (exprNodeType == ASTNodeType.LITERAL ||
+                exprNodeType == ASTNodeType.ID ||
                 exprNodeType == ASTNodeType.DTYPE) {
             return ParseResult.ok(exprNode);
         }
 
         ParseResult<ASTNode> result;
-
         if (exprNode.getNodeType() == ASTNodeType.UN_OP) {
-            result = typeCheckUnExpr((UnASTNode) exprNode);
+            result = typeCheckUnExpr((UnOpASTNode) exprNode);
         } else if (exprNode.getNodeType() == ASTNodeType.BIN_OP) {
-            result = typeCheckBinExpr((BinASTNode) exprNode);
+            result = typeCheckBinExpr((BinOpASTNode) exprNode);
         } else {
-            result = typeCheckArgList((KnaryASTNode) exprNode);
+            result = checkFunCall((FunCallASTNode) exprNode);
         }
 
         return result;
     }
+
+    private ParseResult<ASTNode> checkId(IdASTNode )
 
     /**
      * Checks the type compatibilities in a unary expression.
@@ -71,7 +72,7 @@ public class ExprSemanChecker {
      * @return a ParseResult object as the result of type checking a unary expression.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> typeCheckUnExpr(UnASTNode exprNode) throws IOException {
+    private ParseResult<ASTNode> typeCheckUnExpr(UnOpASTNode exprNode) throws IOException {
         Tok opTok = exprNode.getTok();
         TokType opId = opTok.getType();
         ASTNode childNode = exprNode.getChild();
@@ -105,7 +106,7 @@ public class ExprSemanChecker {
      * @return a ParseResult object as the result of type checking a binary expression.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> typeCheckBinExpr(BinASTNode exprNode) throws IOException {
+    private ParseResult<ASTNode> typeCheckBinExpr(BinOpASTNode exprNode) throws IOException {
         Tok opTok = exprNode.getTok();
         TokType opId = opTok.getType();
         ASTNode leftNode = exprNode.getLeft();
@@ -140,32 +141,43 @@ public class ExprSemanChecker {
     }
 
     /**
-     * Checks the data type of each expression in the argument list is as expected.
+     * Checks if a function id exists and if the data type of each expression in the argument list is as expected.
      *
      * @param funCallNode an AST node associated with the function call.
-     * @return a ParseResult object as the result of type checking the function's argument list.
+     * @return a ParseResult object as the result of type checking the function call and its argument list.
      */
-    private ParseResult<ASTNode> typeCheckArgList(KnaryASTNode funCallNode) throws IOException {
-        Tok funCallTok = funCallNode.getTok();
-        String funId = funCallTok.getVal();
+    private ParseResult<ASTNode> checkFunCall(FunCallASTNode funCallNode) throws IOException {
+        Tok funIdTok = funCallNode.getTok();
+        String funId = funIdTok.getVal();
+        // Check if the function id exists
         SymbolTable symbolTable = scope.getSymbolTable();
         FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
+        if (funInfo == null) {
+            return ParseErr.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
+        }
+
         Iterator<TypeInfo> paramDtypesIter = funInfo.iterator();
         TypeInfo paramDtype;
         ParseResult<ASTNode> argResult;
         int i = 1;
 
         // Check if each argument type is as expected
-        for (ASTNode child : funCallNode) {
+        for (ASTNode argNode : funCallNode) {
             paramDtype = paramDtypesIter.next();
-            argResult = recurCheckSeman(child);
+            argResult = recurCheckSeman(argNode);
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
-            } else if (!child.getDtype().equals(paramDtype)) {
+            } else if (!argNode.getDtype().equals(paramDtype)) {
                 return ParseErr.raise(new ErrMsg("Expected type '" + paramDtype.id() + "' for argument " + i,
-                        child.getTok()));
+                        argNode.getTok()));
             }
             ++i;
+        }
+
+        int numArgs = funInfo.countParams();
+        if (i != numArgs) {
+            return ParseErr.raise(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " + i +
+                    " for function '" + funId + "'", funIdTok));
         }
 
         return ParseResult.ok(funCallNode);

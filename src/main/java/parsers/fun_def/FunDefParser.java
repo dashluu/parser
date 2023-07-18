@@ -1,9 +1,6 @@
 package parsers.fun_def;
 
-import ast.ASTNode;
-import ast.FunDefASTNode;
-import ast.RetASTNode;
-import ast.ScopeASTNode;
+import ast.*;
 import exceptions.ErrMsg;
 import keywords.KeywordTable;
 import parsers.scope.ScopeParser;
@@ -16,20 +13,17 @@ import types.TypeTable;
 import java.io.IOException;
 
 public class FunDefParser {
-    private FunHeadSyntaxPass headSyntaxPass;
-    private FunHeadASTPass headAstPass;
+    private FunHeadParser funHeadParser;
     private ScopeParser scopeParser;
 
     /**
      * Initializes the dependencies.
      *
-     * @param headSyntaxPass an object that checks the function definition's syntax.
-     * @param headAstPass    an object that constructs the function definition's AST.
-     * @param scopeParser    an object that parses code components inside a function scope.
+     * @param funHeadParser a function header parser.
+     * @param scopeParser   a scope parser.
      */
-    public void init(FunHeadSyntaxPass headSyntaxPass, FunHeadASTPass headAstPass, ScopeParser scopeParser) {
-        this.headSyntaxPass = headSyntaxPass;
-        this.headAstPass = headAstPass;
+    public void init(FunHeadParser funHeadParser, ScopeParser scopeParser) {
+        this.funHeadParser = funHeadParser;
         this.scopeParser = scopeParser;
     }
 
@@ -41,22 +35,15 @@ public class FunDefParser {
      * @throws IOException if there is an IO exception.
      */
     public ParseResult<ASTNode> parseFunDef(Scope funScope) throws IOException {
-        SyntaxBuff syntaxBuff = new SyntaxBuff();
-        ParseResult<SyntaxInfo> syntaxResult = headSyntaxPass.eatFunHead(syntaxBuff, funScope);
-        if (syntaxResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (syntaxResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(syntaxResult.getFailTok());
+        ParseResult<ASTNode> funHeadResult = funHeadParser.parseFunHead(funScope);
+        if (funHeadResult.getStatus() == ParseStatus.ERR || funHeadResult.getStatus() == ParseStatus.FAIL) {
+            return funHeadResult;
         }
 
-        ParseResult<ASTNode> astResult = headAstPass.doFunHead(syntaxBuff, funScope);
-        if (astResult.getStatus() == ParseStatus.ERR) {
-            return astResult;
-        }
-
-        Scope bodyScope = new Scope(funScope);
-        FunDefASTNode funDefNode = (FunDefASTNode) astResult.getData();
+        TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) funHeadResult.getData();
+        FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
         TypeInfo retType = funDefNode.getDtype();
+        Scope bodyScope = new Scope(funScope);
         bodyScope.setRetDtype(retType);
         ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
@@ -66,8 +53,7 @@ public class FunDefParser {
                     bodyResult.getFailTok()));
         }
 
-        // Check if a return statement is missing
-        // Valid only if the return type isn't void
+        // Check if a return statement is missing, this is only valid if the return type is void
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         Tok idTok = funDefNode.getTok();
         if (!bodyNode.getRetFlag()) {
@@ -83,6 +69,6 @@ public class FunDefParser {
         }
 
         funDefNode.setBodyNode(bodyNode);
-        return astResult;
+        return funHeadResult;
     }
 }
