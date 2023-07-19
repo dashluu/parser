@@ -20,14 +20,11 @@ public class ExprMain {
 
             Lexer lexer = new Lexer(reader);
             TokParser tokParser = new TokParser();
-            ExprSyntaxPass syntaxPass = new ExprSyntaxPass();
-            ExprASTPass astPass = new ExprASTPass();
             ExprSemanChecker semanChecker = new ExprSemanChecker();
             ExprParser parser = new ExprParser();
 
             tokParser.init(lexer);
-            syntaxPass.init(lexer, tokParser);
-            parser.init(syntaxPass, astPass, semanChecker);
+            parser.init(lexer, tokParser, semanChecker);
 
             Scope global = new Scope(null);
             ParseResult<ASTNode> result = parser.parseExpr(global);

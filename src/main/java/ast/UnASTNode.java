@@ -4,7 +4,7 @@ import toks.Tok;
 import types.TypeInfo;
 
 // Node with data type and one child
-public abstract class UnASTNode extends ASTNode {
+public class UnASTNode extends ASTNode {
     protected ASTNode child;
 
     public UnASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {

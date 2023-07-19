@@ -9,7 +9,7 @@ import java.util.List;
 
 // AST node with multiple children
 // Implemented using the Iterator pattern
-public abstract class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
+public class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
     protected final List<ASTNode> children = new ArrayList<>();
 
     public KnaryASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {

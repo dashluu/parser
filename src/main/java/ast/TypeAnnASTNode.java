@@ -5,7 +5,7 @@ import types.TypeInfo;
 
 public class TypeAnnASTNode extends ASTNode {
     private ASTNode left;
-    private DtypeASTNode dtypeNode;
+    private ASTNode dtypeNode;
 
     public TypeAnnASTNode(Tok tok, TypeInfo dtype) {
         super(tok, ASTNodeType.TYPE_ANN, dtype);
@@ -19,11 +19,11 @@ public class TypeAnnASTNode extends ASTNode {
         this.left = left;
     }
 
-    public DtypeASTNode getDtypeNode() {
+    public ASTNode getDtypeNode() {
         return dtypeNode;
     }
 
-    public void setDtypeNode(DtypeASTNode dtypeNode) {
+    public void setDtypeNode(ASTNode dtypeNode) {
         this.dtypeNode = dtypeNode;
     }
 

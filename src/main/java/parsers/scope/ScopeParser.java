@@ -90,33 +90,14 @@ public class ScopeParser {
         boolean end = false;
 
         while (!end) {
-            // Try parsing a statement
-            stmtResult = stmtParser.parseStmt(scope);
-            status = stmtResult.getStatus();
+            // Try parsing a function definition
+            funDefResult = funDefParser.parseFunDef(scope);
+            status = funDefResult.getStatus();
             if (status == ParseStatus.ERR) {
-                return stmtResult;
-            } else if (status != ParseStatus.EMPTY && !(end = status == ParseStatus.FAIL)) {
-                stmtNode = stmtResult.getData();
-                // Ignore statements following a return statement
-                if (!scopeNode.getRetFlag()) {
-                    scopeNode.addChild(stmtNode);
-                    if (stmtNode.getNodeType() == ASTNodeType.RET) {
-                        // The scope has a return statement
-                        scopeNode.setRetFlag(true);
-                    }
-                }
-            }
-
-            if (end) {
-                // Try parsing a function definition
-                funDefResult = funDefParser.parseFunDef(scope);
-                status = funDefResult.getStatus();
-                if (status == ParseStatus.ERR) {
-                    return funDefResult;
-                } else if (!(end = status == ParseStatus.FAIL)) {
-                    funDefNode = funDefResult.getData();
-                    scopeNode.addChild(funDefNode);
-                }
+                return funDefResult;
+            } else if (!(end = status == ParseStatus.FAIL)) {
+                funDefNode = funDefResult.getData();
+                scopeNode.addChild(funDefNode);
             }
 
             if (end) {
@@ -152,6 +133,25 @@ public class ScopeParser {
                     blockNode = (ScopeASTNode) blockResult.getData();
                     scopeNode.addChild(blockNode);
                     scopeNode.setRetFlag(scopeNode.getRetFlag() || blockNode.getRetFlag());
+                }
+            }
+
+            if (end) {
+                // Try parsing a statement
+                stmtResult = stmtParser.parseStmt(scope);
+                status = stmtResult.getStatus();
+                if (status == ParseStatus.ERR) {
+                    return stmtResult;
+                } else if (status != ParseStatus.EMPTY && !(end = status == ParseStatus.FAIL)) {
+                    stmtNode = stmtResult.getData();
+                    // Ignore statements following a return statement
+                    if (!scopeNode.getRetFlag()) {
+                        scopeNode.addChild(stmtNode);
+                        if (stmtNode.getNodeType() == ASTNodeType.RET) {
+                            // The scope has a return statement
+                            scopeNode.setRetFlag(true);
+                        }
+                    }
                 }
             }
 

@@ -48,7 +48,7 @@ public class DeclParser {
         if (idResult.getStatus() == ParseStatus.ERR) {
             return idResult;
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected an id", idResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Expected an identifier", idResult.getFailTok()));
         }
 
         ASTNode idNode = idResult.getData();
@@ -119,10 +119,10 @@ public class DeclParser {
     }
 
     /**
-     * Parses a declaration id.
+     * Parses a declaration identifier.
      *
      * @param mutable boolean value for declaration's mutability.
-     * @return a ParseResult object as the result of parsing the declaration id.
+     * @return a ParseResult object as the result of parsing the declaration identifier.
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseId(boolean mutable) throws IOException {
@@ -160,13 +160,13 @@ public class DeclParser {
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected a type id for type annotation", dtypeResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Expected a data type for type annotation", dtypeResult.getFailTok()));
         }
 
         Tok typeAnnTok = typeAnnResult.getData();
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         Tok dtypeTok = dtypeResult.getData();
-        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
+        ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return ParseResult.ok(typeAnnNode);
     }

@@ -9,10 +9,8 @@ import parsers.branch.IfElseParser;
 import parsers.branch.WhileParser;
 import parsers.decl.DeclParser;
 import parsers.decl.DeclSemanChecker;
-import parsers.expr.ExprASTPass;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
-import parsers.expr.ExprSyntaxPass;
 import parsers.fun_def.*;
 import parsers.ret.RetParser;
 import parsers.scope.ScopeParser;
@@ -26,8 +24,6 @@ import java.io.IOException;
 public class ModuleParser {
     private final Lexer lexer;
     private final TokParser tokParser;
-    private final ExprSyntaxPass exprSyntaxPass;
-    private final ExprASTPass exprASTPass;
     private final ExprSemanChecker exprSemanChecker;
     private final ExprParser exprParser;
     private final DeclSemanChecker declSemanChecker;
@@ -44,8 +40,6 @@ public class ModuleParser {
     public ModuleParser(Lexer lexer) {
         this.lexer = lexer;
         tokParser = new TokParser();
-        exprSyntaxPass = new ExprSyntaxPass();
-        exprASTPass = new ExprASTPass();
         exprSemanChecker = new ExprSemanChecker();
         exprParser = new ExprParser();
         declSemanChecker = new DeclSemanChecker();
@@ -65,11 +59,10 @@ public class ModuleParser {
      */
     public void init() {
         tokParser.init(lexer);
-        exprSyntaxPass.init(lexer, tokParser);
-        exprParser.init(exprSyntaxPass, exprASTPass, exprSemanChecker);
+        exprParser.init(lexer, tokParser, exprSemanChecker);
         declParser.init(tokParser, exprParser, declSemanChecker);
         retParser.init(tokParser, exprParser);
-        stmtParser.init(lexer, tokParser, exprParser, declParser, retParser);
+        stmtParser.init(tokParser, exprParser, declParser, retParser);
         ifElseParser.init(tokParser, exprParser, scopeParser);
         whileParser.init(tokParser, exprParser, scopeParser);
         funHeadParser.init(tokParser, funHeadSemanChecker);

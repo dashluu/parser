@@ -63,8 +63,8 @@ public class DeclSemanChecker {
     /**
      * Checks the type annotation of a declaration statement.
      *
-     * @param typeAnnNode the type annotation node that contains a node with the symbol's id on the left and a data type
-     *                    node on the right.
+     * @param typeAnnNode the type annotation node that contains a node with a symbol's identifier on the left and a
+     *                    data type node on the right.
      * @return a ParseResult object as the result of checking the declaration statement's type annotation.
      */
     private ParseResult<SymbolInfo> checkTypeAnn(TypeAnnASTNode typeAnnNode) {
@@ -74,7 +74,7 @@ public class DeclSemanChecker {
             return ParseResult.err();
         }
 
-        DtypeASTNode dtypeNode = typeAnnNode.getDtypeNode();
+        ASTNode dtypeNode = typeAnnNode.getDtypeNode();
         ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -88,10 +88,10 @@ public class DeclSemanChecker {
     }
 
     /**
-     * Checks if a declaration id is valid.
+     * Checks if a declaration identifier is valid.
      *
-     * @param idNode the AST node containing the declaration id.
-     * @return a ParseResult object as the result of checking the declaration id.
+     * @param idNode the AST node containing the declaration identifier.
+     * @return a ParseResult object as the result of checking the declaration identifier.
      */
     private ParseResult<SymbolInfo> checkId(ASTNode idNode) {
         // Check if the declaration id has been defined
@@ -117,7 +117,7 @@ public class DeclSemanChecker {
      * @param dtypeNode the AST node that stores a data type token.
      * @return a ParseResult object as the result of checking a data type.
      */
-    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
+    private ParseResult<TypeInfo> checkDtype(ASTNode dtypeNode) {
         Tok dtypeTok = dtypeNode.getTok();
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = TYPE_TABLE.getType(dtypeId);

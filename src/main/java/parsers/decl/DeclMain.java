@@ -3,10 +3,8 @@ package parsers.decl;
 import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
-import parsers.expr.ExprASTPass;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
-import parsers.expr.ExprSyntaxPass;
 import parsers.utils.*;
 
 import java.io.*;
@@ -24,16 +22,13 @@ public class DeclMain {
 
             Lexer lexer = new Lexer(reader);
             TokParser tokParser = new TokParser();
-            ExprSyntaxPass exprSyntaxPass = new ExprSyntaxPass();
-            ExprASTPass exprASTPass = new ExprASTPass();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
             ExprParser exprParser = new ExprParser();
             DeclSemanChecker declSemanChecker = new DeclSemanChecker();
             DeclParser declParser = new DeclParser();
 
             tokParser.init(lexer);
-            exprSyntaxPass.init(lexer, tokParser);
-            exprParser.init(exprSyntaxPass, exprASTPass, exprSemanChecker);
+            exprParser.init(lexer, tokParser, exprSemanChecker);
             declParser.init(tokParser, exprParser, declSemanChecker);
 
             Scope global = new Scope(null);

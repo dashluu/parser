@@ -14,18 +14,18 @@ public class FunHeadSemanChecker {
     private static final TypeTable TYPE_TABLE = TypeTable.getInst();
 
     /**
-     * Checks the semantics of a function's header.
+     * Checks the semantics of a function header.
      *
      * @param typeAnnNode the type annotation node that contains a function declaration node on the left and a return
      *                    type node on the right.
-     * @param funScope    the scope surrounding the function's header.
-     * @return a ParseResult object as the result of checking the semantics of a function's header.
+     * @param funScope    the scope surrounding the function header.
+     * @return a ParseResult object as the result of checking the semantics of a function header.
      */
     public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, Scope funScope) {
         this.funScope = funScope;
 
         FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
-        // Check function's id
+        // Check function id
         ParseResult<FunInfo> idResult = checkId(funDefNode);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -40,13 +40,14 @@ public class FunHeadSemanChecker {
         }
 
         // Check the return type
-        DtypeASTNode retDtypeNode = typeAnnNode.getDtypeNode();
+        ASTNode retDtypeNode = typeAnnNode.getDtypeNode();
         ParseResult<TypeInfo> retDtypeResult = checkDtype(retDtypeNode);
         if (retDtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
         TypeInfo retDtype = retDtypeResult.getData();
+        funInfo.setDtype(retDtype);
         typeAnnNode.setDtype(retDtype);
         funDefNode.setDtype(retDtype);
         retDtypeNode.setDtype(retDtype);
@@ -54,10 +55,10 @@ public class FunHeadSemanChecker {
     }
 
     /**
-     * Checks if a function id is valid.
+     * Checks if a function identifier is valid.
      *
      * @param funDefNode the AST node associated with the function declaration.
-     * @return a ParseResult object as the result of checking the function id.
+     * @return a ParseResult object as the result of checking the function identifier.
      */
     private ParseResult<FunInfo> checkId(ASTNode funDefNode) {
         // Check if the function id has been defined
@@ -118,7 +119,7 @@ public class FunHeadSemanChecker {
         }
 
         // Check the parameter's data type
-        DtypeASTNode dtypeNode = typeAnnNode.getDtypeNode();
+        ASTNode dtypeNode = typeAnnNode.getDtypeNode();
         ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return dtypeResult;
@@ -137,7 +138,7 @@ public class FunHeadSemanChecker {
      * @param dtypeNode the AST node that stores a data type token.
      * @return a ParseResult object as the result of checking a data type.
      */
-    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
+    private ParseResult<TypeInfo> checkDtype(ASTNode dtypeNode) {
         Tok dtypeTok = dtypeNode.getTok();
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = TYPE_TABLE.getType(dtypeId);

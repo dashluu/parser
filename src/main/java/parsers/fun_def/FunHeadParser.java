@@ -185,13 +185,13 @@ public class FunHeadParser {
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected a type id for type annotation", dtypeResult.getFailTok()));
+            return ParseErr.raise(new ErrMsg("Expected a data type for type annotation", dtypeResult.getFailTok()));
         }
 
         Tok typeAnnTok = typeAnnResult.getData();
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         Tok dtypeTok = dtypeResult.getData();
-        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
+        ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return ParseResult.ok(typeAnnNode);
     }
@@ -206,7 +206,7 @@ public class FunHeadParser {
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         String voidId = TypeTable.VOID.id();
         Tok dtypeTok = new Tok(voidId, TokType.ID);
-        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
+        ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return typeAnnNode;
     }

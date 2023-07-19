@@ -1,21 +1,17 @@
 package ast;
 
 public interface IASTVisitor {
-    void visitLiteral(LiteralASTNode literalNode);
+    void visitNode(ASTNode node);
 
-    void visitVarId(VarIdASTNode varIdNode);
+    void visitLiteral(LiteralASTNode literalNode);
 
     void visitVarDecl(VarDeclASTNode varDeclNode);
 
     void visitVarDef(VarDefASTNode varDefNode);
 
-    void visitConstId(ConstIdASTNode constIdNode);
-
     void visitConstDecl(ConstDeclASTNode constDeclNode);
 
     void visitConstDef(ConstDefASTNode constDefNode);
-
-    void visitParam(ParamASTNode paramNode);
 
     void visitParamDecl(ParamDeclASTNode paramDeclNode);
 
@@ -24,8 +20,6 @@ public interface IASTVisitor {
     void visitUnOp(UnOpASTNode unOpASTNode);
 
     void visitBinOp(BinOpASTNode binOpNode);
-
-    void visitDtype(DtypeASTNode dtypeNode);
 
     void visitTypeAnn(TypeAnnASTNode typeAnnNode);
 

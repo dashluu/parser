@@ -10,11 +10,11 @@ import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import parsers.utils.Scope;
-import symbols.FunInfo;
-import symbols.SymbolTable;
+import symbols.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
+import types.TypeTable;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -22,6 +22,7 @@ import java.util.Iterator;
 public class ExprSemanChecker {
     private Scope scope;
     private static final OpTable OP_TABLE = OpTable.getInst();
+    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
 
     /**
      * Checks the semantics of an expression.
@@ -44,26 +45,67 @@ public class ExprSemanChecker {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> recurCheckSeman(ASTNode exprNode) throws IOException {
-        ASTNodeType exprNodeType = exprNode.getNodeType();
-        if (exprNodeType == ASTNodeType.LITERAL ||
-                exprNodeType == ASTNodeType.ID ||
-                exprNodeType == ASTNodeType.DTYPE) {
-            return ParseResult.ok(exprNode);
-        }
-
         ParseResult<ASTNode> result;
-        if (exprNode.getNodeType() == ASTNodeType.UN_OP) {
-            result = typeCheckUnExpr((UnOpASTNode) exprNode);
-        } else if (exprNode.getNodeType() == ASTNodeType.BIN_OP) {
-            result = typeCheckBinExpr((BinOpASTNode) exprNode);
-        } else {
-            result = checkFunCall((FunCallASTNode) exprNode);
+        ASTNodeType exprNodeType = exprNode.getNodeType();
+
+        switch (exprNodeType) {
+            case LITERAL -> result = typeCheckLiteral((LiteralASTNode) exprNode);
+            case ID -> result = checkId(exprNode);
+            case UN_OP -> result = typeCheckUnExpr((UnOpASTNode) exprNode);
+            case BIN_OP -> result = typeCheckBinExpr((BinOpASTNode) exprNode);
+            default -> result = checkFunCall((FunCallASTNode) exprNode);
         }
 
         return result;
     }
 
-    private ParseResult<ASTNode> checkId(IdASTNode )
+    /**
+     * Assigns a data type to a literal.
+     *
+     * @param literalNode an AST node associated with the literal.
+     * @return a ParseResult object as the result of assigning a data type to a literal.
+     */
+    private ParseResult<ASTNode> typeCheckLiteral(LiteralASTNode literalNode) {
+        TokType literalTokType = literalNode.getTok().getType();
+        TypeInfo dtype = TYPE_TABLE.getType(literalTokType);
+        literalNode.setDtype(dtype);
+        return ParseResult.ok(literalNode);
+    }
+
+    /**
+     * Checks if an identifier corresponds to a type or is defined.
+     *
+     * @param idNode an AST node associated with an identifier.
+     * @return a ParseResult object as the result of checking the identifier.
+     */
+    private ParseResult<ASTNode> checkId(ASTNode idNode) {
+        Tok idTok = idNode.getTok();
+        String id = idTok.getVal();
+
+        // Check if the id corresponds to a data type
+        TypeInfo dtype = TYPE_TABLE.getType(id);
+        if (dtype != null) {
+            idNode.setNodeType(ASTNodeType.DTYPE);
+            idNode.setDtype(dtype);
+            return ParseResult.ok(idNode);
+        }
+
+        // Check if the id is valid
+        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolInfo symbol = symbolTable.getClosureSymbol(id);
+        if (symbol == null) {
+            return ParseErr.raise(new ErrMsg("Invalid identifier '" + id + "'", idTok));
+        }
+
+        switch (symbol.getSymbolType()) {
+            case VAR -> idNode.setNodeType(ASTNodeType.VAR_ID);
+            case CONST -> idNode.setNodeType(ASTNodeType.CONST_ID);
+            default -> idNode.setNodeType(ASTNodeType.PARAM);
+        }
+
+        idNode.setDtype(symbol.getDtype());
+        return ParseResult.ok(idNode);
+    }
 
     /**
      * Checks the type compatibilities in a unary expression.
@@ -123,6 +165,12 @@ public class ExprSemanChecker {
             return result;
         }
 
+        // Check assignment if there is any
+        ASTNodeType leftNodeType = leftNode.getNodeType();
+        if (opId == TokType.ASSIGNMENT && leftNodeType != ASTNodeType.VAR_ID && leftNodeType != ASTNodeType.PARAM) {
+            return ParseErr.raise(new ErrMsg("Assignments are only valid for mutable identifiers", opTok));
+        }
+
         // Get the left and right node's data type
         TypeInfo leftDtype = leftNode.getDtype();
         TypeInfo rightDtype = rightNode.getDtype();
@@ -141,7 +189,7 @@ public class ExprSemanChecker {
     }
 
     /**
-     * Checks if a function id exists and if the data type of each expression in the argument list is as expected.
+     * Checks if a function identifier exists and if the data type of each expression in the argument list is as expected.
      *
      * @param funCallNode an AST node associated with the function call.
      * @return a ParseResult object as the result of type checking the function call and its argument list.
@@ -153,13 +201,13 @@ public class ExprSemanChecker {
         SymbolTable symbolTable = scope.getSymbolTable();
         FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         if (funInfo == null) {
-            return ParseErr.raise(new ErrMsg("Invalid function id '" + funId + "'", funIdTok));
+            return ParseErr.raise(new ErrMsg("Invalid function identifier '" + funId + "'", funIdTok));
         }
 
         Iterator<TypeInfo> paramDtypesIter = funInfo.iterator();
         TypeInfo paramDtype;
         ParseResult<ASTNode> argResult;
-        int i = 1;
+        int i = 0;
 
         // Check if each argument type is as expected
         for (ASTNode argNode : funCallNode) {
@@ -180,6 +228,7 @@ public class ExprSemanChecker {
                     " for function '" + funId + "'", funIdTok));
         }
 
+        funCallNode.setDtype(funInfo.getDtype());
         return ParseResult.ok(funCallNode);
     }
 }
