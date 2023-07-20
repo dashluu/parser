@@ -5,7 +5,7 @@ import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
-import parsers.utils.*;
+import parsers.parse_utils.*;
 import utils.Context;
 import utils.Scope;
 import utils.ScopeStack;

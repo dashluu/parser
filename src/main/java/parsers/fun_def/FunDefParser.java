@@ -4,7 +4,7 @@ import ast.*;
 import exceptions.ErrMsg;
 import keywords.KeywordTable;
 import parsers.scope.ScopeParser;
-import parsers.utils.*;
+import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;

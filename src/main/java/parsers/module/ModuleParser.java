@@ -15,7 +15,7 @@ import parsers.fun_def.*;
 import parsers.ret.RetParser;
 import parsers.scope.ScopeParser;
 import parsers.stmt.StmtParser;
-import parsers.utils.*;
+import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
 import utils.Context;

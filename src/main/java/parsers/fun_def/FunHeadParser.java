@@ -2,7 +2,7 @@ package parsers.fun_def;
 
 import ast.*;
 import exceptions.ErrMsg;
-import parsers.utils.*;
+import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;

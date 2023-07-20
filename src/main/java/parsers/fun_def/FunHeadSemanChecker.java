@@ -5,7 +5,7 @@ import ast.FunDefASTNode;
 import ast.ParamListASTNode;
 import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
-import parsers.utils.*;
+import parsers.parse_utils.*;
 import symbols.FunInfo;
 import symbols.ParamInfo;
 import symbols.SymbolTable;

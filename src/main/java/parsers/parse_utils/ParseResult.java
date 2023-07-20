@@ -1,4 +1,4 @@
-package parsers.utils;
+package parsers.parse_utils;
 
 import toks.Tok;
 

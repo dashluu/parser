@@ -3,9 +3,9 @@ package parsers.module;
 import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
-import parsers.utils.ParseErr;
-import parsers.utils.ParseResult;
-import parsers.utils.ParseStatus;
+import parsers.parse_utils.ParseErr;
+import parsers.parse_utils.ParseResult;
+import parsers.parse_utils.ParseStatus;
 
 import java.io.*;
 
