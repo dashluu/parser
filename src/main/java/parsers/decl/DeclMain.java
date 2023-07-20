@@ -6,7 +6,7 @@ import lexers.Lexer;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
 import parsers.parse_utils.*;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
 import utils.ScopeStack;
 
@@ -34,7 +34,7 @@ public class DeclMain {
             exprParser.init(lexer, tokParser, exprSemanChecker);
             declParser.init(tokParser, exprParser, declSemanChecker);
 
-            Context context = new Context();
+            ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);

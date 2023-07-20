@@ -8,7 +8,7 @@ import parsers.ret.RetParser;
 import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.Context;
+import utils.ParseContext;
 
 import java.io.IOException;
 
@@ -17,6 +17,7 @@ public class StmtParser {
     private ExprParser exprParser;
     private DeclParser declParser;
     private RetParser retParser;
+    private ParseContext context;
 
     /**
      * Initializes the dependencies.
@@ -40,7 +41,8 @@ public class StmtParser {
      * @return a ParseResult object as the result of parsing a statement.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseStmt(Context context) throws IOException {
+    public ParseResult<ASTNode> parseStmt(ParseContext context) throws IOException {
+        this.context = context;
         // Parse a declaration statement
         ParseResult<ASTNode> stmtResult = declParser.parseDecl(context);
         if (stmtResult.getStatus() == ParseStatus.ERR) {
@@ -65,12 +67,15 @@ public class StmtParser {
             return parseSemicolon(stmtResult);
         }
 
-        if (tokParser.parseTok(TokType.SEMICOLON).getStatus() == ParseStatus.OK) {
-            // Empty statement in the form ';'
-            return ParseResult.empty();
+        ParseResult<Tok> sepResult = tokParser.parseTok(TokType.SEMICOLON, context);
+        if (sepResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        } else if (sepResult.getStatus() == ParseStatus.FAIL) {
+            return stmtResult;
         }
 
-        return stmtResult;
+        // Empty statement in the form ';'
+        return ParseResult.empty();
     }
 
     /**
@@ -81,7 +86,7 @@ public class StmtParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseSemicolon(ParseResult<ASTNode> stmtResult) throws IOException {
-        ParseResult<Tok> sepResult = tokParser.parseTok(TokType.SEMICOLON);
+        ParseResult<Tok> sepResult = tokParser.parseTok(TokType.SEMICOLON, context);
         if (sepResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (sepResult.getStatus() == ParseStatus.FAIL) {

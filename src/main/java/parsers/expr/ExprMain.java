@@ -4,7 +4,7 @@ import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.parse_utils.*;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
 import utils.ScopeStack;
 
@@ -29,7 +29,7 @@ public class ExprMain {
             tokParser.init(lexer);
             parser.init(lexer, tokParser, semanChecker);
 
-            Context context = new Context();
+            ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);

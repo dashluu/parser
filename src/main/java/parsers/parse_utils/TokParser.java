@@ -5,6 +5,7 @@ import lexers.LexStatus;
 import lexers.Lexer;
 import toks.Tok;
 import toks.TokType;
+import utils.ParseContext;
 
 import java.io.IOException;
 
@@ -24,11 +25,12 @@ public class TokParser {
      * Parses a token.
      *
      * @param tokType the expected token type.
+     * @param context the parsing context.
      * @return a ParseResult as the result of parsing a token.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<Tok> parseTok(TokType tokType) throws IOException {
-        LexResult<Tok> tokResult = lexer.lookahead();
+    public ParseResult<Tok> parseTok(TokType tokType, ParseContext context) throws IOException {
+        LexResult<Tok> tokResult = lexer.lookahead(context);
         if (tokResult.getStatus() != LexStatus.OK) {
             return ParseErr.raise(tokResult.getErrMsg());
         }

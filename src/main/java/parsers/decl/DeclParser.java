@@ -6,7 +6,7 @@ import parsers.expr.ExprParser;
 import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.Context;
+import utils.ParseContext;
 
 import java.io.IOException;
 
@@ -14,6 +14,7 @@ public class DeclParser {
     private TokParser tokParser;
     private ExprParser exprParser;
     private DeclSemanChecker semanChecker;
+    private ParseContext context;
 
     /**
      * Initializes the dependencies.
@@ -34,7 +35,8 @@ public class DeclParser {
      * @return a ParseResult object as the result of parsing the declaration statement.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseDecl(Context context) throws IOException {
+    public ParseResult<ASTNode> parseDecl(ParseContext context) throws IOException {
+        this.context = context;
         // Parse head
         ParseResult<Boolean> headResult = parseHead();
         if (headResult.getStatus() == ParseStatus.ERR) {
@@ -101,7 +103,7 @@ public class DeclParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<Boolean> parseHead() throws IOException {
-        ParseResult<Tok> headResult = tokParser.parseTok(TokType.VAR_DECL);
+        ParseResult<Tok> headResult = tokParser.parseTok(TokType.VAR_DECL, context);
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (headResult.getStatus() == ParseStatus.OK) {
@@ -109,7 +111,7 @@ public class DeclParser {
         }
 
         // If variable keyword is not present, try parsing constant keyword
-        headResult = tokParser.parseTok(TokType.CONST_DECL);
+        headResult = tokParser.parseTok(TokType.CONST_DECL, context);
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (headResult.getStatus() == ParseStatus.FAIL) {
@@ -127,7 +129,7 @@ public class DeclParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseId(boolean mutable) throws IOException {
-        ParseResult<Tok> result = tokParser.parseTok(TokType.ID);
+        ParseResult<Tok> result = tokParser.parseTok(TokType.ID, context);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (result.getStatus() == ParseStatus.FAIL) {
@@ -149,7 +151,7 @@ public class DeclParser {
      */
     private ParseResult<ASTNode> parseTypeAnn() throws IOException {
         // Try parsing ':'
-        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON);
+        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON, context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
@@ -157,7 +159,7 @@ public class DeclParser {
         }
 
         // Parse a data type
-        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID);
+        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
@@ -180,7 +182,7 @@ public class DeclParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseAsgnmt(boolean mutable) throws IOException {
-        ParseResult<Tok> result = tokParser.parseTok(TokType.ASSIGNMENT);
+        ParseResult<Tok> result = tokParser.parseTok(TokType.ASSIGNMENT, context);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (result.getStatus() == ParseStatus.FAIL) {

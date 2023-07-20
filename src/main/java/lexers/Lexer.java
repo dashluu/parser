@@ -3,6 +3,7 @@ package lexers;
 import exceptions.ErrMsg;
 import toks.Tok;
 import toks.TokType;
+import utils.ParseContext;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -30,27 +31,10 @@ public class Lexer {
     }
 
     /**
-     * Gets the row number in lexer.
-     *
-     * @return an integer as the row number.
+     * Pops the next token off the buffer.
      */
-    public int getRow() {
-        return row;
-    }
-
-    /**
-     * Looks ahead to and pops the next token from the buffer.
-     *
-     * @return a LexResult object as the result of consuming a token.
-     * @throws IOException if the read operation causes an IO error.
-     */
-    public LexResult<Tok> consume() throws IOException {
-        LexResult<Tok> result = lookahead();
-        if (result.getStatus() != LexStatus.OK) {
-            return result;
-        }
-        Tok tok = tokBuff.removeFirst();
-        return LexResult.ok(tok);
+    public void consume() {
+        tokBuff.removeFirst();
     }
 
     /**
@@ -71,10 +55,11 @@ public class Lexer {
     /**
      * Looks ahead to the next token without removing it from the stream.
      *
+     * @param context the parsing context.
      * @return a LexResult object as the result of peeking at the next token.
      * @throws IOException if the read operation causes an IO error.
      */
-    public LexResult<Tok> lookahead() throws IOException {
+    public LexResult<Tok> lookahead(ParseContext context) throws IOException {
         // Reads from the token buffer before extracting characters from the stream
         if (!tokBuff.isEmpty()) {
             return LexResult.ok(tokBuff.peekFirst());
@@ -90,7 +75,7 @@ public class Lexer {
             return LexResult.ok(tok);
         }
         // Check if the token is a keyword
-        LexResult<Tok> result = kwLexer.read();
+        LexResult<Tok> result = kwLexer.read(context);
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
             updateRowCol(tok);
@@ -106,7 +91,7 @@ public class Lexer {
             return result;
         }
         // Check if the token is an operator
-        result = opLexer.read();
+        result = opLexer.read(context);
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
             updateRowCol(tok);

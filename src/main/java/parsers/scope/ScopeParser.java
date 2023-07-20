@@ -6,12 +6,12 @@ import ast.ScopeASTNode;
 import exceptions.ErrMsg;
 import parsers.branch.IfElseParser;
 import parsers.branch.WhileParser;
-import parsers.fun_def.FunDefParser;
+import parsers.function.FunDefParser;
 import parsers.stmt.StmtParser;
 import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
 import utils.ScopeStack;
 
@@ -49,9 +49,9 @@ public class ScopeParser {
      * @return a ParseResult object as the result of parsing a code block.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseBlock(Context context) throws IOException {
+    public ParseResult<ASTNode> parseBlock(ParseContext context) throws IOException {
         // Try parsing '{'
-        ParseResult<Tok> bracketResult = tokParser.parseTok(TokType.LBRACKETS);
+        ParseResult<Tok> bracketResult = tokParser.parseTok(TokType.LBRACKETS, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
@@ -69,7 +69,7 @@ public class ScopeParser {
         }
 
         // Try parsing '}'
-        bracketResult = tokParser.parseTok(TokType.RBRACKETS);
+        bracketResult = tokParser.parseTok(TokType.RBRACKETS, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
@@ -87,7 +87,7 @@ public class ScopeParser {
      * @return a ParseResult object as the result of parsing a scope.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseScope(Context context) throws IOException {
+    public ParseResult<ASTNode> parseScope(ParseContext context) throws IOException {
         ParseStatus status;
         ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult, whileResult;
         ASTNode stmtNode, funDefNode, whileNode;

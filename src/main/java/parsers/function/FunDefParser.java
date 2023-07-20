@@ -1,4 +1,4 @@
-package parsers.fun_def;
+package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
@@ -9,7 +9,7 @@ import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
 import types.TypeTable;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
 import utils.ScopeStack;
 
@@ -37,7 +37,7 @@ public class FunDefParser {
      * @return a ParseResult object as the result of parsing a function definition.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseFunDef(Context context) throws IOException {
+    public ParseResult<ASTNode> parseFunDef(ParseContext context) throws IOException {
         ParseResult<ASTNode> funHeadResult = funHeadParser.parseFunHead(context);
         if (funHeadResult.getStatus() == ParseStatus.ERR || funHeadResult.getStatus() == ParseStatus.FAIL) {
             return funHeadResult;

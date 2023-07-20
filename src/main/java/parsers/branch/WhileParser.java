@@ -1,7 +1,7 @@
 package parsers.branch;
 
 import ast.ASTNode;
-import utils.Context;
+import utils.ParseContext;
 import parsers.parse_utils.ParseResult;
 import toks.TokType;
 
@@ -15,7 +15,7 @@ public class WhileParser extends CondBranchParser {
      * @return a ParseResult object as the result of parsing the while loop.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseWhile(Context context) throws IOException {
+    public ParseResult<ASTNode> parseWhile(ParseContext context) throws IOException {
         return parseBranch(TokType.WHILE, context);
     }
 }

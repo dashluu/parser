@@ -7,7 +7,7 @@ import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
-import utils.Context;
+import utils.ParseContext;
 import parsers.parse_utils.ParseErr;
 import parsers.parse_utils.ParseResult;
 import parsers.parse_utils.ParseStatus;
@@ -20,7 +20,7 @@ import toks.TokType;
 import types.TypeInfo;
 
 public class DeclSemanChecker {
-    private Context context;
+    private ParseContext context;
 
     /**
      * Checks the semantics of a declaration statement.
@@ -29,7 +29,7 @@ public class DeclSemanChecker {
      * @param context  the parsing context.
      * @return a ParseResult object as the result of checking the declaration statement's semantics.
      */
-    public ParseResult<ASTNode> checkSeman(ASTNode declNode, Context context) {
+    public ParseResult<ASTNode> checkSeman(ASTNode declNode, ParseContext context) {
         this.context = context;
         ParseResult<SymbolInfo> lhsResult;
         ASTNodeType declNodeType = declNode.getNodeType();

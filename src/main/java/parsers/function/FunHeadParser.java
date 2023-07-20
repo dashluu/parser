@@ -1,4 +1,4 @@
-package parsers.fun_def;
+package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
@@ -6,13 +6,14 @@ import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;
-import utils.Context;
+import utils.ParseContext;
 
 import java.io.IOException;
 
 public class FunHeadParser {
     private TokParser tokParser;
     private FunHeadSemanChecker semanChecker;
+    private ParseContext context;
 
     /**
      * Initializes the dependencies.
@@ -32,9 +33,10 @@ public class FunHeadParser {
      * @return a ParseResult object as the result of parsing a function header.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseFunHead(Context context) throws IOException {
+    public ParseResult<ASTNode> parseFunHead(ParseContext context) throws IOException {
+        this.context = context;
         // Parse the function keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.FUN_DECL);
+        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.FUN_DECL, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -48,7 +50,7 @@ public class FunHeadParser {
         }
 
         // Parse the function id
-        ParseResult<Tok> idResult = tokParser.parseTok(TokType.ID);
+        ParseResult<Tok> idResult = tokParser.parseTok(TokType.ID, context);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
@@ -90,7 +92,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseParamList() throws IOException {
         // Parse '('
-        ParseResult<Tok> parenResult = tokParser.parseTok(TokType.LPAREN);
+        ParseResult<Tok> parenResult = tokParser.parseTok(TokType.LPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
@@ -106,13 +108,13 @@ public class FunHeadParser {
 
         while (!end) {
             // Parse ')'
-            parenResult = tokParser.parseTok(TokType.RPAREN);
+            parenResult = tokParser.parseTok(TokType.RPAREN, context);
             if (parenResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             } else if (!(end = parenResult.getStatus() == ParseStatus.OK)) {
                 if (!firstArg) {
                     // If this is not the first parameter in the list, ',' must be present
-                    commaResult = tokParser.parseTok(TokType.COMMA);
+                    commaResult = tokParser.parseTok(TokType.COMMA, context);
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
@@ -143,7 +145,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseParam() throws IOException {
         // Parse the parameter's name
-        ParseResult<Tok> nameResult = tokParser.parseTok(TokType.ID);
+        ParseResult<Tok> nameResult = tokParser.parseTok(TokType.ID, context);
         if (nameResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (nameResult.getStatus() == ParseStatus.FAIL) {
@@ -174,7 +176,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseTypeAnn() throws IOException {
         // Try parsing ':'
-        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON);
+        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON, context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
@@ -182,7 +184,7 @@ public class FunHeadParser {
         }
 
         // Parse a data type
-        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID);
+        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {

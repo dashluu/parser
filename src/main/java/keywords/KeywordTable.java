@@ -6,9 +6,7 @@ import java.util.HashMap;
 
 // Table for storing keywords
 public class KeywordTable {
-    private static final HashMap<String, TokType> KW_MAP = new HashMap<>();
-    private static final KeywordTable INST = new KeywordTable();
-    private static boolean init = false;
+    private final HashMap<String, TokType> kwMap = new HashMap<>();
     // List of keywords for direct access
     public static final String VAR = "var";
     public static final String CONST = "let";
@@ -27,29 +25,26 @@ public class KeywordTable {
     }
 
     /**
-     * Initializes the only instance of KeywordTable if it has not been initialized and then returns it.
+     * Creates an instance of KeywordTable and initializes it.
      *
      * @return a KeywordTable object.
      */
-    public static KeywordTable getInst() {
-        if (!init) {
-            // Add keywords to table
-            KW_MAP.put(VAR, TokType.VAR_DECL);
-            KW_MAP.put(CONST, TokType.CONST_DECL);
-            KW_MAP.put(TRUE, TokType.BOOL_LITERAL);
-            KW_MAP.put(FALSE, TokType.BOOL_LITERAL);
-            KW_MAP.put(FUN, TokType.FUN_DECL);
-            KW_MAP.put(RET, TokType.RET);
-            KW_MAP.put(IF, TokType.IF);
-            KW_MAP.put(ELIF, TokType.ELIF);
-            KW_MAP.put(ELSE, TokType.ELSE);
-            KW_MAP.put(WHILE, TokType.WHILE);
-            KW_MAP.put(BREAK, TokType.BREAK);
-            KW_MAP.put(CONT, TokType.CONT);
-
-            init = true;
-        }
-        return INST;
+    public static KeywordTable createTable() {
+        KeywordTable table = new KeywordTable();
+        // Add keywords to table
+        table.kwMap.put(VAR, TokType.VAR_DECL);
+        table.kwMap.put(CONST, TokType.CONST_DECL);
+        table.kwMap.put(TRUE, TokType.BOOL_LITERAL);
+        table.kwMap.put(FALSE, TokType.BOOL_LITERAL);
+        table.kwMap.put(FUN, TokType.FUN_DECL);
+        table.kwMap.put(RET, TokType.RET);
+        table.kwMap.put(IF, TokType.IF);
+        table.kwMap.put(ELIF, TokType.ELIF);
+        table.kwMap.put(ELSE, TokType.ELSE);
+        table.kwMap.put(WHILE, TokType.WHILE);
+        table.kwMap.put(BREAK, TokType.BREAK);
+        table.kwMap.put(CONT, TokType.CONT);
+        return table;
     }
 
     /**
@@ -59,6 +54,6 @@ public class KeywordTable {
      * @return a TokType object as the keyword's id if it exists, otherwise, return null.
      */
     public TokType getId(String kwStr) {
-        return KW_MAP.get(kwStr);
+        return kwMap.get(kwStr);
     }
 }

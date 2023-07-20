@@ -8,7 +8,7 @@ import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
 import utils.ScopeStack;
 
@@ -18,7 +18,7 @@ public abstract class CondBranchParser {
     protected TokParser tokParser;
     protected ExprParser exprParser;
     protected ScopeParser scopeParser;
-    protected Context context;
+    protected ParseContext context;
 
     /**
      * Initializes the dependencies.
@@ -41,7 +41,7 @@ public abstract class CondBranchParser {
      * @return a ParseResult object as the result of parsing the conditional branch block.
      * @throws IOException if there is an IO exception.
      */
-    protected ParseResult<ASTNode> parseBranch(TokType tokType, Context context) throws IOException {
+    protected ParseResult<ASTNode> parseBranch(TokType tokType, ParseContext context) throws IOException {
         this.context = context;
         // Parse the condition
         ParseResult<ASTNode> condResult = parseCond(tokType);
@@ -78,7 +78,7 @@ public abstract class CondBranchParser {
      */
     protected ParseResult<ASTNode> parseCond(TokType tokType) throws IOException {
         // keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(tokType);
+        ParseResult<Tok> kwResult = tokParser.parseTok(tokType, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -86,7 +86,7 @@ public abstract class CondBranchParser {
         }
 
         // '('
-        ParseResult<Tok> lparenResult = tokParser.parseTok(TokType.LPAREN);
+        ParseResult<Tok> lparenResult = tokParser.parseTok(TokType.LPAREN, context);
         if (lparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (lparenResult.getStatus() == ParseStatus.FAIL) {
@@ -102,7 +102,7 @@ public abstract class CondBranchParser {
         }
 
         // ')'
-        ParseResult<Tok> rparenResult = tokParser.parseTok(TokType.RPAREN);
+        ParseResult<Tok> rparenResult = tokParser.parseTok(TokType.RPAREN, context);
         if (rparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (rparenResult.getStatus() == ParseStatus.FAIL) {

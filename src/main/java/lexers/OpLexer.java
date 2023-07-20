@@ -3,12 +3,12 @@ package lexers;
 import operators.OpTable;
 import toks.Tok;
 import toks.TokType;
+import utils.ParseContext;
 
 import java.io.IOException;
 
 public class OpLexer {
     private final LexReader reader;
-    private final OpTable opTable = OpTable.getInst();
 
     public OpLexer(LexReader reader) {
         this.reader = reader;
@@ -17,14 +17,16 @@ public class OpLexer {
     /**
      * Reads an operator token.
      *
+     * @param context the parsing context.
      * @return LexResult object as the result of reading an operator token.
      * @throws IOException if there is an IO exception.
      */
-    public LexResult<Tok> read() throws IOException {
+    public LexResult<Tok> read(ParseContext context) throws IOException {
         int c;
         String tokVal = "";
         StringBuilder tmpStr = new StringBuilder();
         TokType tmpTokType, opId = null;
+        OpTable opTable = context.getOpTable();
         boolean end = false;
 
         while ((c = reader.peek()) != LexReader.EOS && !reader.isSpace(c) && !end) {

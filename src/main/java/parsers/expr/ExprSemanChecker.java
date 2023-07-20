@@ -5,7 +5,7 @@ import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
 import operators.UnOpCompat;
-import utils.Context;
+import utils.ParseContext;
 import parsers.parse_utils.ParseErr;
 import parsers.parse_utils.ParseResult;
 import parsers.parse_utils.ParseStatus;
@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 public class ExprSemanChecker {
-    private Context context;
+    private ParseContext context;
 
     /**
      * Checks the semantics of an expression.
@@ -30,7 +30,7 @@ public class ExprSemanChecker {
      * @return a ParseResult object as the result of checking the expression's semantics.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> checkSeman(ASTNode exprNode, Context context) throws IOException {
+    public ParseResult<ASTNode> checkSeman(ASTNode exprNode, ParseContext context) throws IOException {
         this.context = context;
         return recurCheckSeman(exprNode);
     }

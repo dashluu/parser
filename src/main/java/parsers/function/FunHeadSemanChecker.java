@@ -1,4 +1,4 @@
-package parsers.fun_def;
+package parsers.function;
 
 import ast.ASTNode;
 import ast.FunDefASTNode;
@@ -11,11 +11,12 @@ import symbols.ParamInfo;
 import symbols.SymbolTable;
 import toks.Tok;
 import types.TypeInfo;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
+import utils.ScopeStack;
 
 public class FunHeadSemanChecker {
-    private Context context;
+    private ParseContext context;
 
     /**
      * Checks the semantics of a function header.
@@ -25,7 +26,7 @@ public class FunHeadSemanChecker {
      * @param context     the parsing context.
      * @return a ParseResult object as the result of checking the semantics of a function header.
      */
-    public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, Context context) {
+    public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, ParseContext context) {
         this.context = context;
         FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
         // Check function id
@@ -88,9 +89,10 @@ public class FunHeadSemanChecker {
     private ParseResult<ASTNode> checkParamList(FunInfo funInfo, ParamListASTNode paramListNode) {
         ParseResult<TypeInfo> paramResult;
         TypeInfo paramDtype;
-        // Dummy parameter scope
-        Scope paramScope = new Scope(context.getScope());
-        context.getScopeStack().push(paramScope);
+        ScopeStack scopeStack = context.getScopeStack();
+        // Peeking from scope stack is the same as getting the current scope from context
+        Scope paramScope = new Scope(scopeStack.peek());
+        scopeStack.push(paramScope);
 
         for (ASTNode typeAnnNode : paramListNode) {
             paramResult = checkParam((TypeAnnASTNode) typeAnnNode, paramScope);

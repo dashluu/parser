@@ -6,6 +6,9 @@ import lexers.Lexer;
 import parsers.parse_utils.ParseErr;
 import parsers.parse_utils.ParseResult;
 import parsers.parse_utils.ParseStatus;
+import utils.ParseContext;
+import utils.Scope;
+import utils.ScopeStack;
 
 import java.io.*;
 
@@ -19,10 +22,18 @@ public class ModuleMain {
         try {
             reader = new BufferedReader(new FileReader(inFilename));
             writer = new BufferedWriter(new FileWriter(outFilename));
+
             Lexer lexer = new Lexer(reader);
             ModuleParser moduleParser = new ModuleParser(lexer);
+
             moduleParser.init();
-            ParseResult<ASTNode> result = moduleParser.parseModule();
+
+            ParseContext context = ParseContext.createContext();
+            Scope globalScope = new Scope(null);
+            ScopeStack scopeStack = context.getScopeStack();
+            scopeStack.push(globalScope);
+            ParseResult<ASTNode> result = moduleParser.parseModule(context);
+            scopeStack.pop();
             if (ParseErr.hasErr()) {
                 throw new SyntaxErr(ParseErr.getMsg());
             } else if (result.getStatus() == ParseStatus.OK) {

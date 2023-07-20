@@ -9,7 +9,7 @@ import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
 import types.TypeTable;
-import utils.Context;
+import utils.ParseContext;
 
 import java.io.IOException;
 
@@ -35,9 +35,9 @@ public class RetParser {
      * @return a ParseResult object as the result of parsing a return statement.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseRet(Context context) throws IOException {
+    public ParseResult<ASTNode> parseRet(ParseContext context) throws IOException {
         // Check for the return keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.RET);
+        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.RET, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {

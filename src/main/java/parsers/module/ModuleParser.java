@@ -11,16 +11,14 @@ import parsers.decl.DeclParser;
 import parsers.decl.DeclSemanChecker;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
-import parsers.fun_def.*;
+import parsers.function.*;
 import parsers.ret.RetParser;
 import parsers.scope.ScopeParser;
 import parsers.stmt.StmtParser;
 import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.Context;
-import utils.Scope;
-import utils.ScopeStack;
+import utils.ParseContext;
 
 import java.io.IOException;
 
@@ -63,14 +61,11 @@ public class ModuleParser {
     /**
      * Parses a module.
      *
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing the module.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseModule() throws IOException {
-        Context context = new Context();
-        Scope globalScope = new Scope(null);
-        ScopeStack scopeStack = context.getScopeStack();
-        scopeStack.push(globalScope);
+    public ParseResult<ASTNode> parseModule(ParseContext context) throws IOException {
         ParseResult<ASTNode> moduleResult = scopeParser.parseScope(context);
         if (moduleResult.getStatus() == ParseStatus.ERR) {
             return moduleResult;
@@ -81,7 +76,7 @@ public class ModuleParser {
 
         // Check if the end of stream is reached
         // If not, there is a syntax error
-        LexResult<Tok> lexResult = lexer.lookahead();
+        LexResult<Tok> lexResult = lexer.lookahead(context);
         if (lexResult.getStatus() != LexStatus.OK) {
             // Lexer always yields an OK or error status
             return ParseErr.raise(lexResult.getErrMsg());
@@ -92,7 +87,6 @@ public class ModuleParser {
             }
         }
 
-        scopeStack.pop();
         return moduleResult;
     }
 }

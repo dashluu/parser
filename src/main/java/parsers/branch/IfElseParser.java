@@ -7,7 +7,7 @@ import exceptions.ErrMsg;
 import parsers.parse_utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.Context;
+import utils.ParseContext;
 import utils.Scope;
 import utils.ScopeStack;
 
@@ -21,7 +21,7 @@ public class IfElseParser extends CondBranchParser {
      * @return a ParseResult object as the result of parsing the if-elif-else block sequence.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseIfElse(ScopeASTNode brScopeNode, Context context) throws IOException {
+    public ParseResult<ASTNode> parseIfElse(ScopeASTNode brScopeNode, ParseContext context) throws IOException {
         this.context = context;
         ParseResult<ASTNode> result = parseBranch(TokType.IF, context);
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.FAIL) {
@@ -60,7 +60,7 @@ public class IfElseParser extends CondBranchParser {
      */
     private ParseResult<ASTNode> parseElse() throws IOException {
         // keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.ELSE);
+        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.ELSE, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {

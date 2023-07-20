@@ -9,213 +9,209 @@ import java.util.HashSet;
 
 // Table for storing operators and their properties
 public class OpTable {
-    private static final HashMap<String, TokType> OP_MAP = new HashMap<>();
-    private static final HashSet<TokType> PREFIX_OPS = new HashSet<>();
-    private static final HashSet<TokType> INFIX_OPS = new HashSet<>();
-    private static final HashSet<TokType> POSTFIX_OPS = new HashSet<>();
+    private final HashMap<String, TokType> opMap = new HashMap<>();
+    private final HashSet<TokType> prefixOps = new HashSet<>();
+    private final HashSet<TokType> infixOps = new HashSet<>();
+    private final HashSet<TokType> postfixOps = new HashSet<>();
     // Precedence table
-    private static final HashMap<TokType, Integer> PRECED_MAP = new HashMap<>();
+    private final HashMap<TokType, Integer> precedMap = new HashMap<>();
     // Associativity table, true means left-to-right, false means right-to-left
-    private static final HashMap<TokType, Boolean> ASSOCIATIVITY_MAP = new HashMap<>();
+    private final HashMap<TokType, Boolean> associativityMap = new HashMap<>();
     // This table stores the data type compatibility for each operator
     // When an operator is applied, it is used to check if the operands' data types are compatible
     // If they are, it finds the data type of the result after applying the operator
-    private static final HashMap<OpCompat, TypeInfo> COMPAT_MAP = new HashMap<>();
-    private static final OpTable INST = new OpTable();
-    private static boolean init = false;
+    private final HashMap<OpCompat, TypeInfo> compatMap = new HashMap<>();
 
     private OpTable() {
     }
 
     /**
-     * Initializes the only instance of OpTable if it has not been initialized and then returns it.
+     * Creates an instance of OpTable and initializes it.
      *
      * @return an OpTable object.
      */
-    public static OpTable getInst() {
-        if (!init) {
-            // Add operators to table
-            OP_MAP.put("!", TokType.LOG_NOT);
-            OP_MAP.put("||", TokType.LOG_OR);
-            OP_MAP.put("&&", TokType.LOG_AND);
-            OP_MAP.put("==", TokType.EQ);
-            OP_MAP.put("!=", TokType.NEQ);
-            OP_MAP.put("<", TokType.LESS);
-            OP_MAP.put(">", TokType.GREATER);
-            OP_MAP.put("<=", TokType.LEQ);
-            OP_MAP.put(">=", TokType.GEQ);
-            OP_MAP.put("+", TokType.ADD);
-            OP_MAP.put("-", TokType.SUB);
-            OP_MAP.put("*", TokType.MUL);
-            OP_MAP.put("/", TokType.DIV);
-            OP_MAP.put("%", TokType.MOD);
-            OP_MAP.put("<<", TokType.SHL);
-            OP_MAP.put(">>", TokType.ART_SHR);
-            OP_MAP.put(">>>", TokType.LOG_SHR);
-            OP_MAP.put(".", TokType.DOT);
-            OP_MAP.put(":", TokType.COLON);
-            OP_MAP.put("=", TokType.ASSIGNMENT);
-            OP_MAP.put("as", TokType.TYPE_CONV);
-            OP_MAP.put("(", TokType.LPAREN);
-            OP_MAP.put(")", TokType.RPAREN);
-            OP_MAP.put("{", TokType.LBRACKETS);
-            OP_MAP.put("}", TokType.RBRACKETS);
-            OP_MAP.put(";", TokType.SEMICOLON);
-            OP_MAP.put(",", TokType.COMMA);
+    public static OpTable createTable() {
+        OpTable table = new OpTable();
+        // Add operators to table
+        table.opMap.put("!", TokType.LOG_NOT);
+        table.opMap.put("||", TokType.LOG_OR);
+        table.opMap.put("&&", TokType.LOG_AND);
+        table.opMap.put("==", TokType.EQ);
+        table.opMap.put("!=", TokType.NEQ);
+        table.opMap.put("<", TokType.LESS);
+        table.opMap.put(">", TokType.GREATER);
+        table.opMap.put("<=", TokType.LEQ);
+        table.opMap.put(">=", TokType.GEQ);
+        table.opMap.put("+", TokType.ADD);
+        table.opMap.put("-", TokType.SUB);
+        table.opMap.put("*", TokType.MUL);
+        table.opMap.put("/", TokType.DIV);
+        table.opMap.put("%", TokType.MOD);
+        table.opMap.put("<<", TokType.SHL);
+        table.opMap.put(">>", TokType.ART_SHR);
+        table.opMap.put(">>>", TokType.LOG_SHR);
+        table.opMap.put(".", TokType.DOT);
+        table.opMap.put(":", TokType.COLON);
+        table.opMap.put("=", TokType.ASSIGNMENT);
+        table.opMap.put("as", TokType.TYPE_CONV);
+        table.opMap.put("(", TokType.LPAREN);
+        table.opMap.put(")", TokType.RPAREN);
+        table.opMap.put("{", TokType.LBRACKETS);
+        table.opMap.put("}", TokType.RBRACKETS);
+        table.opMap.put(";", TokType.SEMICOLON);
+        table.opMap.put(",", TokType.COMMA);
 
-            // Initialize prefix table
-            PREFIX_OPS.add(TokType.ADD);
-            PREFIX_OPS.add(TokType.SUB);
-            PREFIX_OPS.add(TokType.LOG_NOT);
+        // Initialize prefix table
+        table.prefixOps.add(TokType.ADD);
+        table.prefixOps.add(TokType.SUB);
+        table.prefixOps.add(TokType.LOG_NOT);
 
-            // Initialize infix table
-            INFIX_OPS.add(TokType.ASSIGNMENT);
-            INFIX_OPS.add(TokType.LOG_OR);
-            INFIX_OPS.add(TokType.LOG_AND);
-            INFIX_OPS.add(TokType.EQ);
-            INFIX_OPS.add(TokType.NEQ);
-            INFIX_OPS.add(TokType.LESS);
-            INFIX_OPS.add(TokType.GREATER);
-            INFIX_OPS.add(TokType.LEQ);
-            INFIX_OPS.add(TokType.GEQ);
-            INFIX_OPS.add(TokType.ADD);
-            INFIX_OPS.add(TokType.SUB);
-            INFIX_OPS.add(TokType.MUL);
-            INFIX_OPS.add(TokType.DIV);
-            INFIX_OPS.add(TokType.MOD);
-            INFIX_OPS.add(TokType.SHL);
-            INFIX_OPS.add(TokType.ART_SHR);
-            INFIX_OPS.add(TokType.LOG_SHR);
-            INFIX_OPS.add(TokType.TYPE_CONV);
+        // Initialize infix table
+        table.infixOps.add(TokType.ASSIGNMENT);
+        table.infixOps.add(TokType.LOG_OR);
+        table.infixOps.add(TokType.LOG_AND);
+        table.infixOps.add(TokType.EQ);
+        table.infixOps.add(TokType.NEQ);
+        table.infixOps.add(TokType.LESS);
+        table.infixOps.add(TokType.GREATER);
+        table.infixOps.add(TokType.LEQ);
+        table.infixOps.add(TokType.GEQ);
+        table.infixOps.add(TokType.ADD);
+        table.infixOps.add(TokType.SUB);
+        table.infixOps.add(TokType.MUL);
+        table.infixOps.add(TokType.DIV);
+        table.infixOps.add(TokType.MOD);
+        table.infixOps.add(TokType.SHL);
+        table.infixOps.add(TokType.ART_SHR);
+        table.infixOps.add(TokType.LOG_SHR);
+        table.infixOps.add(TokType.TYPE_CONV);
 
-            // Initialize postfix table
+        // Initialize postfix table
 
-            // Initialize precedence table
-            PRECED_MAP.put(TokType.ASSIGNMENT, 10);
-            PRECED_MAP.put(TokType.LOG_OR, 20);
-            PRECED_MAP.put(TokType.LOG_AND, 30);
-            PRECED_MAP.put(TokType.EQ, 40);
-            PRECED_MAP.put(TokType.NEQ, 40);
-            PRECED_MAP.put(TokType.LESS, 50);
-            PRECED_MAP.put(TokType.GREATER, 50);
-            PRECED_MAP.put(TokType.LEQ, 50);
-            PRECED_MAP.put(TokType.GEQ, 50);
-            PRECED_MAP.put(TokType.SHL, 60);
-            PRECED_MAP.put(TokType.ART_SHR, 60);
-            PRECED_MAP.put(TokType.LOG_SHR, 60);
-            PRECED_MAP.put(TokType.ADD, 70);
-            PRECED_MAP.put(TokType.SUB, 70);
-            PRECED_MAP.put(TokType.MUL, 80);
-            PRECED_MAP.put(TokType.DIV, 80);
-            PRECED_MAP.put(TokType.MOD, 80);
-            PRECED_MAP.put(TokType.TYPE_CONV, 90);
+        // Initialize precedence table
+        table.precedMap.put(TokType.ASSIGNMENT, 10);
+        table.precedMap.put(TokType.LOG_OR, 20);
+        table.precedMap.put(TokType.LOG_AND, 30);
+        table.precedMap.put(TokType.EQ, 40);
+        table.precedMap.put(TokType.NEQ, 40);
+        table.precedMap.put(TokType.LESS, 50);
+        table.precedMap.put(TokType.GREATER, 50);
+        table.precedMap.put(TokType.LEQ, 50);
+        table.precedMap.put(TokType.GEQ, 50);
+        table.precedMap.put(TokType.SHL, 60);
+        table.precedMap.put(TokType.ART_SHR, 60);
+        table.precedMap.put(TokType.LOG_SHR, 60);
+        table.precedMap.put(TokType.ADD, 70);
+        table.precedMap.put(TokType.SUB, 70);
+        table.precedMap.put(TokType.MUL, 80);
+        table.precedMap.put(TokType.DIV, 80);
+        table.precedMap.put(TokType.MOD, 80);
+        table.precedMap.put(TokType.TYPE_CONV, 90);
 
-            // Initialize associativity table
-            ASSOCIATIVITY_MAP.put(TokType.ASSIGNMENT, false);
-            ASSOCIATIVITY_MAP.put(TokType.LOG_OR, true);
-            ASSOCIATIVITY_MAP.put(TokType.LOG_AND, true);
-            ASSOCIATIVITY_MAP.put(TokType.EQ, true);
-            ASSOCIATIVITY_MAP.put(TokType.NEQ, true);
-            ASSOCIATIVITY_MAP.put(TokType.LESS, true);
-            ASSOCIATIVITY_MAP.put(TokType.GREATER, true);
-            ASSOCIATIVITY_MAP.put(TokType.LEQ, true);
-            ASSOCIATIVITY_MAP.put(TokType.GEQ, true);
-            ASSOCIATIVITY_MAP.put(TokType.ADD, true);
-            ASSOCIATIVITY_MAP.put(TokType.SUB, true);
-            ASSOCIATIVITY_MAP.put(TokType.MUL, true);
-            ASSOCIATIVITY_MAP.put(TokType.DIV, true);
-            ASSOCIATIVITY_MAP.put(TokType.MOD, true);
-            ASSOCIATIVITY_MAP.put(TokType.SHL, true);
-            ASSOCIATIVITY_MAP.put(TokType.ART_SHR, true);
-            ASSOCIATIVITY_MAP.put(TokType.LOG_SHR, true);
-            ASSOCIATIVITY_MAP.put(TokType.TYPE_CONV, true);
+        // Initialize associativity table
+        table.associativityMap.put(TokType.ASSIGNMENT, false);
+        table.associativityMap.put(TokType.LOG_OR, true);
+        table.associativityMap.put(TokType.LOG_AND, true);
+        table.associativityMap.put(TokType.EQ, true);
+        table.associativityMap.put(TokType.NEQ, true);
+        table.associativityMap.put(TokType.LESS, true);
+        table.associativityMap.put(TokType.GREATER, true);
+        table.associativityMap.put(TokType.LEQ, true);
+        table.associativityMap.put(TokType.GEQ, true);
+        table.associativityMap.put(TokType.ADD, true);
+        table.associativityMap.put(TokType.SUB, true);
+        table.associativityMap.put(TokType.MUL, true);
+        table.associativityMap.put(TokType.DIV, true);
+        table.associativityMap.put(TokType.MOD, true);
+        table.associativityMap.put(TokType.SHL, true);
+        table.associativityMap.put(TokType.ART_SHR, true);
+        table.associativityMap.put(TokType.LOG_SHR, true);
+        table.associativityMap.put(TokType.TYPE_CONV, true);
 
-            // Initialize operator type compatibility table
-            TypeInfo intType = TypeTable.INT;
-            TypeInfo floatType = TypeTable.FLOAT;
-            TypeInfo boolType = TypeTable.BOOL;
+        // Initialize operator type compatibility table
+        TypeInfo intType = TypeTable.INT;
+        TypeInfo floatType = TypeTable.FLOAT;
+        TypeInfo boolType = TypeTable.BOOL;
 
-            // Unary operators
-            INST.registerCompat(new UnOpCompat(TokType.ADD, intType), intType);
-            INST.registerCompat(new UnOpCompat(TokType.ADD, floatType), floatType);
-            INST.registerCompat(new UnOpCompat(TokType.SUB, intType), intType);
-            INST.registerCompat(new UnOpCompat(TokType.SUB, floatType), floatType);
-            INST.registerCompat(new UnOpCompat(TokType.LOG_NOT, boolType), boolType);
+        // Unary operators
+        table.registerCompat(new UnOpCompat(TokType.ADD, intType), intType);
+        table.registerCompat(new UnOpCompat(TokType.ADD, floatType), floatType);
+        table.registerCompat(new UnOpCompat(TokType.SUB, intType), intType);
+        table.registerCompat(new UnOpCompat(TokType.SUB, floatType), floatType);
+        table.registerCompat(new UnOpCompat(TokType.LOG_NOT, boolType), boolType);
 
-            // Binary operators
-            INST.registerCompat(new BinOpCompat(TokType.ADD, intType, intType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.ADD, intType, floatType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.ADD, floatType, intType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.ADD, floatType, floatType), floatType);
+        // Binary operators
+        table.registerCompat(new BinOpCompat(TokType.ADD, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.ADD, intType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ADD, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ADD, floatType, floatType), floatType);
 
-            INST.registerCompat(new BinOpCompat(TokType.SUB, intType, intType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.SUB, intType, floatType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.SUB, floatType, intType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.SUB, floatType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.SUB, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.SUB, intType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.SUB, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.SUB, floatType, floatType), floatType);
 
-            INST.registerCompat(new BinOpCompat(TokType.MUL, intType, intType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.MUL, intType, floatType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.MUL, floatType, intType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.MUL, floatType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.MUL, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.MUL, intType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.MUL, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.MUL, floatType, floatType), floatType);
 
-            INST.registerCompat(new BinOpCompat(TokType.DIV, intType, intType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.DIV, intType, floatType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.DIV, floatType, intType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.DIV, floatType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.DIV, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.DIV, intType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.DIV, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.DIV, floatType, floatType), floatType);
 
-            INST.registerCompat(new BinOpCompat(TokType.MOD, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.MOD, intType, intType), intType);
 
-            INST.registerCompat(new BinOpCompat(TokType.EQ, intType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.EQ, intType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.EQ, floatType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.EQ, floatType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.EQ, boolType, boolType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.EQ, intType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.EQ, intType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.EQ, floatType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.EQ, floatType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.EQ, boolType, boolType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.NEQ, intType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.NEQ, intType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.NEQ, floatType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.NEQ, floatType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.NEQ, boolType, boolType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.NEQ, intType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.NEQ, intType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.NEQ, floatType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.NEQ, floatType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.NEQ, boolType, boolType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.LESS, intType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.LESS, intType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.LESS, floatType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.LESS, floatType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LESS, intType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LESS, intType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LESS, floatType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LESS, floatType, floatType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.GREATER, intType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.GREATER, intType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.GREATER, floatType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.GREATER, floatType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GREATER, intType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GREATER, intType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GREATER, floatType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GREATER, floatType, floatType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.LEQ, intType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.LEQ, intType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.LEQ, floatType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.LEQ, floatType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LEQ, intType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LEQ, intType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LEQ, floatType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LEQ, floatType, floatType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.GEQ, intType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.GEQ, intType, floatType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.GEQ, floatType, intType), boolType);
-            INST.registerCompat(new BinOpCompat(TokType.GEQ, floatType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GEQ, intType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GEQ, intType, floatType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GEQ, floatType, intType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.GEQ, floatType, floatType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.LOG_OR, boolType, boolType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LOG_OR, boolType, boolType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.LOG_AND, boolType, boolType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.LOG_AND, boolType, boolType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, intType, intType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, intType, floatType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, floatType, intType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, floatType, floatType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, boolType, boolType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, intType, floatType), intType);
+        table.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, floatType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, boolType, boolType), boolType);
 
-            INST.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, intType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, floatType), intType);
-            INST.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, intType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, floatType), floatType);
-            INST.registerCompat(new BinOpCompat(TokType.TYPE_CONV, boolType, boolType), boolType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, floatType), intType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, boolType, boolType), boolType);
 
-            init = true;
-        }
-        return INST;
+        return table;
     }
 
     /**
@@ -225,7 +221,7 @@ public class OpTable {
      * @return true if the given string is a prefix of an operator string and false otherwise.
      */
     public boolean isOpPrefixStr(String prefixStr) {
-        for (String opStr : OP_MAP.keySet()) {
+        for (String opStr : opMap.keySet()) {
             if (opStr.indexOf(prefixStr) == 0) {
                 return true;
             }
@@ -240,7 +236,7 @@ public class OpTable {
      * @return a TokType object as the operator's id if it exists, otherwise, return null.
      */
     public TokType getId(String opStr) {
-        return OP_MAP.get(opStr);
+        return opMap.get(opStr);
     }
 
     /**
@@ -250,7 +246,7 @@ public class OpTable {
      * @return true if the token is a prefix operator and false otherwise.
      */
     public boolean isPrefixOp(TokType id) {
-        return PREFIX_OPS.contains(id);
+        return prefixOps.contains(id);
     }
 
     /**
@@ -260,7 +256,7 @@ public class OpTable {
      * @return true if the token is an infix operator and false otherwise.
      */
     public boolean isInfixOp(TokType id) {
-        return INFIX_OPS.contains(id);
+        return infixOps.contains(id);
     }
 
     /**
@@ -270,7 +266,7 @@ public class OpTable {
      * @return true if the token is a postfix operator and false otherwise.
      */
     public boolean isPostfixOp(TokType id) {
-        return POSTFIX_OPS.contains(id);
+        return postfixOps.contains(id);
     }
 
     /**
@@ -280,7 +276,7 @@ public class OpTable {
      * @return an int value representing the operator precedence.
      */
     public int getPreced(TokType id) {
-        Integer preced = PRECED_MAP.get(id);
+        Integer preced = precedMap.get(id);
         return preced == null ? -1 : preced;
     }
 
@@ -291,7 +287,7 @@ public class OpTable {
      * @return true if the operator left-to-right, otherwise, return false.
      */
     public boolean getAssociativity(TokType id) {
-        return ASSOCIATIVITY_MAP.get(id);
+        return associativityMap.get(id);
     }
 
     /**
@@ -322,7 +318,7 @@ public class OpTable {
      * @param resultDtype the result's data type after applying the operator.
      */
     private void registerCompat(OpCompat opCompat, TypeInfo resultDtype) {
-        COMPAT_MAP.put(opCompat, resultDtype);
+        compatMap.put(opCompat, resultDtype);
     }
 
     /**
@@ -332,6 +328,6 @@ public class OpTable {
      * @return the result's data type.
      */
     public TypeInfo getCompatDtype(OpCompat opCompact) {
-        return COMPAT_MAP.get(opCompact);
+        return compatMap.get(opCompact);
     }
 }

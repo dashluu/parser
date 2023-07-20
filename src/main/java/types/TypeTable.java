@@ -10,43 +10,38 @@ public class TypeTable {
     public static final TypeInfo BOOL = new TypeInfo("Bool", 1);
     public static final TypeInfo VOID = new TypeInfo("Void", 4);
     // String-to-type map
-    private final HashMap<String, TypeInfo> STR_TO_TYPE = new HashMap<>();
-    private final HashMap<TokType, TypeInfo> LITERAL_TO_TYPE = new HashMap<>();
+    private final HashMap<String, TypeInfo> strToType = new HashMap<>();
+    private final HashMap<TokType, TypeInfo> literalToType = new HashMap<>();
     // Type conversion map
-    private static final HashMap<TypeConv, TypeConv> TYPE_CONV_MAP = new HashMap<>();
-    private static final TypeTable INST = new TypeTable();
-    private static boolean init = false;
+    private final HashMap<TypeConv, TypeConv> typeConvMap = new HashMap<>();
 
     private TypeTable() {
     }
 
     /**
-     * Initializes the only instance of TypeTable if it has not been initialized and then returns it.
+     * Creates an instance of TypeTable and initializes it.
      *
      * @return a TypeTable object.
      */
-    public static TypeTable getInst() {
-        if (!init) {
-            // Add types to table
-            INST.registerType(INT);
-            INST.registerType(FLOAT);
-            INST.registerType(BOOL);
-            INST.registerType(VOID);
+    public static TypeTable createTable() {
+        TypeTable table = new TypeTable();
+        // Add types to table
+        table.registerType(INT);
+        table.registerType(FLOAT);
+        table.registerType(BOOL);
+        table.registerType(VOID);
 
-            // Add mappings from token types to data types
-            INST.mapLiteralToType(TokType.INT_LITERAL, INT);
-            INST.mapLiteralToType(TokType.FLOAT_LITERAL, FLOAT);
-            INST.mapLiteralToType(TokType.BOOL_LITERAL, BOOL);
+        // Add mappings from token types to data types
+        table.mapLiteralToType(TokType.INT_LITERAL, INT);
+        table.mapLiteralToType(TokType.FLOAT_LITERAL, FLOAT);
+        table.mapLiteralToType(TokType.BOOL_LITERAL, BOOL);
 
-            // Add pairs of types that can be converted from one to another
-            INST.registerTypeConv(new TypeConv(INT, INT, true));
-            INST.registerTypeConv(new TypeConv(INT, FLOAT, true));
-            INST.registerTypeConv(new TypeConv(FLOAT, INT, true));
-            INST.registerTypeConv(new TypeConv(FLOAT, FLOAT, true));
-
-            init = true;
-        }
-        return INST;
+        // Add pairs of types that can be converted from one to another
+        table.registerTypeConv(new TypeConv(INT, INT, true));
+        table.registerTypeConv(new TypeConv(INT, FLOAT, true));
+        table.registerTypeConv(new TypeConv(FLOAT, INT, true));
+        table.registerTypeConv(new TypeConv(FLOAT, FLOAT, true));
+        return table;
     }
 
     /**
@@ -55,7 +50,7 @@ public class TypeTable {
      * @param dtype TypeInfo object that carries type data.
      */
     public void registerType(TypeInfo dtype) {
-        STR_TO_TYPE.put(dtype.id(), dtype);
+        strToType.put(dtype.id(), dtype);
     }
 
     /**
@@ -65,7 +60,7 @@ public class TypeTable {
      * @return a TypeInfo object associated with the given id.
      */
     public TypeInfo getType(String id) {
-        return STR_TO_TYPE.get(id);
+        return strToType.get(id);
     }
 
     /**
@@ -75,7 +70,7 @@ public class TypeTable {
      * @param dtype       the data type to be mapped to.
      */
     private void mapLiteralToType(TokType literalType, TypeInfo dtype) {
-        LITERAL_TO_TYPE.put(literalType, dtype);
+        literalToType.put(literalType, dtype);
     }
 
     /**
@@ -85,7 +80,7 @@ public class TypeTable {
      * @return the data type mapped from the given token type or null if it does not exist.
      */
     public TypeInfo getType(TokType tokType) {
-        return LITERAL_TO_TYPE.get(tokType);
+        return literalToType.get(tokType);
     }
 
     /**
@@ -94,7 +89,7 @@ public class TypeTable {
      * @param typeConv TypeConv object that contains type conversion information.
      */
     private void registerTypeConv(TypeConv typeConv) {
-        TYPE_CONV_MAP.put(typeConv, typeConv);
+        typeConvMap.put(typeConv, typeConv);
     }
 
     /**
@@ -107,6 +102,6 @@ public class TypeTable {
     public TypeConv getTypeConv(TypeInfo srcDtype, TypeInfo destDtype) {
         // dummy object
         TypeConv typeConv = new TypeConv(srcDtype, destDtype, false);
-        return TYPE_CONV_MAP.get(typeConv);
+        return typeConvMap.get(typeConv);
     }
 }
