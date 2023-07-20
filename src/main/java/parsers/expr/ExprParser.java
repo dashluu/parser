@@ -6,14 +6,14 @@ import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
 import operators.OpTable;
-import parsers.parse_utils.ParseErr;
-import parsers.parse_utils.ParseResult;
-import parsers.parse_utils.ParseStatus;
-import parsers.parse_utils.TokParser;
+import parsers.utils.ParseErr;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
+import parsers.utils.TokParser;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
-import utils.Pair;
+import parsers.utils.ParseContext;
+import global_utils.Pair;
 
 import java.io.IOException;
 

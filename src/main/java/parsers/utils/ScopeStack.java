@@ -1,4 +1,4 @@
-package utils;
+package parsers.utils;
 
 import java.util.ArrayDeque;
 

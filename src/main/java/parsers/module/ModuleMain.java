@@ -3,12 +3,12 @@ package parsers.module;
 import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
-import parsers.parse_utils.ParseErr;
-import parsers.parse_utils.ParseResult;
-import parsers.parse_utils.ParseStatus;
-import utils.ParseContext;
-import utils.Scope;
-import utils.ScopeStack;
+import parsers.utils.ParseErr;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
+import parsers.utils.ParseContext;
+import parsers.utils.Scope;
+import parsers.utils.ScopeStack;
 
 import java.io.*;
 

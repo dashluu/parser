@@ -1,11 +1,10 @@
-package parsers.parse_utils;
+package parsers.utils;
 
 import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
 
 import java.io.IOException;
 

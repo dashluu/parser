@@ -4,13 +4,13 @@ import ast.*;
 import exceptions.ErrMsg;
 import parsers.expr.ExprParser;
 import parsers.scope.ScopeParser;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;
-import utils.ParseContext;
-import utils.Scope;
-import utils.ScopeStack;
+import parsers.utils.ParseContext;
+import parsers.utils.Scope;
+import parsers.utils.ScopeStack;
 
 import java.io.IOException;
 

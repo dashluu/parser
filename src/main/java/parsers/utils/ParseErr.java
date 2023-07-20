@@ -1,4 +1,4 @@
-package parsers.parse_utils;
+package parsers.utils;
 
 import exceptions.ErrMsg;
 

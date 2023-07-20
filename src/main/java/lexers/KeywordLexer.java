@@ -2,7 +2,7 @@ package lexers;
 
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
+import parsers.utils.ParseContext;
 
 import java.io.IOException;
 

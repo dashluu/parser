@@ -15,10 +15,10 @@ import parsers.function.*;
 import parsers.ret.RetParser;
 import parsers.scope.ScopeParser;
 import parsers.stmt.StmtParser;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
+import parsers.utils.ParseContext;
 
 import java.io.IOException;
 

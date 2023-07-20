@@ -8,12 +8,12 @@ import parsers.branch.IfElseParser;
 import parsers.branch.WhileParser;
 import parsers.function.FunDefParser;
 import parsers.stmt.StmtParser;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
-import utils.Scope;
-import utils.ScopeStack;
+import parsers.utils.ParseContext;
+import parsers.utils.Scope;
+import parsers.utils.ScopeStack;
 
 import java.io.IOException;
 

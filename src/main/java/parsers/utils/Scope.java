@@ -1,4 +1,4 @@
-package utils;
+package parsers.utils;
 
 import symbols.SymbolTable;
 import types.TypeInfo;

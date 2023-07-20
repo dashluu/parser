@@ -4,12 +4,12 @@ import ast.ASTNode;
 import ast.ElseASTNode;
 import ast.ScopeASTNode;
 import exceptions.ErrMsg;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
-import utils.Scope;
-import utils.ScopeStack;
+import parsers.utils.ParseContext;
+import parsers.utils.Scope;
+import parsers.utils.ScopeStack;
 
 import java.io.IOException;
 

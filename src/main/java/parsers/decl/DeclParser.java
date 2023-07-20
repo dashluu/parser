@@ -3,10 +3,10 @@ package parsers.decl;
 import ast.*;
 import exceptions.ErrMsg;
 import parsers.expr.ExprParser;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
+import parsers.utils.ParseContext;
 
 import java.io.IOException;
 

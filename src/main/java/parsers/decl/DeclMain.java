@@ -5,10 +5,10 @@ import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
-import parsers.parse_utils.*;
-import utils.ParseContext;
-import utils.Scope;
-import utils.ScopeStack;
+import parsers.utils.*;
+import parsers.utils.ParseContext;
+import parsers.utils.Scope;
+import parsers.utils.ScopeStack;
 
 import java.io.*;
 

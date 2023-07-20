@@ -1,8 +1,8 @@
 package parsers.branch;
 
 import ast.ASTNode;
-import utils.ParseContext;
-import parsers.parse_utils.ParseResult;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
 import toks.TokType;
 
 import java.io.IOException;

@@ -3,7 +3,7 @@ package lexers;
 import exceptions.ErrMsg;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
+import parsers.utils.ParseContext;
 
 import java.io.IOException;
 import java.io.Reader;

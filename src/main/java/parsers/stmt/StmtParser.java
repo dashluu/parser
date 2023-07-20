@@ -5,10 +5,10 @@ import exceptions.ErrMsg;
 import parsers.decl.DeclParser;
 import parsers.expr.ExprParser;
 import parsers.ret.RetParser;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import utils.ParseContext;
+import parsers.utils.ParseContext;
 
 import java.io.IOException;
 

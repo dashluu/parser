@@ -1,4 +1,4 @@
-package parsers.parse_utils;
+package parsers.utils;
 
 public enum ParseStatus {
     OK, FAIL, EMPTY, ERR

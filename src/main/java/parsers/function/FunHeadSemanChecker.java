@@ -5,15 +5,15 @@ import ast.FunDefASTNode;
 import ast.ParamListASTNode;
 import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
-import parsers.parse_utils.*;
+import parsers.utils.*;
 import symbols.FunInfo;
 import symbols.ParamInfo;
 import symbols.SymbolTable;
 import toks.Tok;
 import types.TypeInfo;
-import utils.ParseContext;
-import utils.Scope;
-import utils.ScopeStack;
+import parsers.utils.ParseContext;
+import parsers.utils.Scope;
+import parsers.utils.ScopeStack;
 
 public class FunHeadSemanChecker {
     private ParseContext context;
