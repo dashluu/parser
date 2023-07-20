@@ -9,6 +9,9 @@ import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
 import types.TypeTable;
+import utils.Context;
+import utils.Scope;
+import utils.ScopeStack;
 
 import java.io.IOException;
 
@@ -30,12 +33,12 @@ public class FunDefParser {
     /**
      * Parses a function definition, constructs an AST for it, and checks its semantics.
      *
-     * @param funScope the scope surrounding the function definition.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a function definition.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseFunDef(Scope funScope) throws IOException {
-        ParseResult<ASTNode> funHeadResult = funHeadParser.parseFunHead(funScope);
+    public ParseResult<ASTNode> parseFunDef(Context context) throws IOException {
+        ParseResult<ASTNode> funHeadResult = funHeadParser.parseFunHead(context);
         if (funHeadResult.getStatus() == ParseStatus.ERR || funHeadResult.getStatus() == ParseStatus.FAIL) {
             return funHeadResult;
         }
@@ -43,9 +46,11 @@ public class FunDefParser {
         TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) funHeadResult.getData();
         FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
         TypeInfo retType = funDefNode.getDtype();
-        Scope bodyScope = new Scope(funScope);
+        Scope bodyScope = new Scope(context.getScope());
+        ScopeStack scopeStack = context.getScopeStack();
+        scopeStack.push(bodyScope);
         bodyScope.setRetDtype(retType);
-        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
+        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
@@ -69,6 +74,10 @@ public class FunDefParser {
         }
 
         funDefNode.setBodyNode(bodyNode);
+        // Pop body's scope
+        scopeStack.pop();
+        // Pop parameters' scope
+        scopeStack.pop();
         return funHeadResult;
     }
 }

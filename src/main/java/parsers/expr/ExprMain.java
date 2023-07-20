@@ -4,6 +4,9 @@ import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.utils.*;
+import utils.Context;
+import utils.Scope;
+import utils.ScopeStack;
 
 import java.io.*;
 
@@ -26,8 +29,12 @@ public class ExprMain {
             tokParser.init(lexer);
             parser.init(lexer, tokParser, semanChecker);
 
-            Scope global = new Scope(null);
-            ParseResult<ASTNode> result = parser.parseExpr(global);
+            Context context = new Context();
+            Scope globalScope = new Scope(null);
+            ScopeStack scopeStack = context.getScopeStack();
+            scopeStack.push(globalScope);
+            ParseResult<ASTNode> result = parser.parseExpr(context);
+            scopeStack.pop();
             if (ParseErr.hasErr()) {
                 throw new SyntaxErr(ParseErr.getMsg());
             } else if (result.getStatus() == ParseStatus.OK) {

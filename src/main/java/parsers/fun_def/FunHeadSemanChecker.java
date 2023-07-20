@@ -1,29 +1,32 @@
 package parsers.fun_def;
 
-import ast.*;
+import ast.ASTNode;
+import ast.FunDefASTNode;
+import ast.ParamListASTNode;
+import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
 import parsers.utils.*;
 import symbols.FunInfo;
+import symbols.ParamInfo;
 import symbols.SymbolTable;
 import toks.Tok;
 import types.TypeInfo;
-import types.TypeTable;
+import utils.Context;
+import utils.Scope;
 
 public class FunHeadSemanChecker {
-    private Scope funScope;
-    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
+    private Context context;
 
     /**
      * Checks the semantics of a function header.
      *
      * @param typeAnnNode the type annotation node that contains a function declaration node on the left and a return
      *                    type node on the right.
-     * @param funScope    the scope surrounding the function header.
+     * @param context     the parsing context.
      * @return a ParseResult object as the result of checking the semantics of a function header.
      */
-    public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, Scope funScope) {
-        this.funScope = funScope;
-
+    public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, Context context) {
+        this.context = context;
         FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
         // Check function id
         ParseResult<FunInfo> idResult = checkId(funDefNode);
@@ -64,7 +67,7 @@ public class FunHeadSemanChecker {
         // Check if the function id has been defined
         Tok idTok = funDefNode.getTok();
         String id = idTok.getVal();
-        SymbolTable symbolTable = funScope.getSymbolTable();
+        SymbolTable symbolTable = context.getScope().getSymbolTable();
         if (symbolTable.getLocalSymbol(id) != null) {
             return ParseErr.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
@@ -86,7 +89,8 @@ public class FunHeadSemanChecker {
         ParseResult<TypeInfo> paramResult;
         TypeInfo paramDtype;
         // Dummy parameter scope
-        Scope paramScope = new Scope(funScope);
+        Scope paramScope = new Scope(context.getScope());
+        context.getScopeStack().push(paramScope);
 
         for (ASTNode typeAnnNode : paramListNode) {
             paramResult = checkParam((TypeAnnASTNode) typeAnnNode, paramScope);
@@ -126,6 +130,9 @@ public class FunHeadSemanChecker {
         }
 
         TypeInfo dtype = dtypeResult.getData();
+        // Add parameter to the symbol table
+        ParamInfo paramInfo = new ParamInfo(name, dtype);
+        symbolTable.registerSymbol(paramInfo);
         typeAnnNode.setDtype(dtype);
         paramDeclNode.setDtype(dtype);
         dtypeNode.setDtype(dtype);
@@ -141,7 +148,7 @@ public class FunHeadSemanChecker {
     private ParseResult<TypeInfo> checkDtype(ASTNode dtypeNode) {
         Tok dtypeTok = dtypeNode.getTok();
         String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
+        TypeInfo dtype = context.getTypeTable().getType(dtypeId);
         if (dtype == null) {
             return ParseErr.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
         }

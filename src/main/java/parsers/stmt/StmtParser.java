@@ -8,6 +8,7 @@ import parsers.ret.RetParser;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
+import utils.Context;
 
 import java.io.IOException;
 
@@ -35,13 +36,13 @@ public class StmtParser {
     /**
      * Parses a statement and checks its semantics in a scope.
      *
-     * @param scope the scope surrounding the statement.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a statement.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseStmt(Scope scope) throws IOException {
+    public ParseResult<ASTNode> parseStmt(Context context) throws IOException {
         // Parse a declaration statement
-        ParseResult<ASTNode> stmtResult = declParser.parseDecl(scope);
+        ParseResult<ASTNode> stmtResult = declParser.parseDecl(context);
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
@@ -49,7 +50,7 @@ public class StmtParser {
         }
 
         // Parse a return statement if failed
-        stmtResult = retParser.parseRet(scope);
+        stmtResult = retParser.parseRet(context);
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
@@ -57,7 +58,7 @@ public class StmtParser {
         }
 
         // Parse a expression
-        stmtResult = exprParser.parseExpr(scope);
+        stmtResult = exprParser.parseExpr(context);
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {

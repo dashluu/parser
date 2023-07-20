@@ -8,6 +8,9 @@ import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;
+import utils.Context;
+import utils.Scope;
+import utils.ScopeStack;
 
 import java.io.IOException;
 
@@ -15,8 +18,7 @@ public abstract class CondBranchParser {
     protected TokParser tokParser;
     protected ExprParser exprParser;
     protected ScopeParser scopeParser;
-    // Branch scope
-    protected Scope brScope;
+    protected Context context;
 
     /**
      * Initializes the dependencies.
@@ -35,13 +37,12 @@ public abstract class CondBranchParser {
      * Parses a conditional branch block, which includes its condition and body.
      *
      * @param tokType the token type of the branch keyword.
-     * @param brScope the scope surrounding the branch block.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing the conditional branch block.
      * @throws IOException if there is an IO exception.
      */
-    protected ParseResult<ASTNode> parseBranch(TokType tokType, Scope brScope) throws IOException {
-        this.brScope = brScope;
-
+    protected ParseResult<ASTNode> parseBranch(TokType tokType, Context context) throws IOException {
+        this.context = context;
         // Parse the condition
         ParseResult<ASTNode> condResult = parseCond(tokType);
         if (condResult.getStatus() == ParseStatus.ERR) {
@@ -52,8 +53,10 @@ public abstract class CondBranchParser {
 
         BranchNode brNode = (BranchNode) condResult.getData();
         // Parse the body
-        Scope bodyScope = new Scope(brScope);
-        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(bodyScope);
+        Scope bodyScope = new Scope(context.getScope());
+        ScopeStack scopeStack = context.getScopeStack();
+        scopeStack.push(bodyScope);
+        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
@@ -62,6 +65,7 @@ public abstract class CondBranchParser {
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         brNode.setBodyNode(bodyNode);
+        scopeStack.pop();
         return ParseResult.ok(brNode);
     }
 
@@ -90,7 +94,7 @@ public abstract class CondBranchParser {
         }
 
         // Expression
-        ParseResult<ASTNode> exprResult = exprParser.parseExpr(brScope);
+        ParseResult<ASTNode> exprResult = exprParser.parseExpr(context);
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL) {

@@ -9,6 +9,7 @@ import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
 import types.TypeTable;
+import utils.Context;
 
 import java.io.IOException;
 
@@ -30,11 +31,11 @@ public class RetParser {
     /**
      * Attempts to parse a return statement using the given parsing information.
      *
-     * @param scope the scope surrounding the return statement.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a return statement.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseRet(Scope scope) throws IOException {
+    public ParseResult<ASTNode> parseRet(Context context) throws IOException {
         // Check for the return keyword
         ParseResult<Tok> kwResult = tokParser.parseTok(TokType.RET);
         if (kwResult.getStatus() == ParseStatus.ERR) {
@@ -44,14 +45,14 @@ public class RetParser {
         }
 
         // Detect unexpected return statement in a non-function scope
-        TypeInfo retType = scope.getRetDtype();
+        TypeInfo retType = context.getScope().getRetDtype();
         if (retType == null) {
             return ParseErr.raise(new ErrMsg("Return statements can only exist inside a function",
                     kwResult.getData()));
         }
 
         // Parse return expression
-        ParseResult<ASTNode> exprResult = exprParser.parseExpr(scope);
+        ParseResult<ASTNode> exprResult = exprParser.parseExpr(context);
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL && !retType.equals(TypeTable.VOID)) {

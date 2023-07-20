@@ -6,6 +6,7 @@ import parsers.expr.ExprParser;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
+import utils.Context;
 
 import java.io.IOException;
 
@@ -29,11 +30,11 @@ public class DeclParser {
     /**
      * Parses a declaration statement.
      *
-     * @param scope the scope surrounding the declaration statement.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing the declaration statement.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseDecl(Scope scope) throws IOException {
+    public ParseResult<ASTNode> parseDecl(Context context) throws IOException {
         // Parse head
         ParseResult<Boolean> headResult = parseHead();
         if (headResult.getStatus() == ParseStatus.ERR) {
@@ -72,7 +73,7 @@ public class DeclParser {
         } else if (asgnmtResult.getStatus() == ParseStatus.FAIL) {
             if (typeAnnResult.getStatus() == ParseStatus.OK) {
                 // No rhs expression but the data type is defined
-                return semanChecker.checkSeman(lhsNode, scope);
+                return semanChecker.checkSeman(lhsNode, context);
             }
             String id = lhsNode.getTok().getVal();
             return ParseErr.raise(new ErrMsg("Cannot determine the data type of '" + id + "'",
@@ -80,7 +81,7 @@ public class DeclParser {
         }
 
         // Parse rhs expression
-        ParseResult<ASTNode> exprResult = exprParser.parseExpr(scope);
+        ParseResult<ASTNode> exprResult = exprParser.parseExpr(context);
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL) {
@@ -90,7 +91,7 @@ public class DeclParser {
         BinASTNode asgnmtNode = (BinASTNode) asgnmtResult.getData();
         asgnmtNode.setLeft(lhsNode);
         asgnmtNode.setRight(exprResult.getData());
-        return semanChecker.checkSeman(asgnmtNode, scope);
+        return semanChecker.checkSeman(asgnmtNode, context);
     }
 
     /**

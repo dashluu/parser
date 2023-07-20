@@ -9,6 +9,8 @@ import operators.OpTable;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
+import utils.Context;
+import utils.Pair;
 
 import java.io.IOException;
 
@@ -16,7 +18,7 @@ public class ExprParser {
     private Lexer lexer;
     private TokParser tokParser;
     private ExprSemanChecker semanChecker;
-    private static final OpTable OP_TABLE = OpTable.getInst();
+    private OpTable opTable;
 
     /**
      * Initializes the dependencies.
@@ -36,18 +38,19 @@ public class ExprParser {
     /**
      * Parses an expression.
      *
-     * @param scope the scope surrounding the expression.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing an expression.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseExpr(Scope scope) throws IOException {
+    public ParseResult<ASTNode> parseExpr(Context context) throws IOException {
+        opTable = context.getOpTable();
         ParseResult<ASTNode> exprResult = parseInfixExpr(null);
         ParseStatus exprStatus = exprResult.getStatus();
         if (exprStatus == ParseStatus.ERR || exprStatus == ParseStatus.FAIL) {
             return exprResult;
         }
         ASTNode exprNode = exprResult.getData();
-        return semanChecker.checkSeman(exprNode, scope);
+        return semanChecker.checkSeman(exprNode, context);
     }
 
     // Helper and utility methods
@@ -65,7 +68,7 @@ public class ExprParser {
         }
 
         Tok opTok = opResult.getData();
-        if (opTok.getType() == TokType.EOS || !OP_TABLE.isPrefixOp(opTok.getType())) {
+        if (opTok.getType() == TokType.EOS || !opTable.isPrefixOp(opTok.getType())) {
             return ParseResult.fail(opTok);
         }
 
@@ -88,7 +91,7 @@ public class ExprParser {
 
         Tok opTok = tokResult.getData();
         TokType opId = opTok.getType();
-        if (opTok.getType() == TokType.EOS || !OP_TABLE.isPostfixOp(opId)) {
+        if (opTok.getType() == TokType.EOS || !opTable.isPostfixOp(opId)) {
             return ParseResult.fail(opTok);
         }
 
@@ -397,7 +400,7 @@ public class ExprParser {
             return ParseResult.fail(opTok);
         }
 
-        if (!OP_TABLE.isInfixOp(opId)) {
+        if (!opTable.isInfixOp(opId)) {
             return ParseErr.raise(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
         }
 
@@ -432,7 +435,7 @@ public class ExprParser {
             }
 
             opTok = opResult.getData();
-            if (prevOpTok != null && OP_TABLE.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {
+            if (prevOpTok != null && opTable.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {
                 // The current operator has lower precedence than the previous operator
                 return leftResult;
             }

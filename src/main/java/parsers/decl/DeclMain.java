@@ -6,6 +6,9 @@ import lexers.Lexer;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
 import parsers.utils.*;
+import utils.Context;
+import utils.Scope;
+import utils.ScopeStack;
 
 import java.io.*;
 
@@ -31,8 +34,12 @@ public class DeclMain {
             exprParser.init(lexer, tokParser, exprSemanChecker);
             declParser.init(tokParser, exprParser, declSemanChecker);
 
-            Scope global = new Scope(null);
-            ParseResult<ASTNode> result = declParser.parseDecl(global);
+            Context context = new Context();
+            Scope globalScope = new Scope(null);
+            ScopeStack scopeStack = context.getScopeStack();
+            scopeStack.push(globalScope);
+            ParseResult<ASTNode> result = declParser.parseDecl(context);
+            scopeStack.pop();
             if (ParseErr.hasErr()) {
                 throw new SyntaxErr(ParseErr.getMsg());
             } else if (result.getStatus() == ParseStatus.OK) {

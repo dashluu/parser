@@ -1,14 +1,16 @@
 package parsers.decl;
 
-import ast.*;
+import ast.ASTNode;
+import ast.ASTNodeType;
+import ast.BinASTNode;
+import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
-import operators.OpTable;
+import utils.Context;
 import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import parsers.utils.Scope;
 import symbols.ConstInfo;
 import symbols.SymbolInfo;
 import symbols.SymbolTable;
@@ -16,23 +18,19 @@ import symbols.VarInfo;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
-import types.TypeTable;
 
 public class DeclSemanChecker {
-    private Scope scope;
-    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
-    private static final OpTable OP_TABLE = OpTable.getInst();
+    private Context context;
 
     /**
      * Checks the semantics of a declaration statement.
      *
      * @param declNode the declaration AST's root.
-     * @param scope    the scope surrounding the declaration statement.
+     * @param context  the parsing context.
      * @return a ParseResult object as the result of checking the declaration statement's semantics.
      */
-    public ParseResult<ASTNode> checkSeman(ASTNode declNode, Scope scope) {
-        this.scope = scope;
-
+    public ParseResult<ASTNode> checkSeman(ASTNode declNode, Context context) {
+        this.context = context;
         ParseResult<SymbolInfo> lhsResult;
         ASTNodeType declNodeType = declNode.getNodeType();
         if (declNodeType == ASTNodeType.TYPE_ANN) {
@@ -97,7 +95,7 @@ public class DeclSemanChecker {
         // Check if the declaration id has been defined
         Tok idTok = idNode.getTok();
         String id = idTok.getVal();
-        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getLocalSymbol(id);
         if (symbol != null) {
             return ParseErr.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
@@ -120,7 +118,7 @@ public class DeclSemanChecker {
     private ParseResult<TypeInfo> checkDtype(ASTNode dtypeNode) {
         Tok dtypeTok = dtypeNode.getTok();
         String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = TYPE_TABLE.getType(dtypeId);
+        TypeInfo dtype = context.getTypeTable().getType(dtypeId);
         if (dtype == null) {
             return ParseErr.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
         }
@@ -147,7 +145,7 @@ public class DeclSemanChecker {
         } else if (lhsDtype != rhsDtype) {
             if (lhsDtype != null) {
                 OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
-                if (OP_TABLE.getCompatDtype(opCompat) == null) {
+                if (context.getOpTable().getCompatDtype(opCompat) == null) {
                     return ParseErr.raise(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
                             "' to data of type '" + lhsDtype.id() + "'", asgmtTok));
                 }

@@ -4,36 +4,34 @@ import ast.*;
 import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
-import operators.OpTable;
 import operators.UnOpCompat;
+import utils.Context;
 import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import parsers.utils.Scope;
-import symbols.*;
+import symbols.FunInfo;
+import symbols.SymbolInfo;
+import symbols.SymbolTable;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
-import types.TypeTable;
 
 import java.io.IOException;
 import java.util.Iterator;
 
 public class ExprSemanChecker {
-    private Scope scope;
-    private static final OpTable OP_TABLE = OpTable.getInst();
-    private static final TypeTable TYPE_TABLE = TypeTable.getInst();
+    private Context context;
 
     /**
      * Checks the semantics of an expression.
      *
      * @param exprNode the expression AST's root.
-     * @param scope    the scope surrounding the expression.
+     * @param context  the parsing context.
      * @return a ParseResult object as the result of checking the expression's semantics.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> checkSeman(ASTNode exprNode, Scope scope) throws IOException {
-        this.scope = scope;
+    public ParseResult<ASTNode> checkSeman(ASTNode exprNode, Context context) throws IOException {
+        this.context = context;
         return recurCheckSeman(exprNode);
     }
 
@@ -67,7 +65,7 @@ public class ExprSemanChecker {
      */
     private ParseResult<ASTNode> typeCheckLiteral(LiteralASTNode literalNode) {
         TokType literalTokType = literalNode.getTok().getType();
-        TypeInfo dtype = TYPE_TABLE.getType(literalTokType);
+        TypeInfo dtype = context.getTypeTable().getType(literalTokType);
         literalNode.setDtype(dtype);
         return ParseResult.ok(literalNode);
     }
@@ -83,7 +81,7 @@ public class ExprSemanChecker {
         String id = idTok.getVal();
 
         // Check if the id corresponds to a data type
-        TypeInfo dtype = TYPE_TABLE.getType(id);
+        TypeInfo dtype = context.getTypeTable().getType(id);
         if (dtype != null) {
             idNode.setNodeType(ASTNodeType.DTYPE);
             idNode.setDtype(dtype);
@@ -91,7 +89,7 @@ public class ExprSemanChecker {
         }
 
         // Check if the id is valid
-        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(id);
         if (symbol == null) {
             return ParseErr.raise(new ErrMsg("Invalid identifier '" + id + "'", idTok));
@@ -130,7 +128,7 @@ public class ExprSemanChecker {
 
         // Check the result's data type after applying the operator
         OpCompat opCompat = new UnOpCompat(opId, operandDtype);
-        TypeInfo resultDtype = OP_TABLE.getCompatDtype(opCompat);
+        TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
             return ParseErr.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
                     operandDtype.id() + "'", opTok));
@@ -177,7 +175,7 @@ public class ExprSemanChecker {
 
         // Check the result's data type after applying the operator
         OpCompat opCompat = new BinOpCompat(opId, leftDtype, rightDtype);
-        TypeInfo resultDtype = OP_TABLE.getCompatDtype(opCompat);
+        TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
             return ParseErr.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
                     leftDtype.id() + "' and type '" + rightDtype.id() + "'", opTok));
@@ -198,7 +196,7 @@ public class ExprSemanChecker {
         Tok funIdTok = funCallNode.getTok();
         String funId = funIdTok.getVal();
         // Check if the function id exists
-        SymbolTable symbolTable = scope.getSymbolTable();
+        SymbolTable symbolTable = context.getScope().getSymbolTable();
         FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         if (funInfo == null) {
             return ParseErr.raise(new ErrMsg("Invalid function identifier '" + funId + "'", funIdTok));

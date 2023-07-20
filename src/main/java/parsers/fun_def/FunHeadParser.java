@@ -6,6 +6,7 @@ import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
 import types.TypeTable;
+import utils.Context;
 
 import java.io.IOException;
 
@@ -27,11 +28,11 @@ public class FunHeadParser {
     /**
      * Parses a function header.
      *
-     * @param funScope the scope surrounding the function header.
+     * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a function header.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseFunHead(Scope funScope) throws IOException {
+    public ParseResult<ASTNode> parseFunHead(Context context) throws IOException {
         // Parse the function keyword
         ParseResult<Tok> kwResult = tokParser.parseTok(TokType.FUN_DECL);
         if (kwResult.getStatus() == ParseStatus.ERR) {
@@ -40,7 +41,7 @@ public class FunHeadParser {
             return ParseResult.fail(kwResult.getFailTok());
         }
 
-        if (funScope.getRetDtype() != null) {
+        if (context.getScope().getRetDtype() != null) {
             // Function is defined inside another function
             return ParseErr.raise(new ErrMsg("A function definition cannot exist inside another function",
                     kwResult.getData()));
@@ -78,7 +79,7 @@ public class FunHeadParser {
         ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
         funDefNode.setParamListNode(paramListNode);
         typeAnnNode.setLeft(funDefNode);
-        return semanChecker.checkSeman(typeAnnNode, funScope);
+        return semanChecker.checkSeman(typeAnnNode, context);
     }
 
     /**

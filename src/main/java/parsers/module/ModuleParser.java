@@ -18,40 +18,30 @@ import parsers.stmt.StmtParser;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
+import utils.Context;
+import utils.Scope;
+import utils.ScopeStack;
 
 import java.io.IOException;
 
 public class ModuleParser {
     private final Lexer lexer;
-    private final TokParser tokParser;
-    private final ExprSemanChecker exprSemanChecker;
-    private final ExprParser exprParser;
-    private final DeclSemanChecker declSemanChecker;
-    private final DeclParser declParser;
-    private final RetParser retParser;
-    private final StmtParser stmtParser;
-    private final IfElseParser ifElseParser;
-    private final WhileParser whileParser;
-    private final FunHeadParser funHeadParser;
-    private final FunHeadSemanChecker funHeadSemanChecker;
-    private final FunDefParser funDefParser;
-    private final ScopeParser scopeParser;
+    private final TokParser tokParser = new TokParser();
+    private final ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
+    private final ExprParser exprParser = new ExprParser();
+    private final DeclSemanChecker declSemanChecker = new DeclSemanChecker();
+    private final DeclParser declParser = new DeclParser();
+    private final RetParser retParser = new RetParser();
+    private final StmtParser stmtParser = new StmtParser();
+    private final IfElseParser ifElseParser = new IfElseParser();
+    private final WhileParser whileParser = new WhileParser();
+    private final FunHeadParser funHeadParser = new FunHeadParser();
+    private final FunHeadSemanChecker funHeadSemanChecker = new FunHeadSemanChecker();
+    private final FunDefParser funDefParser = new FunDefParser();
+    private final ScopeParser scopeParser = new ScopeParser();
 
     public ModuleParser(Lexer lexer) {
         this.lexer = lexer;
-        tokParser = new TokParser();
-        exprSemanChecker = new ExprSemanChecker();
-        exprParser = new ExprParser();
-        declSemanChecker = new DeclSemanChecker();
-        declParser = new DeclParser();
-        retParser = new RetParser();
-        stmtParser = new StmtParser();
-        ifElseParser = new IfElseParser();
-        whileParser = new WhileParser();
-        funHeadParser = new FunHeadParser();
-        funHeadSemanChecker = new FunHeadSemanChecker();
-        funDefParser = new FunDefParser();
-        scopeParser = new ScopeParser();
     }
 
     /**
@@ -77,8 +67,11 @@ public class ModuleParser {
      * @throws IOException if there is an IO exception.
      */
     public ParseResult<ASTNode> parseModule() throws IOException {
+        Context context = new Context();
         Scope globalScope = new Scope(null);
-        ParseResult<ASTNode> moduleResult = scopeParser.parseScope(globalScope);
+        ScopeStack scopeStack = context.getScopeStack();
+        scopeStack.push(globalScope);
+        ParseResult<ASTNode> moduleResult = scopeParser.parseScope(context);
         if (moduleResult.getStatus() == ParseStatus.ERR) {
             return moduleResult;
         } else if (moduleResult.getStatus() == ParseStatus.FAIL) {
@@ -99,6 +92,7 @@ public class ModuleParser {
             }
         }
 
+        scopeStack.pop();
         return moduleResult;
     }
 }
