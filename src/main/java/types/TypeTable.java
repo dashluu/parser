@@ -12,8 +12,6 @@ public class TypeTable {
     // String-to-type map
     private final HashMap<String, TypeInfo> strToType = new HashMap<>();
     private final HashMap<TokType, TypeInfo> literalToType = new HashMap<>();
-    // Type conversion map
-    private final HashMap<TypeConv, TypeConv> typeConvMap = new HashMap<>();
 
     private TypeTable() {
     }
@@ -35,12 +33,6 @@ public class TypeTable {
         table.mapLiteralToType(TokType.INT_LITERAL, INT);
         table.mapLiteralToType(TokType.FLOAT_LITERAL, FLOAT);
         table.mapLiteralToType(TokType.BOOL_LITERAL, BOOL);
-
-        // Add pairs of types that can be converted from one to another
-        table.registerTypeConv(new TypeConv(INT, INT, true));
-        table.registerTypeConv(new TypeConv(INT, FLOAT, true));
-        table.registerTypeConv(new TypeConv(FLOAT, INT, true));
-        table.registerTypeConv(new TypeConv(FLOAT, FLOAT, true));
         return table;
     }
 
@@ -81,27 +73,5 @@ public class TypeTable {
      */
     public TypeInfo getType(TokType tokType) {
         return literalToType.get(tokType);
-    }
-
-    /**
-     * Adds a new type conversion object to the type conversion table.
-     *
-     * @param typeConv TypeConv object that contains type conversion information.
-     */
-    private void registerTypeConv(TypeConv typeConv) {
-        typeConvMap.put(typeConv, typeConv);
-    }
-
-    /**
-     * Gets a type conversion object using the source and destination data type.
-     *
-     * @param srcDtype  the source data type.
-     * @param destDtype the destination data type.
-     * @return a TypeConv object if the two types are convertible and null otherwise.
-     */
-    public TypeConv getTypeConv(TypeInfo srcDtype, TypeInfo destDtype) {
-        // dummy object
-        TypeConv typeConv = new TypeConv(srcDtype, destDtype, false);
-        return typeConvMap.get(typeConv);
     }
 }
