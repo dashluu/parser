@@ -90,7 +90,7 @@ public abstract class CondBranchParser {
         if (lparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (lparenResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(lparenResult.getData());
+            return context.raiseErr(new ErrMsg("Missing '('", lparenResult.getFailTok()));
         }
 
         // Expression
