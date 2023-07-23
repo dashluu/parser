@@ -9,7 +9,7 @@ public class UnOpASTNode extends UnASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitUnOp(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitUnOp(this);
     }
 }

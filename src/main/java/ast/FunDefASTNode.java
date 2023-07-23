@@ -38,7 +38,7 @@ public class FunDefASTNode extends ASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitFunDef(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitFunDef(this);
     }
 }

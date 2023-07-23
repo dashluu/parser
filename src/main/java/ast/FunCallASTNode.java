@@ -9,7 +9,7 @@ public class FunCallASTNode extends KnaryASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitFunCall(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitFunCall(this);
     }
 }

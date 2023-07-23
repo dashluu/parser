@@ -9,7 +9,7 @@ public class VarDefASTNode extends BinASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitVarDef(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitVarDef(this);
     }
 }

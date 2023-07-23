@@ -28,8 +28,8 @@ public class TypeAnnASTNode extends ASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitTypeAnn(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitTypeAnn(this);
     }
 
     @Override

@@ -18,8 +18,8 @@ public class ElseASTNode extends ASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitElse(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitElse(this);
     }
 
     @Override

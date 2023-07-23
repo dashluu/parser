@@ -9,7 +9,7 @@ public class RetASTNode extends UnASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitRet(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitRet(this);
     }
 }

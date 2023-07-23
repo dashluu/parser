@@ -9,7 +9,7 @@ public class LiteralASTNode extends ASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitLiteral(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitLiteral(this);
     }
 }

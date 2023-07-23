@@ -8,7 +8,7 @@ public class WhileASTNode extends BranchNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitWhile(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitWhile(this);
     }
 }

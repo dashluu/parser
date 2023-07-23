@@ -8,7 +8,7 @@ public class IfASTNode extends BranchNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitIf(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitIf(this);
     }
 }

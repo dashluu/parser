@@ -23,7 +23,7 @@ public class ScopeASTNode extends KnaryASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitScope(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitScope(this);
     }
 }

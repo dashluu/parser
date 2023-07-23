@@ -9,7 +9,7 @@ public class ConstDefASTNode extends BinASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitConstDef(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitConstDef(this);
     }
 }

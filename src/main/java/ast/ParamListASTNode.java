@@ -6,7 +6,7 @@ public class ParamListASTNode extends KnaryASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitParamList(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitParamList(this);
     }
 }

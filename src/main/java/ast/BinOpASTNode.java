@@ -9,7 +9,7 @@ public class BinOpASTNode extends BinASTNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitBinOp(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitBinOp(this);
     }
 }

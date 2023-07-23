@@ -8,7 +8,7 @@ public class ElifASTNode extends BranchNode {
     }
 
     @Override
-    public void accept(IASTVisitor visitor) {
-        visitor.visitElif(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return visitor.visitElif(this);
     }
 }

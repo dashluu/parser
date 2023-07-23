@@ -45,7 +45,12 @@ public class ASTNode {
                 ",\"Size\":\"" + (dtype == null ? "0" : dtype.size()) + "\"";
     }
 
-    public void accept(IASTVisitor visitor) {
-        visitor.visitNode(this);
+    public ASTNode accept(IASTVisitor visitor) {
+        return switch (nodeType) {
+            case VAR_ID -> visitor.visitVarId(this);
+            case CONST_ID -> visitor.visitConstId(this);
+            case PARAM -> visitor.visitParam(this);
+            default -> visitor.visitDtype(this);
+        };
     }
 }

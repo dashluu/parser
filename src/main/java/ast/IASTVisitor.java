@@ -1,41 +1,47 @@
 package ast;
 
 public interface IASTVisitor {
-    void visitNode(ASTNode node);
+    ASTNode visitVarId(ASTNode node);
 
-    void visitLiteral(LiteralASTNode literalNode);
+    ASTNode visitConstId(ASTNode node);
 
-    void visitVarDecl(VarDeclASTNode varDeclNode);
+    ASTNode visitParam(ASTNode node);
 
-    void visitVarDef(VarDefASTNode varDefNode);
+    ASTNode visitDtype(ASTNode node);
 
-    void visitConstDecl(ConstDeclASTNode constDeclNode);
+    ASTNode visitLiteral(ASTNode node);
 
-    void visitConstDef(ConstDefASTNode constDefNode);
+    ASTNode visitVarDecl(ASTNode node);
 
-    void visitParamDecl(ParamDeclASTNode paramDeclNode);
+    ASTNode visitVarDef(ASTNode node);
 
-    void visitParamList(ParamListASTNode paramListNode);
+    ASTNode visitConstDecl(ASTNode node);
 
-    void visitUnOp(UnOpASTNode unOpASTNode);
+    ASTNode visitConstDef(ASTNode node);
 
-    void visitBinOp(BinOpASTNode binOpNode);
+    ASTNode visitParamDecl(ASTNode node);
 
-    void visitTypeAnn(TypeAnnASTNode typeAnnNode);
+    ASTNode visitParamList(ASTNode node);
 
-    void visitFunCall(FunCallASTNode funCallNode);
+    ASTNode visitUnOp(ASTNode node);
 
-    void visitFunDef(FunDefASTNode funDefNode);
+    ASTNode visitBinOp(ASTNode node);
 
-    void visitRet(RetASTNode retNode);
+    ASTNode visitTypeAnn(ASTNode node);
 
-    void visitScope(ScopeASTNode scopeNode);
+    ASTNode visitFunCall(ASTNode node);
 
-    void visitIf(IfASTNode ifNode);
+    ASTNode visitFunDef(ASTNode node);
 
-    void visitElif(ElifASTNode elifNode);
+    ASTNode visitRet(ASTNode node);
 
-    void visitElse(ElseASTNode elseNode);
+    ASTNode visitScope(ASTNode node);
 
-    void visitWhile(WhileASTNode whileNode);
+    ASTNode visitIf(ASTNode node);
+
+    ASTNode visitElif(ASTNode node);
+
+    ASTNode visitElse(ASTNode node);
+
+    ASTNode visitWhile(ASTNode node);
 }
