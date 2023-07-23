@@ -91,7 +91,7 @@ public class StmtParser {
             return ParseResult.err();
         } else if (sepResult.getStatus() == ParseStatus.FAIL) {
             // An empty expression is valid without a trailing ';'
-            return ParseErr.raise(new ErrMsg("Missing ';'", sepResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Missing ';'", sepResult.getFailTok()));
         }
 
         return stmtResult;

@@ -3,12 +3,7 @@ package parsers.module;
 import ast.ASTNode;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
-import parsers.utils.ParseErr;
-import parsers.utils.ParseResult;
-import parsers.utils.ParseStatus;
-import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
+import parsers.utils.*;
 
 import java.io.*;
 
@@ -34,8 +29,8 @@ public class ModuleMain {
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = moduleParser.parseModule(context);
             scopeStack.pop();
-            if (ParseErr.hasErr()) {
-                throw new SyntaxErr(ParseErr.getMsg());
+            if (context.hasErr()) {
+                throw new SyntaxErr(context.getErrMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode moduleNode = result.getData();
                 writer.write("{" + moduleNode.toJsonStr() + "}");

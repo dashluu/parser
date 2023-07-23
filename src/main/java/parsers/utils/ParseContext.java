@@ -1,5 +1,6 @@
 package parsers.utils;
 
+import exceptions.ErrMsg;
 import keywords.KeywordTable;
 import operators.OpTable;
 import types.TypeTable;
@@ -9,6 +10,7 @@ public class ParseContext {
     private TypeTable typeTable;
     private OpTable opTable;
     private KeywordTable kwTable;
+    private ErrMsg errMsg = null;
 
     private ParseContext() {
     }
@@ -50,5 +52,33 @@ public class ParseContext {
 
     public KeywordTable getKeywordTable() {
         return kwTable;
+    }
+
+    /**
+     * Updates the error message to the earliest one as possible and also returns an error signal.
+     *
+     * @param msg the error message.
+     * @param <E> type argument to the ParseResult object.
+     * @return a ParseResult object as an error signal.
+     */
+    public <E> ParseResult<E> raiseErr(ErrMsg msg) {
+        if (errMsg == null || errMsg.getRow() > msg.getRow() || errMsg.getCol() > msg.getCol()) {
+            // Updates the error to the earliest one as possible, that is, one with <= row and <= column
+            errMsg = msg;
+        }
+        return ParseResult.err();
+    }
+
+    /**
+     * Checks if there is an error during parsing.
+     *
+     * @return true if there is an error and false otherwise.
+     */
+    public boolean hasErr() {
+        return errMsg != null;
+    }
+
+    public ErrMsg getErrMsg() {
+        return errMsg;
     }
 }

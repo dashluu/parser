@@ -73,7 +73,7 @@ public class ScopeParser {
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Missing '}'", bracketResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Missing '}'", bracketResult.getFailTok()));
         }
 
         scopeStack.pop();

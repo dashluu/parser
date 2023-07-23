@@ -51,7 +51,7 @@ public class DeclParser {
         if (idResult.getStatus() == ParseStatus.ERR) {
             return idResult;
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected an identifier", idResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Expected an identifier", idResult.getFailTok()));
         }
 
         ASTNode idNode = idResult.getData();
@@ -78,7 +78,7 @@ public class DeclParser {
                 return semanChecker.checkSeman(lhsNode, context);
             }
             String id = lhsNode.getTok().getVal();
-            return ParseErr.raise(new ErrMsg("Cannot determine the data type of '" + id + "'",
+            return context.raiseErr(new ErrMsg("Cannot determine the data type of '" + id + "'",
                     asgnmtResult.getFailTok()));
         }
 
@@ -87,7 +87,7 @@ public class DeclParser {
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Invalid declaration expression", exprResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Invalid declaration expression", exprResult.getFailTok()));
         }
 
         BinASTNode asgnmtNode = (BinASTNode) asgnmtResult.getData();
@@ -163,7 +163,8 @@ public class DeclParser {
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected a data type for type annotation", dtypeResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Expected a data type for type annotation",
+                    dtypeResult.getFailTok()));
         }
 
         Tok typeAnnTok = typeAnnResult.getData();

@@ -45,7 +45,7 @@ public class FunHeadParser {
 
         if (context.getScope().getRetDtype() != null) {
             // Function is defined inside another function
-            return ParseErr.raise(new ErrMsg("A function definition cannot exist inside another function",
+            return context.raiseErr(new ErrMsg("A function definition cannot exist inside another function",
                     kwResult.getData()));
         }
 
@@ -54,7 +54,7 @@ public class FunHeadParser {
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Missing function's name", idResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Missing function's name", idResult.getFailTok()));
         }
 
         // Try parsing a parameter list
@@ -62,7 +62,7 @@ public class FunHeadParser {
         if (paramListResult.getStatus() == ParseStatus.ERR) {
             return paramListResult;
         } else if (paramListResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
         }
 
         // Try parsing a return type annotation
@@ -118,7 +118,7 @@ public class FunHeadParser {
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
-                        return ParseErr.raise(new ErrMsg("Missing ','", commaResult.getFailTok()));
+                        return context.raiseErr(new ErrMsg("Missing ','", commaResult.getFailTok()));
                     }
                 }
 
@@ -126,7 +126,7 @@ public class FunHeadParser {
                 if (paramResult.getStatus() == ParseStatus.ERR) {
                     return paramResult;
                 } else if (paramResult.getStatus() == ParseStatus.FAIL) {
-                    return ParseErr.raise(new ErrMsg("Invalid parameter", paramResult.getFailTok()));
+                    return context.raiseErr(new ErrMsg("Invalid parameter", paramResult.getFailTok()));
                 }
 
                 paramListNode.addChild(paramResult.getData());
@@ -158,7 +158,7 @@ public class FunHeadParser {
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
         } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Missing a data type for parameter '" + nameTok.getVal() + "'",
+            return context.raiseErr(new ErrMsg("Missing a data type for parameter '" + nameTok.getVal() + "'",
                     typeAnnResult.getFailTok()));
         }
 
@@ -188,7 +188,8 @@ public class FunHeadParser {
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Expected a data type for type annotation", dtypeResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Expected a data type for type annotation",
+                    dtypeResult.getFailTok()));
         }
 
         Tok typeAnnTok = typeAnnResult.getData();

@@ -71,7 +71,7 @@ public class ModuleParser {
             return moduleResult;
         } else if (moduleResult.getStatus() == ParseStatus.FAIL) {
             Tok errTok = moduleResult.getFailTok();
-            return ParseErr.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
+            return context.raiseErr(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
         }
 
         // Check if the end of stream is reached
@@ -79,11 +79,11 @@ public class ModuleParser {
         LexResult<Tok> lexResult = lexer.lookahead(context);
         if (lexResult.getStatus() != LexStatus.OK) {
             // Lexer always yields an OK or error status
-            return ParseErr.raise(lexResult.getErrMsg());
+            return context.raiseErr(lexResult.getErrMsg());
         } else {
             Tok errTok = lexResult.getData();
             if (errTok.getType() != TokType.EOS) {
-                return ParseErr.raise(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
+                return context.raiseErr(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
             }
         }
 

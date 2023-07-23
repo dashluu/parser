@@ -8,7 +8,6 @@ import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
 import parsers.utils.ParseContext;
-import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import symbols.ConstInfo;
@@ -98,7 +97,7 @@ public class DeclSemanChecker {
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getLocalSymbol(id);
         if (symbol != null) {
-            return ParseErr.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return context.raiseErr(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new symbol
@@ -120,7 +119,7 @@ public class DeclSemanChecker {
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = context.getTypeTable().getType(dtypeId);
         if (dtype == null) {
-            return ParseErr.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
+            return context.raiseErr(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
         }
         return ParseResult.ok(dtype);
     }
@@ -141,12 +140,12 @@ public class DeclSemanChecker {
 
         // Compare and check if the lhs and rhs have compatible types
         if (rhsDtype == null) {
-            return ParseErr.raise(new ErrMsg("No type detected on the right-hand side", asgmtTok));
+            return context.raiseErr(new ErrMsg("No type detected on the right-hand side", asgmtTok));
         } else if (lhsDtype != rhsDtype) {
             if (lhsDtype != null) {
                 OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
                 if (context.getOpTable().getCompatDtype(opCompat) == null) {
-                    return ParseErr.raise(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
+                    return context.raiseErr(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
                             "' to data of type '" + lhsDtype.id() + "'", asgmtTok));
                 }
             }

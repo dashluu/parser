@@ -35,8 +35,8 @@ public class ExprMain {
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = parser.parseExpr(context);
             scopeStack.pop();
-            if (ParseErr.hasErr()) {
-                throw new SyntaxErr(ParseErr.getMsg());
+            if (context.hasErr()) {
+                throw new SyntaxErr(context.getErrMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode exprNode = result.getData();
                 writer.write("{" + exprNode.toJsonStr() + "}");

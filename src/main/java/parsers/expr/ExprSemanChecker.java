@@ -6,7 +6,6 @@ import operators.BinOpCompat;
 import operators.OpCompat;
 import operators.UnOpCompat;
 import parsers.utils.ParseContext;
-import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import symbols.FunInfo;
@@ -92,7 +91,7 @@ public class ExprSemanChecker {
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(id);
         if (symbol == null) {
-            return ParseErr.raise(new ErrMsg("Invalid identifier '" + id + "'", idTok));
+            return context.raiseErr(new ErrMsg("Invalid identifier '" + id + "'", idTok));
         }
 
         switch (symbol.getSymbolType()) {
@@ -130,7 +129,7 @@ public class ExprSemanChecker {
         OpCompat opCompat = new UnOpCompat(opId, operandDtype);
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
-            return ParseErr.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
+            return context.raiseErr(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
                     operandDtype.id() + "'", opTok));
         }
 
@@ -166,7 +165,7 @@ public class ExprSemanChecker {
         // Check assignment if there is any
         ASTNodeType leftNodeType = leftNode.getNodeType();
         if (opId == TokType.ASSIGNMENT && leftNodeType != ASTNodeType.VAR_ID && leftNodeType != ASTNodeType.PARAM) {
-            return ParseErr.raise(new ErrMsg("Assignments are only valid for mutable identifiers", opTok));
+            return context.raiseErr(new ErrMsg("Assignments are only valid for mutable identifiers", opTok));
         }
 
         // Get the left and right node's data type
@@ -177,7 +176,7 @@ public class ExprSemanChecker {
         OpCompat opCompat = new BinOpCompat(opId, leftDtype, rightDtype);
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
-            return ParseErr.raise(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
+            return context.raiseErr(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
                     leftDtype.id() + "' and type '" + rightDtype.id() + "'", opTok));
         }
 
@@ -199,7 +198,7 @@ public class ExprSemanChecker {
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
         if (funInfo == null) {
-            return ParseErr.raise(new ErrMsg("Invalid function identifier '" + funId + "'", funIdTok));
+            return context.raiseErr(new ErrMsg("Invalid function identifier '" + funId + "'", funIdTok));
         }
 
         Iterator<TypeInfo> paramDtypesIter = funInfo.iterator();
@@ -214,7 +213,7 @@ public class ExprSemanChecker {
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
             } else if (!argNode.getDtype().equals(paramDtype)) {
-                return ParseErr.raise(new ErrMsg("Expected type '" + paramDtype.id() + "' for argument " + i,
+                return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.id() + "' for argument " + i,
                         argNode.getTok()));
             }
             ++i;
@@ -222,8 +221,8 @@ public class ExprSemanChecker {
 
         int numArgs = funInfo.countParams();
         if (i != numArgs) {
-            return ParseErr.raise(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " + i +
-                    " for function '" + funId + "'", funIdTok));
+            return context.raiseErr(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " +
+                    i + " for function '" + funId + "'", funIdTok));
         }
 
         funCallNode.setDtype(funInfo.getDtype());

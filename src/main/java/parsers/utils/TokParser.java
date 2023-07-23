@@ -31,7 +31,7 @@ public class TokParser {
     public ParseResult<Tok> parseTok(TokType tokType, ParseContext context) throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead(context);
         if (tokResult.getStatus() != LexStatus.OK) {
-            return ParseErr.raise(tokResult.getErrMsg());
+            return context.raiseErr(tokResult.getErrMsg());
         }
         Tok tok = tokResult.getData();
         if (tok.getType() != tokType) {

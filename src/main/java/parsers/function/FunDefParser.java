@@ -54,7 +54,7 @@ public class FunDefParser {
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Invalid body for function '" + funDefNode.getTok().getVal() + "'",
+            return context.raiseErr(new ErrMsg("Invalid body for function '" + funDefNode.getTok().getVal() + "'",
                     bodyResult.getFailTok()));
         }
 
@@ -63,7 +63,7 @@ public class FunDefParser {
         Tok idTok = funDefNode.getTok();
         if (!bodyNode.getRetFlag()) {
             if (retType != TypeTable.VOID) {
-                return ParseErr.raise(new ErrMsg("Missing a return statement in the function '" +
+                return context.raiseErr(new ErrMsg("Missing a return statement in the function '" +
                         idTok.getVal() + "'", idTok));
             } else {
                 // Add a dummy return if a return statement is missing and the return type is void

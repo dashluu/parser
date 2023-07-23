@@ -6,7 +6,6 @@ import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
 import operators.OpTable;
-import parsers.utils.ParseErr;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import parsers.utils.TokParser;
@@ -67,7 +66,7 @@ public class ExprParser {
     private ParseResult<ASTNode> parsePrefixOp() throws IOException {
         LexResult<Tok> opResult = lexer.lookahead(context);
         if (opResult.getStatus() != LexStatus.OK) {
-            return ParseErr.raise(opResult.getErrMsg());
+            return context.raiseErr(opResult.getErrMsg());
         }
 
         Tok opTok = opResult.getData();
@@ -89,7 +88,7 @@ public class ExprParser {
     private ParseResult<ASTNode> parsePostfixOp() throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead(context);
         if (tokResult.getStatus() != LexStatus.OK) {
-            return ParseErr.raise(tokResult.getErrMsg());
+            return context.raiseErr(tokResult.getErrMsg());
         }
 
         Tok opTok = tokResult.getData();
@@ -188,7 +187,7 @@ public class ExprParser {
                     if (sepResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (sepResult.getStatus() == ParseStatus.FAIL) {
-                        return ParseErr.raise(new ErrMsg("Missing ','", sepResult.getFailTok()));
+                        return context.raiseErr(new ErrMsg("Missing ','", sepResult.getFailTok()));
                     }
                 }
 
@@ -196,7 +195,7 @@ public class ExprParser {
                 if (argResult.getStatus() == ParseStatus.ERR) {
                     return argResult;
                 } else if (argResult.getStatus() == ParseStatus.FAIL) {
-                    return ParseErr.raise(new ErrMsg("Invalid argument expression", argResult.getFailTok()));
+                    return context.raiseErr(new ErrMsg("Invalid argument expression", argResult.getFailTok()));
                 }
 
                 funCallNode.addChild(argResult.getData());
@@ -216,7 +215,7 @@ public class ExprParser {
     private ParseResult<ASTNode> parseLiteral() throws IOException {
         LexResult<Tok> literalResult = lexer.lookahead(context);
         if (literalResult.getStatus() != LexStatus.OK) {
-            return ParseErr.raise(literalResult.getErrMsg());
+            return context.raiseErr(literalResult.getErrMsg());
         }
 
         Tok literalTok = literalResult.getData();
@@ -258,7 +257,7 @@ public class ExprParser {
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Missing ')'", parenResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Missing ')'", parenResult.getFailTok()));
         }
 
         return exprResult;
@@ -330,7 +329,7 @@ public class ExprParser {
                 return postfixResult;
             } else {
                 // There is at least one prefix operator but no postfix expression
-                return ParseErr.raise(new ErrMsg("Expected an expression following the prefix operator",
+                return context.raiseErr(new ErrMsg("Expected an expression following the prefix operator",
                         postfixResult.getFailTok()));
             }
         }
@@ -393,7 +392,7 @@ public class ExprParser {
     private ParseResult<Tok> parseInfixOp() throws IOException {
         LexResult<Tok> opResult = lexer.lookahead(context);
         if (opResult.getStatus() != LexStatus.OK) {
-            return ParseErr.raise(opResult.getErrMsg());
+            return context.raiseErr(opResult.getErrMsg());
         }
 
         Tok opTok = opResult.getData();
@@ -404,7 +403,7 @@ public class ExprParser {
         }
 
         if (!context.getOpTable().isInfixOp(opId)) {
-            return ParseErr.raise(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
+            return context.raiseErr(new ErrMsg("Invalid infix operator '" + opTok.getVal() + "'", opTok));
         }
 
         return ParseResult.ok(opTok);
@@ -451,7 +450,7 @@ public class ExprParser {
             if (rightStatus == ParseStatus.ERR) {
                 return rightResult;
             } else if (rightStatus == ParseStatus.FAIL) {
-                return ParseErr.raise(new ErrMsg("Invalid expression", rightResult.getFailTok()));
+                return context.raiseErr(new ErrMsg("Invalid expression", rightResult.getFailTok()));
             }
 
             binOpNode.setLeft(leftResult.getData());

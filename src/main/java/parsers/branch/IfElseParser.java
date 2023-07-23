@@ -76,7 +76,7 @@ public class IfElseParser extends CondBranchParser {
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
-            return ParseErr.raise(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
         }
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();

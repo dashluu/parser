@@ -70,7 +70,7 @@ public class FunHeadSemanChecker {
         String id = idTok.getVal();
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         if (symbolTable.getLocalSymbol(id) != null) {
-            return ParseErr.raise(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return context.raiseErr(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new function
@@ -121,7 +121,7 @@ public class FunHeadSemanChecker {
         String name = nameTok.getVal();
         SymbolTable symbolTable = paramScope.getSymbolTable();
         if (symbolTable.getLocalSymbol(name) != null) {
-            return ParseErr.raise(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
+            return context.raiseErr(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
         }
 
         // Check the parameter's data type
@@ -152,7 +152,7 @@ public class FunHeadSemanChecker {
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = context.getTypeTable().getType(dtypeId);
         if (dtype == null) {
-            return ParseErr.raise(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
+            return context.raiseErr(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
         }
         return ParseResult.ok(dtype);
     }

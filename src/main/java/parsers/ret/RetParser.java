@@ -47,7 +47,7 @@ public class RetParser {
         // Detect unexpected return statement in a non-function scope
         TypeInfo retType = context.getScope().getRetDtype();
         if (retType == null) {
-            return ParseErr.raise(new ErrMsg("Return statements can only exist inside a function",
+            return context.raiseErr(new ErrMsg("Return statements can only exist inside a function",
                     kwResult.getData()));
         }
 
@@ -57,7 +57,7 @@ public class RetParser {
             return exprResult;
         } else if (exprResult.getStatus() == ParseStatus.FAIL && !retType.equals(TypeTable.VOID)) {
             // When the status is "failed", that means an expression is missing
-            return ParseErr.raise(new ErrMsg("Invalid return expression", exprResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Invalid return expression", exprResult.getFailTok()));
         }
 
         ASTNode exprNode = null;
@@ -75,7 +75,7 @@ public class RetParser {
         Tok kwTok = kwResult.getData();
         RetASTNode retNode = new RetASTNode(kwTok, exprDtype);
         if (!retNode.getDtype().equals(retType)) {
-            return ParseErr.raise(new ErrMsg("Return type is not '" + retType.id() + "'", kwTok));
+            return context.raiseErr(new ErrMsg("Return type is not '" + retType.id() + "'", kwTok));
         }
 
         retNode.setChild(exprNode);
