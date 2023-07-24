@@ -16,6 +16,7 @@ import java.io.IOException;
 
 public abstract class CondBranchParser {
     protected TokParser tokParser;
+    protected SemiParser semiParser;
     protected ExprParser exprParser;
     protected ScopeParser scopeParser;
     protected ParseContext context;
@@ -24,11 +25,13 @@ public abstract class CondBranchParser {
      * Initializes the dependencies.
      *
      * @param tokParser   a parser that consumes valid tokens.
+     * @param semiParser  a parser that consumes trailing semicolons.
      * @param exprParser  an expression parser.
      * @param scopeParser a scope parser.
      */
-    public void init(TokParser tokParser, ExprParser exprParser, ScopeParser scopeParser) {
+    public void init(TokParser tokParser, SemiParser semiParser, ExprParser exprParser, ScopeParser scopeParser) {
         this.tokParser = tokParser;
+        this.semiParser = semiParser;
         this.exprParser = exprParser;
         this.scopeParser = scopeParser;
     }
@@ -38,11 +41,11 @@ public abstract class CondBranchParser {
      *
      * @param tokType the token type of the branch keyword.
      * @param context the parsing context.
-     * @param bodyOpt whether the body block is optional.
+     * @param isLoop  whether the branch is a loop.
      * @return a ParseResult object as the result of parsing the conditional branch block.
      * @throws IOException if there is an IO exception.
      */
-    protected ParseResult<ASTNode> parseBranch(TokType tokType, ParseContext context, boolean bodyOpt)
+    protected ParseResult<ASTNode> parseBranch(TokType tokType, ParseContext context, boolean isLoop)
             throws IOException {
         this.context = context;
         // Parse the condition
@@ -56,6 +59,7 @@ public abstract class CondBranchParser {
         BranchNode brNode = (BranchNode) condResult.getData();
         // Parse the body
         Scope bodyScope = new Scope(context.getScope());
+        bodyScope.setInLoop(isLoop);
         ScopeStack scopeStack = context.getScopeStack();
         scopeStack.push(bodyScope);
         ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
@@ -66,21 +70,14 @@ public abstract class CondBranchParser {
             brNode.setBodyNode(bodyNode);
             scopeStack.pop();
             return ParseResult.ok(brNode);
-        } else if (!bodyOpt) {
+        } else if (!isLoop) {
             return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
         }
 
         // Pop before returning as body block doesn't exist
         scopeStack.pop();
         // Check for trailing ';'
-        ParseResult<Tok> semiResult = tokParser.parseTok(TokType.SEMICOLON, context);
-        if (semiResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (semiResult.getStatus() == ParseStatus.FAIL) {
-            return context.raiseErr(new ErrMsg("Missing ';'", semiResult.getFailTok()));
-        }
-
-        return condResult;
+        return semiParser.parseSemi(condResult, context);
     }
 
     /**

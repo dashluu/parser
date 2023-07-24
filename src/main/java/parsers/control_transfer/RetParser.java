@@ -1,4 +1,4 @@
-package parsers.ret;
+package parsers.control_transfer;
 
 import ast.ASTNode;
 import ast.RetASTNode;
@@ -29,7 +29,7 @@ public class RetParser {
     }
 
     /**
-     * Attempts to parse a return statement using the given parsing information.
+     * Parses a return statement using the given parsing information.
      *
      * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a return statement.
