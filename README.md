@@ -54,10 +54,9 @@ There are several phases in the compilation process:
       type checking and resolving references to variables or functions.
 * **Code generation**:
     * Traverses the AST to generate intermediate representation(IR) code.
-    * Several ways, or possibilities, to process IR code:
+    * There are two possible ways to process IR code:
         * Build an interpreter to execute each instruction.
-        * Map IR code to LLVM IR.
-        * Map IR code to other representations, for example, WebAssembly.
+        * Map IR code to other representations such as LLVM IR or WebAssembly.
 
 ## Lexer
 
@@ -112,6 +111,15 @@ The grammar for parser is discussed in `parsers/Grammar.md`.
 
 ## Abstract Syntax Tree(AST)
 
+The code for AST is stored in the package `ast`.
+
+* AST nodes:
+    * Each node has a value, a node type, and a data type.
+    * `ASTNode`: the base class for other AST node classes.
+* AST traversal:
+    * `IASTVisitor`: an interface that uses the visitor pattern to traverse and process each node in the tree.
+    * `ASTWalker`: an implementation of `IASTVisitor` and the base class for the IR code generator.
+
 ## Other components
 
 ### Tables
@@ -152,3 +160,8 @@ several classes associated with type compatibilities:
 * **OpCompat**: the base class for operator compatibilities.
 * **BinOpCompat**: a class inherited from `OpCompat` that determines binary operator compatibilities.
 * **UnOpCompat**: a class inherited from `OpCompat` that determines unary operator compatibilities.
+
+## Other projects
+
+* An IR code generator [microIR](https://github.com/dashluu/microIR)
+* A demo web app that combines that parser with the IR generator [langtools](https://github.com/dashluu/langtools)
