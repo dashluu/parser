@@ -48,7 +48,7 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return parseSemicolon(stmtResult);
+            return parseSemi(stmtResult);
         }
 
         // Parse a return statement if failed
@@ -56,7 +56,7 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return parseSemicolon(stmtResult);
+            return parseSemi(stmtResult);
         }
 
         // Parse a expression
@@ -64,13 +64,13 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return parseSemicolon(stmtResult);
+            return parseSemi(stmtResult);
         }
 
-        ParseResult<Tok> sepResult = tokParser.parseTok(TokType.SEMICOLON, context);
-        if (sepResult.getStatus() == ParseStatus.ERR) {
+        ParseResult<Tok> semiResult = tokParser.parseTok(TokType.SEMICOLON, context);
+        if (semiResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (sepResult.getStatus() == ParseStatus.FAIL) {
+        } else if (semiResult.getStatus() == ParseStatus.FAIL) {
             return stmtResult;
         }
 
@@ -85,13 +85,13 @@ public class StmtParser {
      * @return a ParseResult object as the result of parsing a semicolon following a statement.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseSemicolon(ParseResult<ASTNode> stmtResult) throws IOException {
-        ParseResult<Tok> sepResult = tokParser.parseTok(TokType.SEMICOLON, context);
-        if (sepResult.getStatus() == ParseStatus.ERR) {
+    private ParseResult<ASTNode> parseSemi(ParseResult<ASTNode> stmtResult) throws IOException {
+        ParseResult<Tok> semiResult = tokParser.parseTok(TokType.SEMICOLON, context);
+        if (semiResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (sepResult.getStatus() == ParseStatus.FAIL) {
+        } else if (semiResult.getStatus() == ParseStatus.FAIL) {
             // An empty expression is valid without a trailing ';'
-            return context.raiseErr(new ErrMsg("Missing ';'", sepResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Missing ';'", semiResult.getFailTok()));
         }
 
         return stmtResult;
