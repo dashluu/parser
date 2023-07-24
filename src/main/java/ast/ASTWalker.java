@@ -132,6 +132,16 @@ public class ASTWalker implements IASTVisitor {
     }
 
     @Override
+    public ASTNode visitBreak(ASTNode node) {
+        return node;
+    }
+
+    @Override
+    public ASTNode visitCont(ASTNode node) {
+        return node;
+    }
+
+    @Override
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
         scopeNode.callbackOnChildren(nodeCallback);

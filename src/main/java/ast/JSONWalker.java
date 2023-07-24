@@ -265,6 +265,18 @@ public class JSONWalker implements IASTVisitor {
     }
 
     @Override
+    public ASTNode visitBreak(ASTNode node) {
+        nodeToJSON(node);
+        return node;
+    }
+
+    @Override
+    public ASTNode visitCont(ASTNode node) {
+        nodeToJSON(node);
+        return node;
+    }
+
+    @Override
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
         knaryNodeToJSON(scopeNode);

@@ -35,6 +35,10 @@ public interface IASTVisitor {
 
     ASTNode visitRet(ASTNode node);
 
+    ASTNode visitBreak(ASTNode node);
+
+    ASTNode visitCont(ASTNode node);
+
     ASTNode visitScope(ASTNode node);
 
     ASTNode visitIf(ASTNode node);
