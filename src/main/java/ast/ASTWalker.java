@@ -1,14 +1,14 @@
 package ast;
 
-public class ASTPostWalker implements IASTVisitor {
-    private record ASTNodeTransformer(ASTPostWalker walker) implements IASTNodeTransformer {
+public class ASTWalker implements IASTVisitor {
+    private record ASTNodeCallback(ASTWalker walker) implements IASTNodeCallback {
         @Override
-        public ASTNode transform(ASTNode node) {
+        public ASTNode run(ASTNode node) {
             return node.accept(walker);
         }
     }
 
-    private final ASTNodeTransformer transformer = new ASTNodeTransformer(this);
+    private final ASTNodeCallback nodeCallback = new ASTNodeCallback(this);
 
     @Override
     public ASTNode visitVarId(ASTNode node) {
@@ -73,7 +73,7 @@ public class ASTPostWalker implements IASTVisitor {
     @Override
     public ASTNode visitParamList(ASTNode node) {
         ParamListASTNode paramListNode = (ParamListASTNode) node;
-        paramListNode.transformChildren(transformer);
+        paramListNode.callbackOnChildren(nodeCallback);
         return node;
     }
 
@@ -106,7 +106,7 @@ public class ASTPostWalker implements IASTVisitor {
     @Override
     public ASTNode visitFunCall(ASTNode node) {
         FunCallASTNode funCallNode = (FunCallASTNode) node;
-        funCallNode.transformChildren(transformer);
+        funCallNode.callbackOnChildren(nodeCallback);
         return node;
     }
 
@@ -134,7 +134,7 @@ public class ASTPostWalker implements IASTVisitor {
     @Override
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
-        scopeNode.transformChildren(transformer);
+        scopeNode.callbackOnChildren(nodeCallback);
         return node;
     }
 

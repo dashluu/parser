@@ -1,6 +1,7 @@
 package parsers.expr;
 
 import ast.ASTNode;
+import ast.JSONWalker;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.utils.*;
@@ -39,7 +40,8 @@ public class ExprMain {
                 throw new SyntaxErr(context.getErrMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode exprNode = result.getData();
-                writer.write("{" + exprNode.toJsonStr() + "}");
+                JSONWalker walker = new JSONWalker();
+                writer.write(walker.getJSON(exprNode));
             }
 
             reader.close();

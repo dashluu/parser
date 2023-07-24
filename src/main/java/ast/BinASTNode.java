@@ -28,11 +28,4 @@ public class BinASTNode extends ASTNode {
     public void setRight(ASTNode right) {
         this.right = right;
     }
-
-    @Override
-    public String toJsonStr() {
-        return super.toJsonStr() +
-                ",\"Left\":" + (left == null ? "\"null\"" : "{" + left.toJsonStr() + "}") +
-                ",\"Right\":" + (right == null ? "\"null\"" : "{" + right.toJsonStr() + "}");
-    }
 }

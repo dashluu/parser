@@ -44,31 +44,16 @@ public class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
     }
 
     /**
-     * Transforms each child and sets each transformed node as a new child.
+     * Executes callback on each child and sets the resulting node as a new child.
      *
-     * @param transformer an object that performs the transformation.
+     * @param nodeCallback an object that performs the callback.
      */
-    public void transformChildren(IASTNodeTransformer transformer) {
+    public void callbackOnChildren(IASTNodeCallback nodeCallback) {
         ASTNode node;
         for (int i = 0; i < children.size(); ++i) {
-            node = transformer.transform(children.get(i));
+            node = nodeCallback.run(children.get(i));
             children.set(i, node);
         }
-    }
-
-    @Override
-    public String toJsonStr() {
-        StringBuilder jsonStr = new StringBuilder(super.toJsonStr() + ",\"Children\":[");
-        boolean isFirst = true;
-        for (ASTNode child : children) {
-            if (!isFirst) {
-                jsonStr.append(",");
-            }
-            isFirst = false;
-            jsonStr.append("{").append(child.toJsonStr()).append("}");
-        }
-        jsonStr.append("]");
-        return jsonStr.toString();
     }
 
     @Override

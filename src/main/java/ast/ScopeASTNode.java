@@ -18,11 +18,6 @@ public class ScopeASTNode extends KnaryASTNode {
     }
 
     @Override
-    public String toJsonStr() {
-        return super.toJsonStr() + ",\"Return flag\":\"" + retFlag + "\"";
-    }
-
-    @Override
     public ASTNode accept(IASTVisitor visitor) {
         return visitor.visitScope(this);
     }

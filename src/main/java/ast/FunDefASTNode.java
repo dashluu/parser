@@ -31,13 +31,6 @@ public class FunDefASTNode extends ASTNode {
     }
 
     @Override
-    public String toJsonStr() {
-        return super.toJsonStr() +
-                ",\"Param list\":" + (paramListNode == null ? "\"null\"" : "{" + paramListNode.toJsonStr() + "}") +
-                ",\"Body\":" + (bodyNode == null ? "\"null\"" : "{" + bodyNode.toJsonStr() + "}");
-    }
-
-    @Override
     public ASTNode accept(IASTVisitor visitor) {
         return visitor.visitFunDef(this);
     }

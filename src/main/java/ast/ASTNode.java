@@ -38,13 +38,6 @@ public class ASTNode {
         this.dtype = dtype;
     }
 
-    public String toJsonStr() {
-        return "\"Node type\":\"" + (nodeType == null ? "null" : nodeType) + "\"" +
-                ",\"Value\":\"" + (tok == null ? "null" : tok.getVal()) + "\"" +
-                ",\"Data type\":\"" + (dtype == null ? "null" : dtype.id()) + "\"" +
-                ",\"Size\":\"" + (dtype == null ? "0" : dtype.size()) + "\"";
-    }
-
     public ASTNode accept(IASTVisitor visitor) {
         return switch (nodeType) {
             case VAR_ID -> visitor.visitVarId(this);

@@ -19,9 +19,4 @@ public class UnASTNode extends ASTNode {
     public void setChild(ASTNode child) {
         this.child = child;
     }
-
-    @Override
-    public String toJsonStr() {
-        return super.toJsonStr() + ",\"Child\":" + (child == null ? "\"null\"" : "{" + child.toJsonStr() + "}");
-    }
 }

@@ -1,6 +1,7 @@
 package parsers.decl;
 
 import ast.ASTNode;
+import ast.JSONWalker;
 import exceptions.SyntaxErr;
 import lexers.Lexer;
 import parsers.expr.ExprParser;
@@ -44,7 +45,8 @@ public class DeclMain {
                 throw new SyntaxErr(context.getErrMsg());
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode declNode = result.getData();
-                writer.write("{" + declNode.toJsonStr() + "}");
+                JSONWalker walker = new JSONWalker();
+                writer.write(walker.getJSON(declNode));
             }
 
             reader.close();

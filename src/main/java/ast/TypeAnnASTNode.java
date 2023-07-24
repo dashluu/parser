@@ -31,11 +31,4 @@ public class TypeAnnASTNode extends ASTNode {
     public ASTNode accept(IASTVisitor visitor) {
         return visitor.visitTypeAnn(this);
     }
-
-    @Override
-    public String toJsonStr() {
-        return super.toJsonStr() +
-                ",\"Left\":" + (left == null ? "\"null\"" : "{" + left.toJsonStr() + "}") +
-                ",\"Data type node\":" + (dtypeNode == null ? "\"null\"" : "{" + dtypeNode.toJsonStr() + "}");
-    }
 }
