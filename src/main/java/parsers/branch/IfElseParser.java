@@ -23,7 +23,7 @@ public class IfElseParser extends CondBranchParser {
      */
     public ParseResult<ASTNode> parseIfElse(ScopeASTNode brScopeNode, ParseContext context) throws IOException {
         this.context = context;
-        ParseResult<ASTNode> result = parseBranch(TokType.IF, context);
+        ParseResult<ASTNode> result = parseBranch(TokType.IF, context, false);
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.FAIL) {
             return result;
         }
@@ -32,7 +32,7 @@ public class IfElseParser extends CondBranchParser {
         boolean end = false;
 
         do {
-            result = parseBranch(TokType.ELIF, context);
+            result = parseBranch(TokType.ELIF, context, false);
             if (result.getStatus() == ParseStatus.ERR) {
                 return result;
             } else if (result.getStatus() == ParseStatus.OK) {

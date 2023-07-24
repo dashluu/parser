@@ -38,10 +38,12 @@ public abstract class CondBranchParser {
      *
      * @param tokType the token type of the branch keyword.
      * @param context the parsing context.
+     * @param bodyOpt whether the body block is optional.
      * @return a ParseResult object as the result of parsing the conditional branch block.
      * @throws IOException if there is an IO exception.
      */
-    protected ParseResult<ASTNode> parseBranch(TokType tokType, ParseContext context) throws IOException {
+    protected ParseResult<ASTNode> parseBranch(TokType tokType, ParseContext context, boolean bodyOpt)
+            throws IOException {
         this.context = context;
         // Parse the condition
         ParseResult<ASTNode> condResult = parseCond(tokType);
@@ -59,14 +61,26 @@ public abstract class CondBranchParser {
         ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
-        } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
+        } else if (bodyResult.getStatus() == ParseStatus.OK) {
+            ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
+            brNode.setBodyNode(bodyNode);
+            scopeStack.pop();
+            return ParseResult.ok(brNode);
+        } else if (!bodyOpt) {
             return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
         }
 
-        ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
-        brNode.setBodyNode(bodyNode);
+        // Pop before returning as body block doesn't exist
         scopeStack.pop();
-        return ParseResult.ok(brNode);
+        // Check for trailing ';'
+        ParseResult<Tok> semiResult = tokParser.parseTok(TokType.SEMICOLON, context);
+        if (semiResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        } else if (semiResult.getStatus() == ParseStatus.FAIL) {
+            return context.raiseErr(new ErrMsg("Missing ';'", semiResult.getFailTok()));
+        }
+
+        return condResult;
     }
 
     /**

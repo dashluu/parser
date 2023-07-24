@@ -16,6 +16,6 @@ public class WhileParser extends CondBranchParser {
      * @throws IOException if there is an IO exception.
      */
     public ParseResult<ASTNode> parseWhile(ParseContext context) throws IOException {
-        return parseBranch(TokType.WHILE, context);
+        return parseBranch(TokType.WHILE, context, true);
     }
 }
