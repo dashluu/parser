@@ -115,7 +115,7 @@ public class JSONWalker implements IASTVisitor {
         nodeToJSON(knaryNode);
         jsonStrBuff.append(",\"Children\":[");
         ASTNodeCallback nodeCallback = new ASTNodeCallback(this);
-        knaryNode.callbackOnChildren(nodeCallback);
+        knaryNode.runOnChildren(nodeCallback);
         jsonStrBuff.append("]");
     }
 

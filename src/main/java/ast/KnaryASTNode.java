@@ -48,7 +48,7 @@ public class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
      *
      * @param nodeCallback an object that performs the callback.
      */
-    public void callbackOnChildren(IASTNodeCallback nodeCallback) {
+    public void runOnChildren(IASTNodeCallback nodeCallback) {
         ASTNode node;
         for (int i = 0; i < children.size(); ++i) {
             node = nodeCallback.run(children.get(i));
