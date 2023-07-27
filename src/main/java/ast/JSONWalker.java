@@ -280,9 +280,6 @@ public class JSONWalker implements IASTVisitor {
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
         knaryNodeToJSON(scopeNode);
-        jsonStrBuff.append(",\"Return flag\":\"");
-        jsonStrBuff.append(scopeNode.getRetFlag());
-        jsonStrBuff.append("\"");
         return node;
     }
 

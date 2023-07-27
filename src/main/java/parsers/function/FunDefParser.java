@@ -1,17 +1,13 @@
 package parsers.function;
 
-import ast.*;
+import ast.ASTNode;
+import ast.FunDefASTNode;
+import ast.ScopeASTNode;
+import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
-import keywords.KeywordTable;
 import parsers.scope.ScopeParser;
 import parsers.utils.*;
-import toks.Tok;
-import toks.TokType;
 import types.TypeInfo;
-import types.TypeTable;
-import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
 
 import java.io.IOException;
 
@@ -58,21 +54,7 @@ public class FunDefParser {
                     bodyResult.getFailTok()));
         }
 
-        // Check if a return statement is missing, this is only valid if the return type is void
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
-        Tok idTok = funDefNode.getTok();
-        if (!bodyNode.getRetFlag()) {
-            if (retType != TypeTable.VOID) {
-                return context.raiseErr(new ErrMsg("Missing a return statement in the function '" +
-                        idTok.getVal() + "'", idTok));
-            } else {
-                // Add a dummy return if a return statement is missing and the return type is void
-                Tok retTok = new Tok(KeywordTable.RET, TokType.RET);
-                RetASTNode retNode = new RetASTNode(retTok, TypeTable.VOID);
-                bodyNode.addChild(retNode);
-            }
-        }
-
         funDefNode.setBodyNode(bodyNode);
         // Pop body's scope
         scopeStack.pop();

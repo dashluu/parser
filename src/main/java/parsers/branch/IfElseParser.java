@@ -28,9 +28,7 @@ public class IfElseParser extends CondBranchParser {
 
         // Create an if-else node to hold if-else sequence
         IfElseASTNode ifElseNode = new IfElseASTNode(result.getData().getTok());
-        IfASTNode ifNode = (IfASTNode) result.getData();
-        ifElseNode.addChild(ifNode);
-        ifElseNode.setRetFlag(ifElseNode.getRetFlag() && ifNode.getRetFlag());
+        ifElseNode.addChild(result.getData());
         boolean end = false;
 
         do {
@@ -38,17 +36,13 @@ public class IfElseParser extends CondBranchParser {
             if (result.getStatus() == ParseStatus.ERR) {
                 return result;
             } else if (result.getStatus() == ParseStatus.OK) {
-                ifNode = (IfASTNode) result.getData();
-                ifElseNode.addChild(ifNode);
-                ifElseNode.setRetFlag(ifElseNode.getRetFlag() && ifNode.getRetFlag());
+                ifElseNode.addChild(result.getData());
             } else {
                 result = parseElse();
                 if (result.getStatus() == ParseStatus.ERR) {
                     return result;
                 } else if (!(end = result.getStatus() == ParseStatus.FAIL)) {
-                    ElseASTNode elseNode = (ElseASTNode) result.getData();
-                    ifElseNode.addChild(elseNode);
-                    ifElseNode.setRetFlag(ifElseNode.getRetFlag() && elseNode.getRetFlag());
+                    ifElseNode.addChild(result.getData());
                 }
             }
         } while (!end);
@@ -85,7 +79,6 @@ public class IfElseParser extends CondBranchParser {
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         elseNode.setBodyNode(bodyNode);
-        elseNode.setRetFlag(bodyNode.getRetFlag());
         scopeStack.pop();
         return ParseResult.ok(elseNode);
     }

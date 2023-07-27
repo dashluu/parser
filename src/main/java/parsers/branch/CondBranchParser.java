@@ -76,7 +76,6 @@ public abstract class CondBranchParser {
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         brNode.setBodyNode(bodyNode);
-        brNode.setRetFlag(bodyNode.getRetFlag());
         scopeStack.pop();
         return ParseResult.ok(brNode);
     }

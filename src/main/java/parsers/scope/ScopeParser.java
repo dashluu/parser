@@ -88,10 +88,6 @@ public class ScopeParser {
     public ParseResult<ASTNode> parseScope(ParseContext context) throws IOException {
         ParseStatus status;
         ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult, whileResult;
-        ASTNode stmtNode, funDefNode;
-        IfElseASTNode ifElseNode;
-        WhileASTNode whileNode;
-        ScopeASTNode blockNode;
         ScopeASTNode scopeNode = new ScopeASTNode();
         boolean end = false;
 
@@ -102,8 +98,7 @@ public class ScopeParser {
             if (status == ParseStatus.ERR) {
                 return funDefResult;
             } else if (!(end = status == ParseStatus.FAIL)) {
-                funDefNode = funDefResult.getData();
-                scopeNode.addChild(funDefNode);
+                scopeNode.addChild(funDefResult.getData());
             }
 
             if (end) {
@@ -114,9 +109,7 @@ public class ScopeParser {
                 if (status == ParseStatus.ERR) {
                     return ifElseResult;
                 } else if (!(end = status == ParseStatus.FAIL)) {
-                    ifElseNode = (IfElseASTNode) ifElseResult.getData();
-                    scopeNode.addChild(ifElseNode);
-                    scopeNode.setRetFlag(scopeNode.getRetFlag() || ifElseNode.getRetFlag());
+                    scopeNode.addChild(ifElseResult.getData());
                 }
             }
 
@@ -127,9 +120,7 @@ public class ScopeParser {
                 if (status == ParseStatus.ERR) {
                     return whileResult;
                 } else if (!(end = status == ParseStatus.FAIL)) {
-                    whileNode = (WhileASTNode) whileResult.getData();
-                    scopeNode.addChild(whileNode);
-                    scopeNode.setRetFlag(scopeNode.getRetFlag() || whileNode.getRetFlag());
+                    scopeNode.addChild(whileResult.getData());
                 }
             }
 
@@ -140,9 +131,7 @@ public class ScopeParser {
                 if (status == ParseStatus.ERR) {
                     return blockResult;
                 } else if (!(end = status == ParseStatus.FAIL)) {
-                    blockNode = (ScopeASTNode) blockResult.getData();
-                    scopeNode.addChild(blockNode);
-                    scopeNode.setRetFlag(scopeNode.getRetFlag() || blockNode.getRetFlag());
+                    scopeNode.addChild(blockResult.getData());
                 }
             }
 
@@ -153,15 +142,7 @@ public class ScopeParser {
                 if (status == ParseStatus.ERR) {
                     return stmtResult;
                 } else if (status != ParseStatus.EMPTY && !(end = status == ParseStatus.FAIL)) {
-                    stmtNode = stmtResult.getData();
-                    // Ignore statements following a return statement
-                    if (!scopeNode.getRetFlag()) {
-                        scopeNode.addChild(stmtNode);
-                        if (stmtNode.getNodeType() == ASTNodeType.RET) {
-                            // The scope has a return statement
-                            scopeNode.setRetFlag(true);
-                        }
-                    }
+                    scopeNode.addChild(stmtResult.getData());
                 }
             }
 
