@@ -41,9 +41,9 @@ public interface IASTVisitor {
 
     ASTNode visitScope(ASTNode node);
 
-    ASTNode visitIf(ASTNode node);
+    ASTNode visitIfElse(ASTNode node);
 
-    ASTNode visitElif(ASTNode node);
+    ASTNode visitIf(ASTNode node);
 
     ASTNode visitElse(ASTNode node);
 

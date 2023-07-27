@@ -48,10 +48,10 @@ public class KeywordTable {
     }
 
     /**
-     * Gets the keyword's id associated with the given string.
+     * Gets the keyword's identifier associated with the given string.
      *
      * @param kwStr a string associated with a keyword.
-     * @return a TokType object as the keyword's id if it exists, otherwise, return null.
+     * @return a TokType object as the keyword's identifier if it exists, otherwise, return null.
      */
     public TokType getId(String kwStr) {
         return kwMap.get(kwStr);

@@ -46,10 +46,10 @@ public class TypeTable {
     }
 
     /**
-     * Gets the data type associated with the given id.
+     * Gets the data type associated with the given identifier.
      *
-     * @param id id of the type.
-     * @return a TypeInfo object associated with the given id.
+     * @param id identifier of the type.
+     * @return a TypeInfo object associated with the given identifier.
      */
     public TypeInfo getType(String id) {
         return strToType.get(id);

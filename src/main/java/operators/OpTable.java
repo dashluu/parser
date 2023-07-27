@@ -230,10 +230,10 @@ public class OpTable {
     }
 
     /**
-     * Gets the operator's id associated with the given string.
+     * Gets the operator's identifier associated with the given string.
      *
      * @param opStr a string associated with an operator.
-     * @return a TokType object as the operator's id if it exists, otherwise, return null.
+     * @return a TokType object as the operator's identifier if it exists, otherwise, return null.
      */
     public TokType getId(String opStr) {
         return opMap.get(opStr);
@@ -242,7 +242,7 @@ public class OpTable {
     /**
      * Checks if a token is a prefix operator.
      *
-     * @param id operator's id.
+     * @param id operator's identifier.
      * @return true if the token is a prefix operator and false otherwise.
      */
     public boolean isPrefixOp(TokType id) {
@@ -252,7 +252,7 @@ public class OpTable {
     /**
      * Checks if a token is an infix operator.
      *
-     * @param id operator's id.
+     * @param id operator's identifier.
      * @return true if the token is an infix operator and false otherwise.
      */
     public boolean isInfixOp(TokType id) {
@@ -262,7 +262,7 @@ public class OpTable {
     /**
      * Checks if a token is a postfix operator.
      *
-     * @param id operator's id.
+     * @param id operator's identifier.
      * @return true if the token is a postfix operator and false otherwise.
      */
     public boolean isPostfixOp(TokType id) {
@@ -272,7 +272,7 @@ public class OpTable {
     /**
      * Gets the precedence of the given operator.
      *
-     * @param id operator's id.
+     * @param id operator's identifier.
      * @return an int value representing the operator precedence.
      */
     public int getPreced(TokType id) {
@@ -283,7 +283,7 @@ public class OpTable {
     /**
      * Gets the associativity of the given operator.
      *
-     * @param id operator's id.
+     * @param id operator's identifier.
      * @return true if the operator left-to-right, otherwise, return false.
      */
     public boolean getAssociativity(TokType id) {
@@ -293,8 +293,8 @@ public class OpTable {
     /**
      * Compares the precedences of two operators.
      *
-     * @param id1 the first operator's id.
-     * @param id2 the second operator's id.
+     * @param id1 the first operator's identifier.
+     * @param id2 the second operator's identifier.
      * @return 1 if the first operator has higher priority, otherwise, return -1.
      */
     public int cmpPreced(TokType id1, TokType id2) {

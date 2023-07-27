@@ -287,16 +287,16 @@ public class JSONWalker implements IASTVisitor {
     }
 
     @Override
-    public ASTNode visitIf(ASTNode node) {
-        IfASTNode ifNode = (IfASTNode) node;
-        brNodeToJSON(ifNode);
+    public ASTNode visitIfElse(ASTNode node) {
+        IfElseASTNode ifElseNode = (IfElseASTNode) node;
+        knaryNodeToJSON(ifElseNode);
         return node;
     }
 
     @Override
-    public ASTNode visitElif(ASTNode node) {
-        ElifASTNode elifNode = (ElifASTNode) node;
-        brNodeToJSON(elifNode);
+    public ASTNode visitIf(ASTNode node) {
+        IfASTNode ifNode = (IfASTNode) node;
+        brNodeToJSON(ifNode);
         return node;
     }
 

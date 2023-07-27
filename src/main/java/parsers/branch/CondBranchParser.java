@@ -65,19 +65,20 @@ public abstract class CondBranchParser {
         ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
-        } else if (bodyResult.getStatus() == ParseStatus.OK) {
-            ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
-            brNode.setBodyNode(bodyNode);
+        } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
+            if (!isLoop) {
+                return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
+            }
             scopeStack.pop();
-            return ParseResult.ok(brNode);
-        } else if (!isLoop) {
-            return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
+            // Check for trailing ';'
+            return semiParser.parseSemi(condResult, context);
         }
 
-        // Pop before returning as body block doesn't exist
+        ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
+        brNode.setBodyNode(bodyNode);
+        brNode.setRetFlag(bodyNode.getRetFlag());
         scopeStack.pop();
-        // Check for trailing ';'
-        return semiParser.parseSemi(condResult, context);
+        return ParseResult.ok(brNode);
     }
 
     /**
@@ -129,8 +130,7 @@ public abstract class CondBranchParser {
 
         Tok kwTok = kwResult.getData();
         BranchNode brNode = switch (tokType) {
-            case IF -> new IfASTNode(kwTok);
-            case ELIF -> new ElifASTNode(kwTok);
+            case IF, ELIF -> new IfASTNode(kwTok);
             default -> new WhileASTNode(kwTok);
         };
         brNode.setCondNode(exprNode);

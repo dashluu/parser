@@ -37,8 +37,6 @@ public class ModuleMain {
                 JSONWalker walker = new JSONWalker();
                 writer.write(walker.getJSON(moduleNode));
             }
-            reader.close();
-            writer.close();
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
         } finally {

@@ -43,9 +43,6 @@ public class ExprMain {
                 JSONWalker walker = new JSONWalker();
                 writer.write(walker.getJSON(exprNode));
             }
-
-            reader.close();
-            writer.close();
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
         } finally {

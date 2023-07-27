@@ -1,8 +1,6 @@
 package parsers.scope;
 
-import ast.ASTNode;
-import ast.ASTNodeType;
-import ast.ScopeASTNode;
+import ast.*;
 import exceptions.ErrMsg;
 import parsers.branch.IfElseParser;
 import parsers.branch.WhileParser;
@@ -90,7 +88,9 @@ public class ScopeParser {
     public ParseResult<ASTNode> parseScope(ParseContext context) throws IOException {
         ParseStatus status;
         ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult, whileResult;
-        ASTNode stmtNode, funDefNode, whileNode;
+        ASTNode stmtNode, funDefNode;
+        IfElseASTNode ifElseNode;
+        WhileASTNode whileNode;
         ScopeASTNode blockNode;
         ScopeASTNode scopeNode = new ScopeASTNode();
         boolean end = false;
@@ -109,12 +109,15 @@ public class ScopeParser {
             if (end) {
                 // Try parsing a sequence of if-elif-else blocks
                 // The blocks are added to the scope if successful
-                ifElseResult = ifElseParser.parseIfElse(scopeNode, context);
+                ifElseResult = ifElseParser.parseIfElse(context);
                 status = ifElseResult.getStatus();
                 if (status == ParseStatus.ERR) {
                     return ifElseResult;
+                } else if (!(end = status == ParseStatus.FAIL)) {
+                    ifElseNode = (IfElseASTNode) ifElseResult.getData();
+                    scopeNode.addChild(ifElseNode);
+                    scopeNode.setRetFlag(scopeNode.getRetFlag() || ifElseNode.getRetFlag());
                 }
-                end = status == ParseStatus.FAIL;
             }
 
             if (end) {
@@ -124,8 +127,9 @@ public class ScopeParser {
                 if (status == ParseStatus.ERR) {
                     return whileResult;
                 } else if (!(end = status == ParseStatus.FAIL)) {
-                    whileNode = whileResult.getData();
+                    whileNode = (WhileASTNode) whileResult.getData();
                     scopeNode.addChild(whileNode);
+                    scopeNode.setRetFlag(scopeNode.getRetFlag() || whileNode.getRetFlag());
                 }
             }
 
