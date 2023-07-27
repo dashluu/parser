@@ -118,7 +118,9 @@ The code for AST is stored in the package `ast`.
     * `ASTNode`: the base class for other AST node classes.
 * AST traversal:
     * `IASTVisitor`: an interface that uses the visitor pattern to traverse and process each node in the tree.
-    * `ASTWalker`: an implementation of `IASTVisitor` and the base class for the IR code generator.
+    * `IASTNodeCallback`: an interface that is used to run a callback function on each child node of AST nodes with
+      multiple children such as `KnaryASTNode`.
+    * `JSONWalker`: an implementation of `IASTVisitor` that displays the AST using JSON.
 
 ## Other components
 
