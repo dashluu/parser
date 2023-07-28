@@ -53,6 +53,17 @@ public class Lexer {
     }
 
     /**
+     * Skips the leading whitespaces and a trailing comment if there is any.
+     *
+     * @throws IOException if the read operation causes an IO error.
+     */
+    private void skipComment() throws IOException {
+        reader.skipSpaces();
+        reader.skipSinglelineComment();
+        reader.skipMultilineComment();
+    }
+
+    /**
      * Looks ahead to the next token without removing it from the stream.
      *
      * @param context the parsing context.
@@ -64,7 +75,7 @@ public class Lexer {
         if (!tokBuff.isEmpty()) {
             return LexResult.ok(tokBuff.peekFirst());
         }
-        // Skip the white spaces
+        skipComment();
         reader.skipSpaces();
         // Check if the token is EOF
         Tok tok;

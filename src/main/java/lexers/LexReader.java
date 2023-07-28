@@ -87,6 +87,57 @@ public class LexReader {
     }
 
     /**
+     * Skips a single-line comment, that is, until a newline character is encountered.
+     *
+     * @throws IOException if the read operation causes an IO error.
+     */
+    public void skipSinglelineComment() throws IOException {
+        int c;
+        if ((c = peek()) == LexReader.EOS || c != '/') {
+            return;
+        }
+
+        read();
+        if ((c = peek()) == LexReader.EOS || c != '/') {
+            putBack("/");
+            return;
+        }
+
+        read();
+        while ((c = read()) != LexReader.EOS && c != '\n') ;
+    }
+
+    /**
+     * Skips a multiline comment.
+     *
+     * @throws IOException if the read operation causes an IO error.
+     */
+    public void skipMultilineComment() throws IOException {
+        int c;
+        if ((c = peek()) == LexReader.EOS || c != '/') {
+            return;
+        }
+
+        read();
+        if ((c = peek()) == LexReader.EOS || c != '*') {
+            putBack("/");
+            return;
+        }
+
+        read();
+        boolean end = false;
+
+        while (!end) {
+            c = read();
+            end = c == LexReader.EOS;
+            if (!end && c == '*') {
+                c = read();
+                end = c == LexReader.EOS || c == '/';
+            }
+        }
+    }
+
+    /**
      * Peeks without extracting a character from the internal buffer. If the internal buffer is empty, read a character
      * from the stream into the buffer.
      *
