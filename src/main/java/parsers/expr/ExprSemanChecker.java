@@ -130,7 +130,7 @@ public class ExprSemanChecker {
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
             return context.raiseErr(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
-                    operandDtype.id() + "'", opTok));
+                    operandDtype.getId() + "'", opTok));
         }
 
         // Set the current node's data type to that of the result
@@ -177,7 +177,7 @@ public class ExprSemanChecker {
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
             return context.raiseErr(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
-                    leftDtype.id() + "' and type '" + rightDtype.id() + "'", opTok));
+                    leftDtype.getId() + "' and type '" + rightDtype.getId() + "'", opTok));
         }
 
         // Set the current node's data type to that of the result
@@ -213,7 +213,7 @@ public class ExprSemanChecker {
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
             } else if (!argNode.getDtype().equals(paramDtype)) {
-                return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.id() + "' for argument " + i,
+                return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.getId() + "' for argument " + i,
                         argNode.getTok()));
             }
             ++i;

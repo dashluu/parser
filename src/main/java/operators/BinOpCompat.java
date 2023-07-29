@@ -24,7 +24,7 @@ public class BinOpCompat extends OpCompat {
 
     @Override
     public int hashCode() {
-        String hashStr = id + leftDtype.id() + rightDtype.id();
+        String hashStr = id + leftDtype.getId() + rightDtype.getId();
         return hashStr.hashCode();
     }
 

@@ -41,8 +41,8 @@ public class JSONWalker implements IASTVisitor {
         TypeInfo dtype = node.getDtype();
         jsonStrBuff.append("\"Node type\":\"").append(nodeType == null ? "null" : nodeType).append("\"")
                 .append(",\"Value\":\"").append(tok == null ? "null" : tok.getVal()).append("\"")
-                .append(",\"Data type\":\"").append(dtype == null ? "null" : dtype.id()).append("\"")
-                .append(",\"Size\":\"").append(dtype == null ? "0" : dtype.size()).append("\"");
+                .append(",\"Data type\":\"").append(dtype == null ? "null" : dtype.getId()).append("\"")
+                .append(",\"Size\":\"").append(dtype == null ? "0" : dtype.getSize()).append("\"");
     }
 
     private void unNodeToJSON(UnASTNode unNode) {

@@ -18,7 +18,7 @@ public class UnOpCompat extends OpCompat {
 
     @Override
     public int hashCode() {
-        String hashStr = id + dtype.id();
+        String hashStr = id + dtype.getId();
         return hashStr.hashCode();
     }
 

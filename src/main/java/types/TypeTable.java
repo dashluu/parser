@@ -42,7 +42,7 @@ public class TypeTable {
      * @param dtype TypeInfo object that carries type data.
      */
     public void registerType(TypeInfo dtype) {
-        strToType.put(dtype.id(), dtype);
+        strToType.put(dtype.getId(), dtype);
     }
 
     /**

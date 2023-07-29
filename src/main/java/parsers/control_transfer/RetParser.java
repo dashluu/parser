@@ -75,7 +75,7 @@ public class RetParser {
         Tok kwTok = kwResult.getData();
         RetASTNode retNode = new RetASTNode(kwTok, exprDtype);
         if (!retNode.getDtype().equals(retType)) {
-            return context.raiseErr(new ErrMsg("Return type is not '" + retType.id() + "'", kwTok));
+            return context.raiseErr(new ErrMsg("Return type is not '" + retType.getId() + "'", kwTok));
         }
 
         retNode.setChild(exprNode);

@@ -208,7 +208,7 @@ public class FunHeadParser {
     private TypeAnnASTNode voidRetTypeAnnAST() {
         Tok typeAnnTok = new Tok(":", TokType.COLON);
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        String voidId = TypeTable.VOID.id();
+        String voidId = TypeTable.VOID.getId();
         Tok dtypeTok = new Tok(voidId, TokType.ID);
         ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
         typeAnnNode.setDtypeNode(dtypeNode);

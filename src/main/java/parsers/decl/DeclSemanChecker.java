@@ -145,8 +145,8 @@ public class DeclSemanChecker {
             if (lhsDtype != null) {
                 OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
                 if (context.getOpTable().getCompatDtype(opCompat) == null) {
-                    return context.raiseErr(new ErrMsg("Unable to assign data of type '" + rhsDtype.id() +
-                            "' to data of type '" + lhsDtype.id() + "'", asgmtTok));
+                    return context.raiseErr(new ErrMsg("Unable to assign data of type '" + rhsDtype.getId() +
+                            "' to data of type '" + lhsDtype.getId() + "'", asgmtTok));
                 }
             }
             lhsNode.setDtype(rhsDtype);

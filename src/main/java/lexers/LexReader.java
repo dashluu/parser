@@ -8,7 +8,7 @@ public class LexReader {
     private final ArrayDeque<Integer> buff = new ArrayDeque<>();
     private final Reader reader;
     public final static int EOS = -1;
-    private final static String SPECIAL_CHARS = "(){}+-*/%~!&|<>=,.;:_";
+    private final static String SPECIAL_CHARS = "(){}[]+-*/%~!&|<>=,.;:_";
     private int row = 1;
 
     public LexReader(Reader reader) {

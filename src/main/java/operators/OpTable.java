@@ -56,8 +56,10 @@ public class OpTable {
         table.opMap.put("as", TokType.TYPE_CONV);
         table.opMap.put("(", TokType.LPAREN);
         table.opMap.put(")", TokType.RPAREN);
-        table.opMap.put("{", TokType.LBRACKETS);
-        table.opMap.put("}", TokType.RBRACKETS);
+        table.opMap.put("{", TokType.LBRACKET);
+        table.opMap.put("}", TokType.RBRACKET);
+        table.opMap.put("[", TokType.LSQUARE);
+        table.opMap.put("]", TokType.RSQUARE);
         table.opMap.put(";", TokType.SEMICOLON);
         table.opMap.put(",", TokType.COMMA);
 

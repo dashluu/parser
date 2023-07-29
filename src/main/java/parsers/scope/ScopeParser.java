@@ -49,7 +49,7 @@ public class ScopeParser {
      */
     public ParseResult<ASTNode> parseBlock(ParseContext context) throws IOException {
         // Try parsing '{'
-        ParseResult<Tok> bracketResult = tokParser.parseTok(TokType.LBRACKETS, context);
+        ParseResult<Tok> bracketResult = tokParser.parseTok(TokType.LBRACKET, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
@@ -67,7 +67,7 @@ public class ScopeParser {
         }
 
         // Try parsing '}'
-        bracketResult = tokParser.parseTok(TokType.RBRACKETS, context);
+        bracketResult = tokParser.parseTok(TokType.RBRACKET, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {

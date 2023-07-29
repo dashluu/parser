@@ -125,6 +125,60 @@ public class ExprParser {
     }
 
     /**
+     * Parses a list of expressions independent of the left and right bracket type.
+     *
+     * @param leftTokType  the left bracket type identified by its token type.
+     * @param rightTokType the right bracket type identified by its token type.
+     * @param groupNode    the parent node of expression AST nodes in the list.
+     * @return a ParseResult object as the result of parsing a list of expressions.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, KnaryASTNode groupNode)
+            throws IOException {
+        ParseResult<Tok> bracketResult = tokParser.parseTok(leftTokType, context);
+        if (bracketResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
+            return ParseResult.fail(bracketResult.getFailTok());
+        }
+
+        ParseResult<ASTNode> exprResult;
+        ParseResult<Tok> sepResult;
+        boolean end = false;
+        // Boolean to indicate if this is the first expression
+        boolean firstExpr = true;
+
+        while (!end) {
+            bracketResult = tokParser.parseTok(rightTokType, context);
+            if (bracketResult.getStatus() == ParseStatus.ERR) {
+                return ParseResult.err();
+            } else if (!(end = bracketResult.getStatus() == ParseStatus.OK)) {
+                if (!firstExpr) {
+                    // If this is not the first expression, ',' must be present
+                    sepResult = tokParser.parseTok(TokType.COMMA, context);
+                    if (sepResult.getStatus() == ParseStatus.ERR) {
+                        return ParseResult.err();
+                    } else if (sepResult.getStatus() == ParseStatus.FAIL) {
+                        return context.raiseErr(new ErrMsg("Missing ','", sepResult.getFailTok()));
+                    }
+                }
+
+                exprResult = parseInfixExpr(null);
+                if (exprResult.getStatus() == ParseStatus.ERR) {
+                    return exprResult;
+                } else if (exprResult.getStatus() == ParseStatus.FAIL) {
+                    return context.raiseErr(new ErrMsg("Invalid expression", exprResult.getFailTok()));
+                }
+
+                groupNode.addChild(exprResult.getData());
+                firstExpr = false;
+            }
+        }
+
+        return ParseResult.ok(groupNode);
+    }
+
+    /**
      * Parses an identifier and also an argument list following it if there is any.
      *
      * @return a ParseResult object as the result of parsing the identifier and the argument list.
@@ -160,50 +214,8 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArgList(Tok funIdTok) throws IOException {
-        // Parse '('
-        ParseResult<Tok> parenResult = tokParser.parseTok(TokType.LPAREN, context);
-        if (parenResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (parenResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(parenResult.getFailTok());
-        }
-
         FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, null);
-        ParseResult<Tok> sepResult;
-        ParseResult<ASTNode> argResult;
-        boolean end = false;
-        // Boolean to indicate if this is the first argument
-        boolean firstArg = true;
-
-        while (!end) {
-            // Parse ')'
-            parenResult = tokParser.parseTok(TokType.RPAREN, context);
-            if (parenResult.getStatus() == ParseStatus.ERR) {
-                return ParseResult.err();
-            } else if (!(end = parenResult.getStatus() == ParseStatus.OK)) {
-                if (!firstArg) {
-                    // If this is not the first argument in the list, ',' must be present
-                    sepResult = tokParser.parseTok(TokType.COMMA, context);
-                    if (sepResult.getStatus() == ParseStatus.ERR) {
-                        return ParseResult.err();
-                    } else if (sepResult.getStatus() == ParseStatus.FAIL) {
-                        return context.raiseErr(new ErrMsg("Missing ','", sepResult.getFailTok()));
-                    }
-                }
-
-                argResult = parseInfixExpr(null);
-                if (argResult.getStatus() == ParseStatus.ERR) {
-                    return argResult;
-                } else if (argResult.getStatus() == ParseStatus.FAIL) {
-                    return context.raiseErr(new ErrMsg("Invalid argument expression", argResult.getFailTok()));
-                }
-
-                funCallNode.addChild(argResult.getData());
-                firstArg = false;
-            }
-        }
-
-        return ParseResult.ok(funCallNode);
+        return parseList(TokType.LPAREN, TokType.RPAREN, funCallNode);
     }
 
     /**
@@ -398,7 +410,7 @@ public class ExprParser {
         Tok opTok = opResult.getData();
         TokType opId = opTok.getType();
         if (opId == TokType.EOS || opId == TokType.SEMICOLON || opId == TokType.COMMA ||
-                opId == TokType.RPAREN || opId == TokType.RBRACKETS) {
+                opId == TokType.RPAREN || opId == TokType.RBRACKET) {
             return ParseResult.fail(opTok);
         }
 
