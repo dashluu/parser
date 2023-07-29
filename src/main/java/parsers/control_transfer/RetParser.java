@@ -4,12 +4,14 @@ import ast.ASTNode;
 import ast.RetASTNode;
 import exceptions.ErrMsg;
 import parsers.expr.ExprParser;
-import parsers.utils.*;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
+import parsers.utils.TokParser;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
-import types.TypeTable;
-import parsers.utils.ParseContext;
+import types.VoidType;
 
 import java.io.IOException;
 
@@ -55,7 +57,7 @@ public class RetParser {
         ParseResult<ASTNode> exprResult = exprParser.parseExpr(context);
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
-        } else if (exprResult.getStatus() == ParseStatus.FAIL && !retType.equals(TypeTable.VOID)) {
+        } else if (exprResult.getStatus() == ParseStatus.FAIL && !retType.equals(VoidType.getInst())) {
             // When the status is "failed", that means an expression is missing
             return context.raiseErr(new ErrMsg("Invalid return expression", exprResult.getFailTok()));
         }
@@ -65,7 +67,7 @@ public class RetParser {
 
         if (exprResult.getStatus() == ParseStatus.FAIL) {
             // Missing expression indicates the return type is void
-            exprDtype = TypeTable.VOID;
+            exprDtype = VoidType.getInst();
         } else {
             exprNode = exprResult.getData();
             exprDtype = exprNode.getDtype();

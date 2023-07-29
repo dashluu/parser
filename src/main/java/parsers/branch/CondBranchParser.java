@@ -7,10 +7,7 @@ import parsers.scope.ScopeParser;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
-import types.TypeTable;
-import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
+import types.BoolType;
 
 import java.io.IOException;
 
@@ -122,7 +119,7 @@ public abstract class CondBranchParser {
 
         ASTNode exprNode = exprResult.getData();
         // Check if expression has a boolean value
-        if (!exprNode.getDtype().equals(TypeTable.BOOL)) {
+        if (!exprNode.getDtype().equals(BoolType.getInst())) {
             return context.raiseErr(new ErrMsg("Branch condition's expression is not of boolean type",
                     lparenResult.getData()));
         }

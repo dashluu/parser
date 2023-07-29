@@ -2,11 +2,13 @@ package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
-import parsers.utils.*;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
+import parsers.utils.TokParser;
 import toks.Tok;
 import toks.TokType;
-import types.TypeTable;
-import parsers.utils.ParseContext;
+import types.VoidType;
 
 import java.io.IOException;
 
@@ -208,8 +210,7 @@ public class FunHeadParser {
     private TypeAnnASTNode voidRetTypeAnnAST() {
         Tok typeAnnTok = new Tok(":", TokType.COLON);
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        String voidId = TypeTable.VOID.getId();
-        Tok dtypeTok = new Tok(voidId, TokType.ID);
+        Tok dtypeTok = new Tok(VoidType.ID, TokType.ID);
         ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return typeAnnNode;

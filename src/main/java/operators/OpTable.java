@@ -1,8 +1,7 @@
 package operators;
 
 import toks.TokType;
-import types.TypeInfo;
-import types.TypeTable;
+import types.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -131,9 +130,9 @@ public class OpTable {
         table.associativityMap.put(TokType.TYPE_CONV, true);
 
         // Initialize operator type compatibility table
-        TypeInfo intType = TypeTable.INT;
-        TypeInfo floatType = TypeTable.FLOAT;
-        TypeInfo boolType = TypeTable.BOOL;
+        TypeInfo intType = IntType.getInst();
+        TypeInfo floatType = FloatType.getInst();
+        TypeInfo boolType = BoolType.getInst();
 
         // Unary operators
         table.registerCompat(new UnOpCompat(TokType.ADD, intType), intType);

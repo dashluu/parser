@@ -5,10 +5,6 @@ import toks.TokType;
 import java.util.HashMap;
 
 public class TypeTable {
-    public static final TypeInfo INT = new TypeInfo("Int", 4);
-    public static final TypeInfo FLOAT = new TypeInfo("Float", 4);
-    public static final TypeInfo BOOL = new TypeInfo("Bool", 1);
-    public static final TypeInfo VOID = new TypeInfo("Void", 4);
     // String-to-type map
     private final HashMap<String, TypeInfo> strToType = new HashMap<>();
     private final HashMap<TokType, TypeInfo> literalToType = new HashMap<>();
@@ -24,15 +20,15 @@ public class TypeTable {
     public static TypeTable createTable() {
         TypeTable table = new TypeTable();
         // Add types to table
-        table.registerType(INT);
-        table.registerType(FLOAT);
-        table.registerType(BOOL);
-        table.registerType(VOID);
+        table.registerType(IntType.getInst());
+        table.registerType(FloatType.getInst());
+        table.registerType(BoolType.getInst());
+        table.registerType(VoidType.getInst());
 
         // Add mappings from token types to data types
-        table.mapLiteralToType(TokType.INT_LITERAL, INT);
-        table.mapLiteralToType(TokType.FLOAT_LITERAL, FLOAT);
-        table.mapLiteralToType(TokType.BOOL_LITERAL, BOOL);
+        table.mapLiteralToType(TokType.INT_LITERAL, IntType.getInst());
+        table.mapLiteralToType(TokType.FLOAT_LITERAL, FloatType.getInst());
+        table.mapLiteralToType(TokType.BOOL_LITERAL, BoolType.getInst());
         return table;
     }
 
