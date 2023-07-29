@@ -106,8 +106,6 @@ public class ExprParser {
 
     /**
      * Parses a primary expression.
-     * Grammar:
-     * primary-expression: identifier | literal-expression | parenthesized-expression
      *
      * @return a ParseResult object as the result of parsing a primary expression.
      * @throws IOException if there is an IO exception.
@@ -117,7 +115,7 @@ public class ExprParser {
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.OK) {
             return result;
         }
-        result = parseLiteral();
+        result = parseLiteralExpr();
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.OK) {
             return result;
         }
@@ -179,6 +177,18 @@ public class ExprParser {
     }
 
     /**
+     * Parses an array access expression.
+     *
+     * @param arrIdTok the array identifier.
+     * @return a ParseResult object as the result of parsing the array access expression.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> parseArrAccess(Tok arrIdTok) throws IOException {
+        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(arrIdTok, null);
+        return parseList(TokType.LSQUARE, TokType.RSQUARE, arrAccessNode);
+    }
+
+    /**
      * Parses an identifier and also an argument list following it if there is any.
      *
      * @return a ParseResult object as the result of parsing the identifier and the argument list.
@@ -196,10 +206,14 @@ public class ExprParser {
         Tok idTok = idResult.getData();
         // Try parsing an argument list
         ParseResult<ASTNode> argListResult = parseArgList(idTok);
-        if (argListResult.getStatus() == ParseStatus.ERR) {
+        if (argListResult.getStatus() == ParseStatus.ERR || argListResult.getStatus() == ParseStatus.OK) {
             return argListResult;
-        } else if (argListResult.getStatus() == ParseStatus.OK) {
-            return ParseResult.ok(argListResult.getData());
+        }
+
+        // Try parsing an array access expression
+        ParseResult<ASTNode> arrAccessResult = parseArrAccess(idTok);
+        if (arrAccessResult.getStatus() == ParseStatus.ERR || arrAccessResult.getStatus() == ParseStatus.OK) {
+            return arrAccessResult;
         }
 
         ASTNode idNode = new ASTNode(idTok, ASTNodeType.ID, null);
@@ -224,6 +238,31 @@ public class ExprParser {
      * @return a ParseResult object as the result of parsing a literal expression.
      * @throws IOException if there is an IO exception.
      */
+    private ParseResult<ASTNode> parseLiteralExpr() throws IOException {
+        ParseResult<ASTNode> result = parseLiteral();
+        if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.OK) {
+            return result;
+        }
+        return parseArrLiteral();
+    }
+
+    /**
+     * Parses an array literal.
+     *
+     * @return a ParseResult object as the result of parsing the array literal.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> parseArrLiteral() throws IOException {
+        ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null);
+        return parseList(TokType.LSQUARE, TokType.RSQUARE, arrLiteralNode);
+    }
+
+    /**
+     * Parses a literal.
+     *
+     * @return a ParseResult object as the result of parsing a literal.
+     * @throws IOException if there is an IO exception.
+     */
     private ParseResult<ASTNode> parseLiteral() throws IOException {
         LexResult<Tok> literalResult = lexer.lookahead(context);
         if (literalResult.getStatus() != LexStatus.OK) {
@@ -245,8 +284,6 @@ public class ExprParser {
 
     /**
      * Parses a parenthesized expression.
-     * Grammar:
-     * parenthesized-expression: '(' expression ')'
      *
      * @return a ParseResult object as the result of parsing an expression inside a pair of parentheses.
      * @throws IOException if there is an IO exception.
@@ -313,8 +350,6 @@ public class ExprParser {
 
     /**
      * Parses a prefix expression.
-     * Grammar:
-     * prefix-expression: prefix-operator* postfix-expression
      *
      * @return a ParseResult object as the result of parsing a prefix expression.
      * @throws IOException if there is an IO exception.
@@ -358,10 +393,6 @@ public class ExprParser {
 
     /**
      * Parses a postfix expression.
-     * Grammar:
-     * postfix-expression: postfix-expression postfix-operator
-     * postfix-expression: primary-expression
-     * postfix-expression: function-call-expression
      *
      * @return a ParseResult object as the result of parsing a postfix expression.
      * @throws IOException if there is an IO exception.
