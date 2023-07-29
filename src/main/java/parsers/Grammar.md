@@ -18,8 +18,27 @@ from [Kotlin's grammar](https://kotlinlang.org/docs/reference/grammar.html).
 
 ```
 expression -> infix-expression
-primary-expression -> identifier | literal-expression | parenthesized-expression
+
+primary-expression -> identifier-clause | literal-expression | parenthesized-expression
+
+identifier-clause -> identifier | identifier function-call-argument-clause
+
+array-access-expression -> '[' array-access-item-list? ']'
+array-access-item-list -> array-access-item | array-access-item ',' array-access-item-list
+array-access-item -> expression
+
+function-call-argument-clause -> '(' function-call-argument-list? ')'
+function-call-argument-list -> function-call-argument | function-call-argument ',' function-call-argument-list
+function-call-argument -> expression
+
+literal-expression -> literal | array-literal
+
+array-literal -> '[' array-literal-item-list? ']'
+array-literal-item-list -> array-literal-item | array-literal-item ',' array-literal-item-list
+array-literal-item -> expression
+
 parenthesized-expression -> '(' expression ')'
+
 prefix-expression -> prefix-operator* postfix-expression
 postfix-expression -> primary-expression postfix-operator*
 postfix-operator -> type-casting-operator
