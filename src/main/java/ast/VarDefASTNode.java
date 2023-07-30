@@ -4,8 +4,19 @@ import toks.Tok;
 import types.TypeInfo;
 
 public class VarDefASTNode extends BinASTNode {
-    public VarDefASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.VAR_DEF, dtype);
+    private boolean mutable;
+
+    public VarDefASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
+        super(tok, ASTNodeType.DEF, dtype);
+        this.mutable = mutable;
+    }
+
+    public boolean isMutable() {
+        return mutable;
+    }
+
+    public void setMutable(boolean mutable) {
+        this.mutable = mutable;
     }
 
     @Override

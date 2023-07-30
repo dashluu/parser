@@ -3,29 +3,9 @@ package ast;
 import toks.Tok;
 import types.TypeInfo;
 
+import java.util.ListIterator;
+
 public class JSONWalker implements IASTVisitor {
-    private class ASTNodeCallback implements IASTNodeCallback {
-        private final JSONWalker walker;
-        private boolean firstChild;
-
-        public ASTNodeCallback(JSONWalker walker) {
-            this.walker = walker;
-            firstChild = true;
-        }
-
-        @Override
-        public ASTNode run(ASTNode node) {
-            if (!firstChild) {
-                jsonStrBuff.append(",");
-            }
-            firstChild = false;
-            jsonStrBuff.append("{");
-            node = node.accept(walker);
-            jsonStrBuff.append("}");
-            return node;
-        }
-    }
-
     private final StringBuilder jsonStrBuff = new StringBuilder();
 
     public String getJSON(ASTNode root) {
@@ -114,24 +94,26 @@ public class JSONWalker implements IASTVisitor {
     private void knaryNodeToJSON(KnaryASTNode knaryNode) {
         nodeToJSON(knaryNode);
         jsonStrBuff.append(",\"Children\":[");
-        ASTNodeCallback nodeCallback = new ASTNodeCallback(this);
-        knaryNode.runOnChildren(nodeCallback);
+        ListIterator<ASTNode> childrenIter = knaryNode.listIterator();
+        ASTNode child;
+        boolean firstChild = true;
+
+        while (childrenIter.hasNext()) {
+            if (!firstChild) {
+                jsonStrBuff.append(",");
+            }
+            firstChild = false;
+            jsonStrBuff.append("{");
+            child = childrenIter.next().accept(this);
+            childrenIter.set(child);
+            jsonStrBuff.append("}");
+        }
+
         jsonStrBuff.append("]");
     }
 
-    public ASTNode visitVarId(ASTNode node) {
-        nodeToJSON(node);
-        return node;
-    }
-
     @Override
-    public ASTNode visitConstId(ASTNode node) {
-        nodeToJSON(node);
-        return node;
-    }
-
-    @Override
-    public ASTNode visitParam(ASTNode node) {
+    public ASTNode visitId(ASTNode node) {
         nodeToJSON(node);
         return node;
     }
@@ -158,19 +140,6 @@ public class JSONWalker implements IASTVisitor {
     public ASTNode visitVarDef(ASTNode node) {
         VarDefASTNode varDefNode = (VarDefASTNode) node;
         binNodeToJSON(varDefNode);
-        return node;
-    }
-
-    @Override
-    public ASTNode visitConstDecl(ASTNode node) {
-        nodeToJSON(node);
-        return node;
-    }
-
-    @Override
-    public ASTNode visitConstDef(ASTNode node) {
-        ConstDefASTNode constDefNode = (ConstDefASTNode) node;
-        binNodeToJSON(constDefNode);
         return node;
     }
 

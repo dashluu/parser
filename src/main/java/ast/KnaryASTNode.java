@@ -6,10 +6,11 @@ import types.TypeInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 // AST node with multiple children
 // Implemented using the Iterator pattern
-public class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
+public abstract class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
     protected final List<ASTNode> children = new ArrayList<>();
 
     public KnaryASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {
@@ -43,21 +44,12 @@ public class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
         return children.isEmpty();
     }
 
-    /**
-     * Executes callback on each child and sets the resulting node as a new child.
-     *
-     * @param nodeCallback an object that performs the callback.
-     */
-    public void runOnChildren(IASTNodeCallback nodeCallback) {
-        ASTNode node;
-        for (int i = 0; i < children.size(); ++i) {
-            node = nodeCallback.run(children.get(i));
-            children.set(i, node);
-        }
-    }
-
     @Override
     public Iterator<ASTNode> iterator() {
         return children.iterator();
+    }
+
+    public ListIterator<ASTNode> listIterator() {
+        return children.listIterator();
     }
 }

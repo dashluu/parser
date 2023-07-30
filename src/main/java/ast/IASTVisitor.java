@@ -1,11 +1,7 @@
 package ast;
 
 public interface IASTVisitor {
-    ASTNode visitVarId(ASTNode node);
-
-    ASTNode visitConstId(ASTNode node);
-
-    ASTNode visitParam(ASTNode node);
+    ASTNode visitId(ASTNode node);
 
     ASTNode visitDtype(ASTNode node);
 
@@ -14,10 +10,6 @@ public interface IASTVisitor {
     ASTNode visitVarDecl(ASTNode node);
 
     ASTNode visitVarDef(ASTNode node);
-
-    ASTNode visitConstDecl(ASTNode node);
-
-    ASTNode visitConstDef(ASTNode node);
 
     ASTNode visitParamDecl(ASTNode node);
 

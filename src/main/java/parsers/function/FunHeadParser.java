@@ -197,7 +197,7 @@ public class FunHeadParser {
         Tok typeAnnTok = typeAnnResult.getData();
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         Tok dtypeTok = dtypeResult.getData();
-        ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
+        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return ParseResult.ok(typeAnnNode);
     }
@@ -211,7 +211,7 @@ public class FunHeadParser {
         Tok typeAnnTok = new Tok(":", TokType.COLON);
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         Tok dtypeTok = new Tok(VoidType.ID, TokType.ID);
-        ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
+        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return typeAnnNode;
     }

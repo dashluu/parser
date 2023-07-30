@@ -3,11 +3,11 @@ package ast;
 import toks.Tok;
 import types.TypeInfo;
 
-public class ArrAccessASTNode extends KnaryASTNode {
+public class IdASTNode extends ASTNode {
     private boolean mutable;
 
-    public ArrAccessASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
-        super(tok, ASTNodeType.ARR_ACCESS, dtype);
+    public IdASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
+        super(tok, ASTNodeType.ID, dtype);
         this.mutable = mutable;
     }
 
@@ -21,6 +21,6 @@ public class ArrAccessASTNode extends KnaryASTNode {
 
     @Override
     public ASTNode accept(IASTVisitor visitor) {
-        return null;
+        return visitor.visitId(this);
     }
 }

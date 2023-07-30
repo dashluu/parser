@@ -9,11 +9,13 @@ public class SymbolInfo {
     // The data type of the symbol
     // For a function, this is its return type
     protected TypeInfo dtype;
+    protected boolean mutable;
 
-    public SymbolInfo(String id, SymbolType symbolType, TypeInfo dtype) {
+    public SymbolInfo(String id, SymbolType symbolType, TypeInfo dtype, boolean mutable) {
         this.id = id;
         this.symbolType = symbolType;
         this.dtype = dtype;
+        this.mutable = mutable;
     }
 
     public String getId() {
@@ -30,6 +32,14 @@ public class SymbolInfo {
 
     public void setDtype(TypeInfo dtype) {
         this.dtype = dtype;
+    }
+
+    public boolean isMutable() {
+        return mutable;
+    }
+
+    public void setMutable(boolean mutable) {
+        this.mutable = mutable;
     }
 
     @Override

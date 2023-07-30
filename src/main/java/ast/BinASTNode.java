@@ -4,7 +4,7 @@ import toks.Tok;
 import types.TypeInfo;
 
 // Node with data type and two children
-public class BinASTNode extends ASTNode {
+public abstract class BinASTNode extends ASTNode {
     protected ASTNode left;
     protected ASTNode right;
 

@@ -83,7 +83,7 @@ public class FunHeadSemanChecker {
      * Checks a function's parameter list.
      *
      * @param funInfo       the function symbol.
-     * @param paramListNode an AST node associated with the parameter list.
+     * @param paramListNode the AST node associated with the parameter list.
      * @return a ParseResult object as the result of checking the parameter list.
      */
     private ParseResult<ASTNode> checkParamList(FunInfo funInfo, ParamListASTNode paramListNode) {

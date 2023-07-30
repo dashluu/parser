@@ -137,9 +137,7 @@ public class DeclParser {
         }
 
         Tok idTok = result.getData();
-        ASTNode idNode = mutable ?
-                new VarDeclASTNode(idTok, null) :
-                new ConstDeclASTNode(idTok, null);
+        ASTNode idNode = new VarDeclASTNode(idTok, null, mutable);
         return ParseResult.ok(idNode);
     }
 
@@ -170,7 +168,7 @@ public class DeclParser {
         Tok typeAnnTok = typeAnnResult.getData();
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         Tok dtypeTok = dtypeResult.getData();
-        ASTNode dtypeNode = new ASTNode(dtypeTok, ASTNodeType.DTYPE, null);
+        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return ParseResult.ok(typeAnnNode);
     }
@@ -191,9 +189,7 @@ public class DeclParser {
         }
 
         Tok asgnmtTok = result.getData();
-        ASTNode asgnmtNode = mutable ?
-                new VarDefASTNode(asgnmtTok, null) :
-                new ConstDefASTNode(asgnmtTok, null);
+        ASTNode asgnmtNode = new VarDefASTNode(asgnmtTok, null, mutable);
         return ParseResult.ok(asgnmtNode);
     }
 }

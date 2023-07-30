@@ -3,9 +3,9 @@ package ast;
 import toks.Tok;
 import types.TypeInfo;
 
-public class ASTNode {
-    protected Tok tok;
-    protected ASTNodeType nodeType;
+public abstract class ASTNode {
+    protected final Tok tok;
+    protected final ASTNodeType nodeType;
     protected TypeInfo dtype;
 
     public ASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {
@@ -18,16 +18,8 @@ public class ASTNode {
         return tok;
     }
 
-    public void setTok(Tok tok) {
-        this.tok = tok;
-    }
-
     public ASTNodeType getNodeType() {
         return nodeType;
-    }
-
-    public void setNodeType(ASTNodeType nodeType) {
-        this.nodeType = nodeType;
     }
 
     public TypeInfo getDtype() {
@@ -38,12 +30,5 @@ public class ASTNode {
         this.dtype = dtype;
     }
 
-    public ASTNode accept(IASTVisitor visitor) {
-        return switch (nodeType) {
-            case VAR_ID -> visitor.visitVarId(this);
-            case CONST_ID -> visitor.visitConstId(this);
-            case PARAM -> visitor.visitParam(this);
-            default -> visitor.visitDtype(this);
-        };
-    }
+    public abstract ASTNode accept(IASTVisitor visitor);
 }

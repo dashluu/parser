@@ -12,7 +12,7 @@ public class FunInfo extends SymbolInfo implements Iterable<TypeInfo> {
     private final List<TypeInfo> paramDtypes = new ArrayList<>();
 
     public FunInfo(String id, TypeInfo returnDtype) {
-        super(id, SymbolType.FUN, returnDtype);
+        super(id, SymbolType.FUN, returnDtype, false);
     }
 
     /**

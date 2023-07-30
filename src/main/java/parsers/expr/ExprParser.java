@@ -184,7 +184,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrAccess(Tok arrIdTok) throws IOException {
-        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(arrIdTok, null);
+        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(arrIdTok, null, false);
         return parseList(TokType.LSQUARE, TokType.RSQUARE, arrAccessNode);
     }
 
@@ -216,7 +216,8 @@ public class ExprParser {
             return arrAccessResult;
         }
 
-        ASTNode idNode = new ASTNode(idTok, ASTNodeType.ID, null);
+        // Dummy id node
+        ASTNode idNode = new IdASTNode(idTok, null, false);
         return ParseResult.ok(idNode);
     }
 

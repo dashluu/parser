@@ -1,16 +1,12 @@
 package parsers.decl;
 
-import ast.ASTNode;
-import ast.ASTNodeType;
-import ast.BinASTNode;
-import ast.TypeAnnASTNode;
+import ast.*;
 import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import symbols.ConstInfo;
 import symbols.SymbolInfo;
 import symbols.SymbolTable;
 import symbols.VarInfo;
@@ -101,9 +97,8 @@ public class DeclSemanChecker {
         }
 
         // Create a new symbol
-        symbol = idNode.getNodeType() == ASTNodeType.VAR_DECL ?
-                new VarInfo(id, null) :
-                new ConstInfo(id, null);
+        VarDeclASTNode varDeclNode = (VarDeclASTNode) idNode;
+        symbol = new VarInfo(id, null, varDeclNode.isMutable());
         symbolTable.registerSymbol(symbol);
         return ParseResult.ok(symbol);
     }
