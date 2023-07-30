@@ -163,7 +163,8 @@ several classes associated with type compatibilities:
 * **BinOpCompat**: a class inherited from `OpCompat` that determines binary operator compatibilities.
 * **UnOpCompat**: a class inherited from `OpCompat` that determines unary operator compatibilities.
 
-## Other projects
+## Other related projects
 
-* An IR code generator [microIR](https://github.com/dashluu/microIR)
-* A demo web app that combines that parser with the IR generator [langtools](https://github.com/dashluu/langtools)
+* [microIR](https://github.com/dashluu/microIR): takes the AST produced by this parser and generates IR instructions.
+* [langtools](https://github.com/dashluu/langtools): a demo web app that combines this parser with the IR
+  generator [microIR](https://github.com/dashluu/microIR).

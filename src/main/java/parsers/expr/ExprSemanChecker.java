@@ -11,8 +11,11 @@ import parsers.utils.ParseStatus;
 import symbols.FunInfo;
 import symbols.SymbolInfo;
 import symbols.SymbolTable;
+import symbols.SymbolType;
 import toks.Tok;
 import toks.TokType;
+import types.ArrTypeInfo;
+import types.IntType;
 import types.TypeInfo;
 
 import java.io.IOException;
@@ -90,7 +93,9 @@ public class ExprSemanChecker {
         // Check if the id is valid
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(id);
-        if (symbol == null) {
+        if (symbol == null || (symbol.getSymbolType() != SymbolType.VAR &&
+                symbol.getSymbolType() != SymbolType.CONST &&
+                symbol.getSymbolType() != SymbolType.PARAM)) {
             return context.raiseErr(new ErrMsg("Invalid identifier '" + id + "'", idTok));
         }
 
@@ -163,8 +168,7 @@ public class ExprSemanChecker {
         }
 
         // Check assignment if there is any
-        ASTNodeType leftNodeType = leftNode.getNodeType();
-        if (opId == TokType.ASSIGNMENT && leftNodeType != ASTNodeType.VAR_ID && leftNodeType != ASTNodeType.PARAM) {
+        if (opId == TokType.ASSIGNMENT && !isLvalue(leftNode)) {
             return context.raiseErr(new ErrMsg("Assignments are only valid for mutable identifiers", opTok));
         }
 
@@ -185,6 +189,46 @@ public class ExprSemanChecker {
         return ParseResult.ok(exprNode);
     }
 
+    private ParseResult<ASTNode> checkArrAccess(ArrAccessASTNode arrAccessNode) throws IOException {
+        Tok arrIdTok = arrAccessNode.getTok();
+        String arrId = arrIdTok.getVal();
+        // Check if the array id exists
+        SymbolTable symbolTable = context.getScope().getSymbolTable();
+        SymbolInfo symbol = symbolTable.getClosureSymbol(arrId);
+        if (symbol == null || (symbol.getSymbolType() != SymbolType.VAR &&
+                symbol.getSymbolType() != SymbolType.CONST &&
+                symbol.getSymbolType() != SymbolType.PARAM)) {
+            return context.raiseErr(new ErrMsg("Invalid array identifier '" + arrId + "'", arrIdTok));
+        }
+
+        // Check if the id is of type array
+        TypeInfo symbolDtype = symbol.getDtype();
+        if (!symbolDtype.getId().equals(ArrTypeInfo.ID)) {
+            return context.raiseErr(new ErrMsg("Expected an array type from '" + arrId + "'", arrIdTok));
+        }
+
+        ParseResult<ASTNode> itemResult;
+        int i = 0;
+
+        // Check if each index is of type integer
+        for (ASTNode itemNode : arrAccessNode) {
+            itemResult = recurCheckSeman(itemNode);
+            if (itemResult.getStatus() == ParseStatus.ERR) {
+                return itemResult;
+            } else if (!itemNode.getDtype().equals(IntType.getInst())) {
+                return context.raiseErr(new ErrMsg("Expected type '" + IntType.ID + "' for array index",
+                        itemNode.getTok()));
+            }
+            ++i;
+        }
+
+        ArrTypeInfo arrTypeInfo = (ArrTypeInfo) symbolDtype;
+        // Reduce the dimension of the original array data type
+        ArrTypeInfo newArrTypeInfo = ArrTypeInfo.createReducedDimArrType(arrTypeInfo, i);
+        arrAccessNode.setDtype(newArrTypeInfo);
+        return ParseResult.ok(arrAccessNode);
+    }
+
     /**
      * Checks if a function identifier exists and if the data type of each expression in the argument list is as expected.
      *
@@ -196,18 +240,19 @@ public class ExprSemanChecker {
         String funId = funIdTok.getVal();
         // Check if the function id exists
         SymbolTable symbolTable = context.getScope().getSymbolTable();
-        FunInfo funInfo = (FunInfo) symbolTable.getClosureSymbol(funId);
-        if (funInfo == null) {
+        SymbolInfo symbol = symbolTable.getClosureSymbol(funId);
+        if (symbol == null || symbol.getSymbolType() != SymbolType.FUN) {
             return context.raiseErr(new ErrMsg("Invalid function identifier '" + funId + "'", funIdTok));
         }
 
+        FunInfo funInfo = (FunInfo) symbol;
         Iterator<TypeInfo> paramDtypesIter = funInfo.iterator();
         TypeInfo paramDtype;
         ParseResult<ASTNode> argResult;
         int i = 0;
 
-        // Check if each argument type is as expected
         for (ASTNode argNode : funCallNode) {
+            // Check if each argument type is as expected
             paramDtype = paramDtypesIter.next();
             argResult = recurCheckSeman(argNode);
             if (argResult.getStatus() == ParseStatus.ERR) {
@@ -216,7 +261,11 @@ public class ExprSemanChecker {
                 return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.getId() + "' for argument " + i,
                         argNode.getTok()));
             }
-            ++i;
+
+            // If the argument is an lvalue, check if it is mutable
+            if (argNode.getDtype().getId().equals()) {
+                ++i;
+            }
         }
 
         int numArgs = funInfo.countParams();
@@ -227,5 +276,10 @@ public class ExprSemanChecker {
 
         funCallNode.setDtype(funInfo.getDtype());
         return ParseResult.ok(funCallNode);
+    }
+
+    private boolean isLvalue(ASTNode node) {
+        ASTNodeType nodeType = node.getNodeType();
+        return nodeType == ASTNodeType.VAR_ID || (nodeType == ASTNodeType.ARR_ACCESS)
     }
 }
