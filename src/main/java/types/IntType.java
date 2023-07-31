@@ -6,7 +6,7 @@ public class IntType extends TypeInfo {
     private static final IntType inst = new IntType();
 
     private IntType() {
-        super(ID, SIZE);
+        super(ID, TypeInfoType.PRIMITIVE, SIZE);
     }
 
     /**

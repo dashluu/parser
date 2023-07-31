@@ -3,15 +3,21 @@ package types;
 // Data type
 public class TypeInfo {
     private final String id;
+    private final TypeInfoType infoType;
     private final int size;
 
-    public TypeInfo(String id, int size) {
+    public TypeInfo(String id, TypeInfoType infoType, int size) {
         this.id = id;
+        this.infoType = infoType;
         this.size = size;
     }
 
     public String getId() {
         return id;
+    }
+
+    public TypeInfoType getInfoType() {
+        return infoType;
     }
 
     public int getSize() {

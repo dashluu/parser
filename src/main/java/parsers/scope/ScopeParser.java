@@ -49,11 +49,11 @@ public class ScopeParser {
      */
     public ParseResult<ASTNode> parseBlock(ParseContext context) throws IOException {
         // Try parsing '{'
-        ParseResult<Tok> bracketResult = tokParser.parseTok(TokType.LBRACKET, context);
-        if (bracketResult.getStatus() == ParseStatus.ERR) {
+        ParseResult<Tok> curlyResult = tokParser.parseTok(TokType.LCURLY, context);
+        if (curlyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(bracketResult.getFailTok());
+        } else if (curlyResult.getStatus() == ParseStatus.FAIL) {
+            return ParseResult.fail(curlyResult.getFailTok());
         }
 
         // Try parsing code in a new scope
@@ -67,11 +67,11 @@ public class ScopeParser {
         }
 
         // Try parsing '}'
-        bracketResult = tokParser.parseTok(TokType.RBRACKET, context);
-        if (bracketResult.getStatus() == ParseStatus.ERR) {
+        curlyResult = tokParser.parseTok(TokType.RCURLY, context);
+        if (curlyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
-            return context.raiseErr(new ErrMsg("Missing '}'", bracketResult.getFailTok()));
+        } else if (curlyResult.getStatus() == ParseStatus.FAIL) {
+            return context.raiseErr(new ErrMsg("Missing '}'", curlyResult.getFailTok()));
         }
 
         scopeStack.pop();

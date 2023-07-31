@@ -21,6 +21,6 @@ public class ArrAccessASTNode extends KnaryASTNode {
 
     @Override
     public ASTNode accept(IASTVisitor visitor) {
-        return null;
+        return visitor.visitArrAccess(this);
     }
 }

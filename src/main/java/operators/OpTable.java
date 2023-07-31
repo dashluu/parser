@@ -20,6 +20,14 @@ public class OpTable {
     // When an operator is applied, it is used to check if the operands' data types are compatible
     // If they are, it finds the data type of the result after applying the operator
     private final HashMap<OpCompat, TypeInfo> compatMap = new HashMap<>();
+    // List of operator strings for direct access
+    public static final String LOG_NOT = "!", LOG_OR = "||", LOG_AND = "&&",
+            EQ = "==", NEQ = "!=", LESS = "<", GREATER = ">", LEQ = "<=", GEQ = ">=",
+            ADD = "+", SUB = "-", MUL = "*", DIV = "/", MOD = "%",
+            SHL = "<<", ART_SHR = ">>", LOG_SHR = ">>>",
+            DOT = ".", COLON = ":", ASSIGNMENT = "=", TYPE_CONV = "as",
+            LPAREN = "(", RPAREN = ")", LCURLY = "{", RCURLY = "}", LSQUARE = "[", RSQUARE = "]",
+            SEMI = ";", COMMA = ",";
 
     private OpTable() {
     }
@@ -32,35 +40,35 @@ public class OpTable {
     public static OpTable createTable() {
         OpTable table = new OpTable();
         // Add operators to table
-        table.opMap.put("!", TokType.LOG_NOT);
-        table.opMap.put("||", TokType.LOG_OR);
-        table.opMap.put("&&", TokType.LOG_AND);
-        table.opMap.put("==", TokType.EQ);
-        table.opMap.put("!=", TokType.NEQ);
-        table.opMap.put("<", TokType.LESS);
-        table.opMap.put(">", TokType.GREATER);
-        table.opMap.put("<=", TokType.LEQ);
-        table.opMap.put(">=", TokType.GEQ);
-        table.opMap.put("+", TokType.ADD);
-        table.opMap.put("-", TokType.SUB);
-        table.opMap.put("*", TokType.MUL);
-        table.opMap.put("/", TokType.DIV);
-        table.opMap.put("%", TokType.MOD);
-        table.opMap.put("<<", TokType.SHL);
-        table.opMap.put(">>", TokType.ART_SHR);
-        table.opMap.put(">>>", TokType.LOG_SHR);
-        table.opMap.put(".", TokType.DOT);
-        table.opMap.put(":", TokType.COLON);
-        table.opMap.put("=", TokType.ASSIGNMENT);
-        table.opMap.put("as", TokType.TYPE_CONV);
-        table.opMap.put("(", TokType.LPAREN);
-        table.opMap.put(")", TokType.RPAREN);
-        table.opMap.put("{", TokType.LBRACKET);
-        table.opMap.put("}", TokType.RBRACKET);
-        table.opMap.put("[", TokType.LSQUARE);
-        table.opMap.put("]", TokType.RSQUARE);
-        table.opMap.put(";", TokType.SEMICOLON);
-        table.opMap.put(",", TokType.COMMA);
+        table.opMap.put(LOG_NOT, TokType.LOG_NOT);
+        table.opMap.put(LOG_OR, TokType.LOG_OR);
+        table.opMap.put(LOG_AND, TokType.LOG_AND);
+        table.opMap.put(EQ, TokType.EQ);
+        table.opMap.put(NEQ, TokType.NEQ);
+        table.opMap.put(LESS, TokType.LESS);
+        table.opMap.put(GREATER, TokType.GREATER);
+        table.opMap.put(LEQ, TokType.LEQ);
+        table.opMap.put(GEQ, TokType.GEQ);
+        table.opMap.put(ADD, TokType.ADD);
+        table.opMap.put(SUB, TokType.SUB);
+        table.opMap.put(MUL, TokType.MUL);
+        table.opMap.put(DIV, TokType.DIV);
+        table.opMap.put(MOD, TokType.MOD);
+        table.opMap.put(SHL, TokType.SHL);
+        table.opMap.put(ART_SHR, TokType.ART_SHR);
+        table.opMap.put(LOG_SHR, TokType.LOG_SHR);
+        table.opMap.put(DOT, TokType.DOT);
+        table.opMap.put(COLON, TokType.COLON);
+        table.opMap.put(ASSIGNMENT, TokType.ASSIGNMENT);
+        table.opMap.put(TYPE_CONV, TokType.TYPE_CONV);
+        table.opMap.put(LPAREN, TokType.LPAREN);
+        table.opMap.put(RPAREN, TokType.RPAREN);
+        table.opMap.put(LCURLY, TokType.LCURLY);
+        table.opMap.put(RCURLY, TokType.RCURLY);
+        table.opMap.put(LSQUARE, TokType.LSQUARE);
+        table.opMap.put(RSQUARE, TokType.RSQUARE);
+        table.opMap.put(SEMI, TokType.SEMI);
+        table.opMap.put(COMMA, TokType.COMMA);
 
         // Initialize prefix table
         table.prefixOps.add(TokType.ADD);
@@ -207,10 +215,16 @@ public class OpTable {
         table.registerCompat(new BinOpCompat(TokType.ASSIGNMENT, boolType, boolType), boolType);
 
         table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, intType), intType);
-        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, floatType), intType);
-        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, intType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, intType), intType);
         table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, floatType, floatType), floatType);
         table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, boolType, boolType), boolType);
+
+        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, intType, intType), intType);
+        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, intType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, floatType, intType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, floatType, floatType), floatType);
+        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, boolType, boolType), boolType);
 
         return table;
     }

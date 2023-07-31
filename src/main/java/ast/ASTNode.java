@@ -4,7 +4,7 @@ import toks.Tok;
 import types.TypeInfo;
 
 public abstract class ASTNode {
-    protected final Tok tok;
+    protected Tok tok;
     protected final ASTNodeType nodeType;
     protected TypeInfo dtype;
 
@@ -16,6 +16,10 @@ public abstract class ASTNode {
 
     public Tok getTok() {
         return tok;
+    }
+
+    public void setTok(Tok tok) {
+        this.tok = tok;
     }
 
     public ASTNodeType getNodeType() {

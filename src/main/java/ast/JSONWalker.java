@@ -21,8 +21,7 @@ public class JSONWalker implements IASTVisitor {
         TypeInfo dtype = node.getDtype();
         jsonStrBuff.append("\"Node type\":\"").append(nodeType == null ? "null" : nodeType).append("\"")
                 .append(",\"Value\":\"").append(tok == null ? "null" : tok.getVal()).append("\"")
-                .append(",\"Data type\":\"").append(dtype == null ? "null" : dtype.getId()).append("\"")
-                .append(",\"Size\":\"").append(dtype == null ? "0" : dtype.getSize()).append("\"");
+                .append(",\"Data type\":\"").append(dtype == null ? "null" : dtype.getId()).append("\"");
     }
 
     private void unNodeToJSON(UnASTNode unNode) {
@@ -193,6 +192,21 @@ public class JSONWalker implements IASTVisitor {
     public ASTNode visitWhile(ASTNode node) {
         WhileASTNode whileNode = (WhileASTNode) node;
         brNodeToJSON(whileNode);
+        return node;
+    }
+
+    @Override
+    public ASTNode visitArrAccess(ASTNode node) {
+        ArrAccessASTNode arrAccessNode = (ArrAccessASTNode) node;
+        knaryNodeToJSON(arrAccessNode);
+        return node;
+    }
+
+    @Override
+    public ASTNode visitArrLiteral(ASTNode node) {
+        ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) node;
+        arrLiteralNode.setTok(null);
+        knaryNodeToJSON(arrLiteralNode);
         return node;
     }
 

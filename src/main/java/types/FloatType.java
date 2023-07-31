@@ -6,7 +6,7 @@ public class FloatType extends TypeInfo {
     private static final FloatType inst = new FloatType();
 
     private FloatType() {
-        super(ID, SIZE);
+        super(ID, TypeInfoType.PRIMITIVE, SIZE);
     }
 
     /**

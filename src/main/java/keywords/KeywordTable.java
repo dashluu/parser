@@ -8,18 +8,11 @@ import java.util.HashMap;
 public class KeywordTable {
     private final HashMap<String, TokType> kwMap = new HashMap<>();
     // List of keywords for direct access
-    public static final String VAR = "var";
-    public static final String CONST = "let";
-    public static final String TRUE = "true";
-    public static final String FALSE = "false";
-    public static final String FUN = "fun";
-    public static final String RET = "return";
-    public static final String IF = "if";
-    public static final String ELIF = "elif";
-    public static final String ELSE = "else";
-    public static final String WHILE = "while";
-    public static final String BREAK = "break";
-    public static final String CONT = "continue";
+    public static final String VAR = "var", CONST = "let",
+            TRUE = "true", FALSE = "false",
+            FUN = "fun", RET = "return",
+            IF = "if", ELIF = "elif", ELSE = "else", WHILE = "while",
+            BREAK = "break", CONT = "continue";
 
     private KeywordTable() {
     }

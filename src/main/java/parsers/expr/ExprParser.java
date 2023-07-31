@@ -140,8 +140,12 @@ public class ExprParser {
             return ParseResult.fail(bracketResult.getFailTok());
         }
 
+        if (groupNode.getTok() == null) {
+            groupNode.setTok(bracketResult.getData());
+        }
+
         ParseResult<ASTNode> exprResult;
-        ParseResult<Tok> sepResult;
+        ParseResult<Tok> commaResult;
         boolean end = false;
         // Boolean to indicate if this is the first expression
         boolean firstExpr = true;
@@ -153,11 +157,11 @@ public class ExprParser {
             } else if (!(end = bracketResult.getStatus() == ParseStatus.OK)) {
                 if (!firstExpr) {
                     // If this is not the first expression, ',' must be present
-                    sepResult = tokParser.parseTok(TokType.COMMA, context);
-                    if (sepResult.getStatus() == ParseStatus.ERR) {
+                    commaResult = tokParser.parseTok(TokType.COMMA, context);
+                    if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
-                    } else if (sepResult.getStatus() == ParseStatus.FAIL) {
-                        return context.raiseErr(new ErrMsg("Missing ','", sepResult.getFailTok()));
+                    } else if (commaResult.getStatus() == ParseStatus.FAIL) {
+                        return context.raiseErr(new ErrMsg("Missing ','", commaResult.getFailTok()));
                     }
                 }
 
@@ -254,7 +258,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrLiteral() throws IOException {
-        ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null);
+        ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null, null);
         return parseList(TokType.LSQUARE, TokType.RSQUARE, arrLiteralNode);
     }
 
@@ -441,8 +445,8 @@ public class ExprParser {
 
         Tok opTok = opResult.getData();
         TokType opId = opTok.getType();
-        if (opId == TokType.EOS || opId == TokType.SEMICOLON || opId == TokType.COMMA ||
-                opId == TokType.RPAREN || opId == TokType.RBRACKET) {
+        if (opId == TokType.EOS || opId == TokType.SEMI || opId == TokType.COMMA ||
+                opId == TokType.RPAREN || opId == TokType.RCURLY || opId == TokType.RSQUARE) {
             return ParseResult.fail(opTok);
         }
 

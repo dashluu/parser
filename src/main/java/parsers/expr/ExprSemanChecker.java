@@ -2,18 +2,16 @@ package parsers.expr;
 
 import ast.*;
 import exceptions.ErrMsg;
-import operators.BinOpCompat;
 import operators.OpCompat;
 import operators.UnOpCompat;
+import operators.BinOpCompat;
+import types.*;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import symbols.*;
 import toks.Tok;
 import toks.TokType;
-import types.ArrTypeInfo;
-import types.IntType;
-import types.TypeInfo;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -52,6 +50,7 @@ public class ExprSemanChecker {
             case UN_OP -> result = typeCheckUnExpr((UnOpASTNode) exprNode);
             case BIN_OP -> result = typeCheckBinExpr((BinOpASTNode) exprNode);
             case ARR_ACCESS -> result = checkArrAccess((ArrAccessASTNode) exprNode);
+            case ARR_LITERAL -> result = checkArrLiteral((ArrLiteralASTNode) exprNode);
             default -> result = checkFunCall((FunCallASTNode) exprNode);
         }
 
@@ -211,32 +210,120 @@ public class ExprSemanChecker {
 
         // Check if the id is of type array
         TypeInfo dtype = symbol.getDtype();
-        if (!dtype.getId().equals(ArrTypeInfo.ID)) {
+        if (dtype.getInfoType() != TypeInfoType.ARR) {
             return context.raiseErr(new ErrMsg("Expected an array type from '" + arrId + "'", arrIdTok));
         }
 
         ParseResult<ASTNode> itemResult;
+        ASTNode itemNode;
+        ListIterator<ASTNode> itemIter = arrAccessNode.listIterator();
         int i = 0;
 
-        // Check if each index is of type integer
-        for (ASTNode itemNode : arrAccessNode) {
+        while (itemIter.hasNext()) {
+            itemNode = itemIter.next();
             itemResult = recurCheckSeman(itemNode);
             if (itemResult.getStatus() == ParseStatus.ERR) {
                 return itemResult;
-            } else if (!itemNode.getDtype().equals(IntType.getInst())) {
+            }
+
+            // Check if each index is of type integer
+            itemNode = itemResult.getData();
+            if (!itemNode.getDtype().equals(IntType.getInst())) {
                 return context.raiseErr(new ErrMsg("Expected type '" + IntType.ID + "' for array index",
                         itemNode.getTok()));
             }
+
+            // Update the item node at the current position
+            itemIter.set(itemNode);
             ++i;
         }
 
         ArrTypeInfo arrDtype = (ArrTypeInfo) dtype;
-        int dim = arrDtype.getDim();
-        // Reduce the dimension of the original array data type
-        ArrTypeInfo subarrDtype = new ArrTypeInfo(dim - i);
-        arrAccessNode.setDtype(subarrDtype);
+        int newArrDim = arrDtype.getDim() - i;
+        if (newArrDim < 0) {
+            return context.raiseErr(new ErrMsg("Cannot get item from non-array element '" + arrId + "'", arrIdTok));
+        }
+
+        TypeInfo coreDtype = arrDtype.getCoreDtype();
+        ArrTypeInfo newArrDtype = new ArrTypeInfo(coreDtype, newArrDim);
+        arrAccessNode.setDtype(newArrDtype);
         arrAccessNode.setMutable(symbol.isMutable());
         return ParseResult.ok(arrAccessNode);
+    }
+
+    /**
+     * Checks if an array literal is valid.
+     *
+     * @param arrLiteralNode the AST node associated with the array literal.
+     * @return a ParseResult object as the result of checking the array literal.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> checkArrLiteral(ArrLiteralASTNode arrLiteralNode) throws IOException {
+        ParseResult<ASTNode> itemResult;
+        ASTNode itemNode;
+        TypeInfo nodeDtype, itemDtype, coreArrDtype, coreItemDtype, coreResultDtype;
+        ArrTypeInfo arrDtype, itemArrDtype;
+        int arrDim, itemArrDim;
+        ListIterator<ASTNode> itemIter = arrLiteralNode.listIterator();
+
+        while (itemIter.hasNext()) {
+            itemNode = itemIter.next();
+            itemResult = recurCheckSeman(itemNode);
+            if (itemResult.getStatus() == ParseStatus.ERR) {
+                return itemResult;
+            }
+
+            // Check if the current item node's data type is compatible with that of the array
+            itemNode = itemResult.getData();
+            nodeDtype = arrLiteralNode.getDtype();
+            itemDtype = itemNode.getDtype();
+            if (nodeDtype == null) {
+                // First item
+                if (itemDtype.getInfoType() != TypeInfoType.ARR) {
+                    // The item is not an array
+                    arrDtype = new ArrTypeInfo(itemDtype, 1);
+                    arrLiteralNode.setDtype(arrDtype);
+                } else {
+                    itemArrDtype = (ArrTypeInfo) itemDtype;
+                    coreArrDtype = itemArrDtype.getCoreDtype();
+                    itemArrDim = itemArrDtype.getDim();
+                    arrDim = itemArrDim + 1;
+                    arrDtype = new ArrTypeInfo(coreArrDtype, arrDim);
+                    arrLiteralNode.setDtype(arrDtype);
+                }
+            } else {
+                arrDtype = (ArrTypeInfo) nodeDtype;
+                // Check if the dimensions match
+                if (itemDtype.getInfoType() != TypeInfoType.ARR) {
+                    coreItemDtype = itemDtype;
+                } else {
+                    itemArrDtype = (ArrTypeInfo) itemDtype;
+                    coreItemDtype = itemArrDtype.getCoreDtype();
+                    arrDim = arrDtype.getDim();
+                    itemArrDim = itemArrDtype.getDim();
+                    if (arrDim != itemArrDim + 1) {
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous",
+                                itemNode.getTok()));
+                    }
+                }
+
+                // Treat the current node as a type conversion node and check if the data types are compatible
+                coreArrDtype = arrDtype.getCoreDtype();
+                OpCompat opCompat = new BinOpCompat(TokType.ARR_TYPE_CONV, coreArrDtype, coreItemDtype);
+                coreResultDtype = context.getOpTable().getCompatDtype(opCompat);
+                if (coreResultDtype == null) {
+                    return context.raiseErr(new ErrMsg("Unable to have data of type '" + coreItemDtype.getId() +
+                            "' in an array of type '" + coreArrDtype.getId() + "'", itemNode.getTok()));
+                }
+                arrDtype.setCoreDtype(coreResultDtype);
+                arrLiteralNode.setDtype(arrDtype);
+            }
+
+            // Update the item node at the current position
+            itemIter.set(itemNode);
+        }
+
+        return ParseResult.ok(arrLiteralNode);
     }
 
     /**
@@ -270,12 +357,16 @@ public class ExprSemanChecker {
             argResult = recurCheckSeman(argNode);
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
-            } else if (!argNode.getDtype().equals(paramDtype)) {
+            }
+
+            argNode = argResult.getData();
+            if (!argNode.getDtype().equals(paramDtype)) {
                 return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.getId() + "' for argument " + i,
                         argNode.getTok()));
             }
-            // Update the AST child node at the current position
-            argIter.set(argResult.getData());
+
+            // Update the argument node at the current position
+            argIter.set(argNode);
             ++i;
         }
 
