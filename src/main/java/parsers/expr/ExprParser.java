@@ -13,6 +13,9 @@ import toks.Tok;
 import toks.TokType;
 import parsers.utils.ParseContext;
 import global_utils.Pair;
+import types.ArrTypeInfo;
+import types.TypeInfo;
+import types.VoidType;
 
 import java.io.IOException;
 
@@ -165,7 +168,7 @@ public class ExprParser {
                     }
                 }
 
-                exprResult = parseInfixExpr(null);
+                exprResult = parseExpr(context);
                 if (exprResult.getStatus() == ParseStatus.ERR) {
                     return exprResult;
                 } else if (exprResult.getStatus() == ParseStatus.FAIL) {
@@ -258,7 +261,10 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrLiteral() throws IOException {
-        ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null, null);
+        // Set void as the core type and dimension of 1 by default
+        // Semantics checker will reset this later
+        TypeInfo arrDtype = new ArrTypeInfo(VoidType.getInst(), 1);
+        ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null, arrDtype);
         return parseList(TokType.LSQUARE, TokType.RSQUARE, arrLiteralNode);
     }
 
@@ -301,7 +307,7 @@ public class ExprParser {
             return ParseResult.fail(parenResult.getFailTok());
         }
 
-        ParseResult<ASTNode> exprResult = parseInfixExpr(null);
+        ParseResult<ASTNode> exprResult = parseExpr(context);
         // Do not return when failed, parse ')' before returning
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;

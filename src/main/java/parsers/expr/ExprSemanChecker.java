@@ -261,10 +261,11 @@ public class ExprSemanChecker {
     private ParseResult<ASTNode> checkArrLiteral(ArrLiteralASTNode arrLiteralNode) throws IOException {
         ParseResult<ASTNode> itemResult;
         ASTNode itemNode;
-        TypeInfo nodeDtype, itemDtype, coreArrDtype, coreItemDtype, coreResultDtype;
+        TypeInfo itemDtype, coreArrDtype, coreItemDtype, coreResultDtype;
         ArrTypeInfo arrDtype, itemArrDtype;
         int arrDim, itemArrDim;
         ListIterator<ASTNode> itemIter = arrLiteralNode.listIterator();
+        boolean firstItem = true;
 
         while (itemIter.hasNext()) {
             itemNode = itemIter.next();
@@ -275,24 +276,23 @@ public class ExprSemanChecker {
 
             // Check if the current item node's data type is compatible with that of the array
             itemNode = itemResult.getData();
-            nodeDtype = arrLiteralNode.getDtype();
+            arrDtype = (ArrTypeInfo) arrLiteralNode.getDtype();
             itemDtype = itemNode.getDtype();
-            if (nodeDtype == null) {
-                // First item
+
+            if (firstItem) {
+                firstItem = false;
                 if (itemDtype.getInfoType() != TypeInfoType.ARR) {
                     // The item is not an array
-                    arrDtype = new ArrTypeInfo(itemDtype, 1);
-                    arrLiteralNode.setDtype(arrDtype);
+                    arrDtype.setCoreDtype(itemDtype);
                 } else {
                     itemArrDtype = (ArrTypeInfo) itemDtype;
                     coreArrDtype = itemArrDtype.getCoreDtype();
                     itemArrDim = itemArrDtype.getDim();
                     arrDim = itemArrDim + 1;
-                    arrDtype = new ArrTypeInfo(coreArrDtype, arrDim);
-                    arrLiteralNode.setDtype(arrDtype);
+                    arrDtype.setCoreDtype(coreArrDtype);
+                    arrDtype.setDim(arrDim);
                 }
             } else {
-                arrDtype = (ArrTypeInfo) nodeDtype;
                 // Check if the dimensions match
                 if (itemDtype.getInfoType() != TypeInfoType.ARR) {
                     coreItemDtype = itemDtype;
@@ -315,8 +315,8 @@ public class ExprSemanChecker {
                     return context.raiseErr(new ErrMsg("Unable to have data of type '" + coreItemDtype.getId() +
                             "' in an array of type '" + coreArrDtype.getId() + "'", itemNode.getTok()));
                 }
+
                 arrDtype.setCoreDtype(coreResultDtype);
-                arrLiteralNode.setDtype(arrDtype);
             }
 
             // Update the item node at the current position
