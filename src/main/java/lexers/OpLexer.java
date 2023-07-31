@@ -1,6 +1,7 @@
 package lexers;
 
 import operators.OpTable;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
 import parsers.utils.ParseContext;
@@ -28,6 +29,7 @@ public class OpLexer {
         TokType tmpTokType, opId = null;
         OpTable opTable = context.getOpTable();
         boolean end = false;
+        reader.startSrcRange();
 
         while ((c = reader.peek()) != LexReader.EOS && !reader.isSpace(c) && !end) {
             tmpStr.append((char) c);
@@ -55,7 +57,8 @@ public class OpLexer {
             return LexResult.fail();
         }
 
-        Tok opTok = new Tok(tokVal, opId, reader.getRow());
+        SrcRange srcRange = reader.endSrcRange();
+        Tok opTok = new Tok(tokVal, opId, srcRange);
         return LexResult.ok(opTok);
     }
 }

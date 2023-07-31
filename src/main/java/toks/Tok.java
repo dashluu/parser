@@ -3,22 +3,12 @@ package toks;
 public class Tok {
     private final String val;
     private TokType type;
-    private final int row;
-    private int col;
+    private SrcRange srcRange;
 
-    public Tok(String val, TokType type, int row, int col) {
+    public Tok(String val, TokType type, SrcRange srcRange) {
         this.val = val;
         this.type = type;
-        this.row = row;
-        this.col = col;
-    }
-
-    public Tok(String val, TokType type, int row) {
-        this(val, type, row, 1);
-    }
-
-    public Tok(String val, TokType type) {
-        this(val, type, 1, 1);
+        this.srcRange = srcRange;
     }
 
     public String getVal() {
@@ -33,22 +23,17 @@ public class Tok {
         this.type = type;
     }
 
-    public int getRow() {
-        return row;
+    public SrcRange getSrcRange() {
+        return srcRange;
     }
 
-    public void setCol(int col) {
-        this.col = col;
-    }
-
-    public int getCol() {
-        return col;
+    public void setSrcRange(SrcRange srcRange) {
+        this.srcRange = srcRange;
     }
 
     @Override
     public String toString() {
-        return "token: " + val + ", token type: " + type +
-                ", row number: " + row + ", column number: " + col;
+        return "token: " + val + ", token type: " + type + ", " + srcRange;
     }
 
     @Override

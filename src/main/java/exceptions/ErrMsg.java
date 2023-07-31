@@ -1,39 +1,30 @@
 package exceptions;
 
+import toks.SrcPos;
 import toks.Tok;
 
 public class ErrMsg {
     private final String val;
-    private final int row;
-    private int col;
+    private SrcPos srcPos;
 
-    public ErrMsg(String val, int row, int col) {
+    public ErrMsg(String val, SrcPos srcPos) {
         this.val = val;
-        this.row = row;
-        this.col = col;
+        this.srcPos = srcPos;
     }
 
     public ErrMsg(String val, Tok tok) {
-        this(val, tok.getRow(), tok.getCol());
-    }
-
-    public ErrMsg(String val, int row) {
-        this(val, row, 1);
+        this(val, tok.getSrcRange().getStartPos());
     }
 
     public String getVal() {
         return val;
     }
 
-    public int getRow() {
-        return row;
+    public SrcPos getSrcPos() {
+        return srcPos;
     }
 
-    public int getCol() {
-        return col;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
+    public void setSrcPos(SrcPos srcPos) {
+        this.srcPos = srcPos;
     }
 }

@@ -1,6 +1,7 @@
 package lexers;
 
 import exceptions.ErrMsg;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
 
@@ -108,7 +109,7 @@ public class NumLexer {
         String digits = readDigits();
         if (digits == null) {
             return LexResult.err(new ErrMsg("Expected a sequence of digits after '" +
-                    exp.charAt(exp.length() - 1) + "'", reader.getRow()));
+                    exp.charAt(exp.length() - 1) + "'", reader.getSrcPos()));
         }
         exp.append(digits);
         return LexResult.ok(exp.toString());
@@ -122,6 +123,7 @@ public class NumLexer {
      */
     public LexResult<Tok> read() throws IOException {
         StringBuilder tokVal = new StringBuilder();
+        reader.startSrcRange();
 
         // Read sequence of digits
         String digits = readDigits();
@@ -150,7 +152,8 @@ public class NumLexer {
         }
 
         TokType literalType = (isFp ? TokType.FLOAT_LITERAL : TokType.INT_LITERAL);
-        Tok numTok = new Tok(tokVal.toString(), literalType, reader.getRow());
+        SrcRange srcRange = reader.endSrcRange();
+        Tok numTok = new Tok(tokVal.toString(), literalType, srcRange);
         return LexResult.ok(numTok);
     }
 }

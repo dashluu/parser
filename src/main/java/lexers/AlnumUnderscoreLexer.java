@@ -1,6 +1,7 @@
 package lexers;
 
 import exceptions.ErrMsg;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
 
@@ -30,6 +31,7 @@ public class AlnumUnderscoreLexer {
 
         StringBuilder tokStr = new StringBuilder();
         boolean end = false;
+        reader.startSrcRange();
 
         // Consume the character from the stream until it is a separator or a valid special character
         while (!reader.isSep(c) && !end) {
@@ -41,12 +43,13 @@ public class AlnumUnderscoreLexer {
                 end = true;
             } else {
                 return LexResult.err(new ErrMsg("Invalid character '" + c + "' after '" + tokStr + "'",
-                        reader.getRow()));
+                        reader.getSrcPos()));
             }
         }
 
         // The token string cannot be empty
-        Tok tok = new Tok(tokStr.toString(), TokType.UNKNOWN, reader.getRow());
+        SrcRange srcRange = reader.endSrcRange();
+        Tok tok = new Tok(tokStr.toString(), TokType.UNKNOWN, srcRange);
         return LexResult.ok(tok);
     }
 }

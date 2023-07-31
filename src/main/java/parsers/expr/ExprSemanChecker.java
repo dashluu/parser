@@ -293,18 +293,20 @@ public class ExprSemanChecker {
                     arrDtype.setDim(arrDim);
                 }
             } else {
+                arrDim = arrDtype.getDim();
                 // Check if the dimensions match
                 if (itemDtype.getInfoType() != TypeInfoType.ARR) {
+                    if (arrDim != 1) {
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getTok()));
+                    }
                     coreItemDtype = itemDtype;
                 } else {
                     itemArrDtype = (ArrTypeInfo) itemDtype;
-                    coreItemDtype = itemArrDtype.getCoreDtype();
-                    arrDim = arrDtype.getDim();
                     itemArrDim = itemArrDtype.getDim();
                     if (arrDim != itemArrDim + 1) {
-                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous",
-                                itemNode.getTok()));
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getTok()));
                     }
+                    coreItemDtype = itemArrDtype.getCoreDtype();
                 }
 
                 // Treat the current node as a type conversion node and check if the data types are compatible

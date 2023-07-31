@@ -1,6 +1,8 @@
 package lexers;
 
 import exceptions.ErrMsg;
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
 import parsers.utils.ParseContext;
@@ -17,11 +19,6 @@ public class Lexer {
     private final OpLexer opLexer;
     private final ArrayDeque<Tok> tokBuff = new ArrayDeque<>();
 
-    // Row number of a token being peeked
-    private int row = 1;
-    // Column number
-    private int col = 0;
-
     public Lexer(Reader reader) {
         this.reader = new LexReader(reader);
         alnum_Lexer = new AlnumUnderscoreLexer(this.reader);
@@ -35,21 +32,6 @@ public class Lexer {
      */
     public void consume() {
         tokBuff.removeFirst();
-    }
-
-    /**
-     * Updates the row and column number in lexer.
-     *
-     * @param tok the token whose row and column is to be updated.
-     */
-    private void updateRowCol(Tok tok) {
-        if (row != tok.getRow()) {
-            row = tok.getRow();
-            col = 1;
-        } else {
-            ++col;
-        }
-        tok.setCol(col);
     }
 
     /**
@@ -80,8 +62,9 @@ public class Lexer {
         // Check if the token is EOF
         Tok tok;
         if (reader.peek() == LexReader.EOS) {
-            tok = new Tok(null, TokType.EOS, row, -1);
-            updateRowCol(tok);
+            SrcPos srcPos = reader.getSrcPos();
+            SrcRange srcRange = new SrcRange(srcPos);
+            tok = new Tok(null, TokType.EOS, srcRange);
             tokBuff.addLast(tok);
             return LexResult.ok(tok);
         }
@@ -89,7 +72,6 @@ public class Lexer {
         LexResult<Tok> result = kwLexer.read(context);
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
-            updateRowCol(tok);
             tokBuff.addLast(tok);
             return result;
         }
@@ -97,7 +79,6 @@ public class Lexer {
         result = numLexer.read();
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
-            updateRowCol(tok);
             tokBuff.addLast(tok);
             return result;
         }
@@ -105,7 +86,6 @@ public class Lexer {
         result = opLexer.read(context);
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
-            updateRowCol(tok);
             tokBuff.addLast(tok);
             return result;
         }
@@ -114,12 +94,11 @@ public class Lexer {
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
             tok.setType(TokType.ID);
-            updateRowCol(tok);
             tokBuff.addLast(tok);
             return result;
         }
         // Cannot read the next token
         return LexResult.err(new ErrMsg("Unable to get next token because of invalid syntax at '" +
-                (char) reader.peek() + "'", reader.getRow(), col));
+                (char) reader.peek() + "'", reader.getSrcPos()));
     }
 }

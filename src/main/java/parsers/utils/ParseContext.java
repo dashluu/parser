@@ -62,8 +62,10 @@ public class ParseContext {
      * @return a ParseResult object as an error signal.
      */
     public <E> ParseResult<E> raiseErr(ErrMsg msg) {
-        if (errMsg == null || errMsg.getRow() > msg.getRow() || errMsg.getCol() > msg.getCol()) {
-            // Updates the error to the earliest one as possible, that is, one with <= row and <= column
+        if (errMsg == null ||
+                errMsg.getSrcPos().getLn() > msg.getSrcPos().getLn() ||
+                errMsg.getSrcPos().getCol() > msg.getSrcPos().getCol()) {
+            // Updates the error to the earliest one as possible, that is, one with <= line and <= column
             errMsg = msg;
         }
         return ParseResult.err();

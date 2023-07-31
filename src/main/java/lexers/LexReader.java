@@ -1,18 +1,25 @@
 package lexers;
 
+import toks.SrcPos;
+import toks.SrcRange;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LexReader {
     private final ArrayDeque<Integer> buff = new ArrayDeque<>();
     private final Reader reader;
     public final static int EOS = -1;
     private final static String SPECIAL_CHARS = "(){}[]+-*/%~!&|<>=,.;:_";
-    private int row = 1;
+    private final static List<Integer> colList = new ArrayList<>();
+    private SrcRange srcRange;
 
     public LexReader(Reader reader) {
         this.reader = reader;
+        colList.add(1);
     }
 
     /**
@@ -66,12 +73,31 @@ public class LexReader {
     }
 
     /**
-     * Gets the current row number.
+     * Gets the current position in the source.
      *
-     * @return an integer as the current row number.
+     * @return a SrcPos object as the current source position.
      */
-    public int getRow() {
-        return row;
+    public SrcPos getSrcPos() {
+        int ln = colList.size();
+        int col = colList.get(colList.size() - 1);
+        return new SrcPos(ln, col);
+    }
+
+    /**
+     * Records the starting position of a source range.
+     */
+    public void startSrcRange() {
+        srcRange = new SrcRange(getSrcPos());
+    }
+
+    /**
+     * Records the ending position of a source range.
+     *
+     * @return the source range from the starting point to the ending point.
+     */
+    public SrcRange endSrcRange() {
+        srcRange.setEndPos(getSrcPos());
+        return srcRange;
     }
 
     /**
@@ -162,10 +188,14 @@ public class LexReader {
     public int read() throws IOException {
         peek();
         int c = buff.pop();
+        int lastColIndex = colList.size() - 1;
+
         if (c == '\n') {
-            // If '\n' is popped, increment the current row number
-            ++row;
+            colList.add(1);
+        } else {
+            colList.set(lastColIndex, colList.get(lastColIndex) + 1);
         }
+
         return c;
     }
 
@@ -175,13 +205,17 @@ public class LexReader {
      * @param str the string to be put back.
      */
     public void putBack(String str) {
-        int c;
+        int c, lastColIndex;
         for (int i = str.length() - 1; i >= 0; --i) {
             c = str.charAt(i);
+            lastColIndex = colList.size() - 1;
+
             if (c == '\n') {
-                // If '\n' is pushed, decrement the current row number
-                --row;
+                colList.remove(lastColIndex);
+            } else {
+                colList.set(lastColIndex, colList.get(lastColIndex) - 1);
             }
+
             buff.addFirst(c);
         }
     }

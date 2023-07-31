@@ -2,6 +2,7 @@ package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
+import operators.OpTable;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
@@ -208,9 +209,9 @@ public class FunHeadParser {
      * @return an AST node as the root of the constructed AST.
      */
     private TypeAnnASTNode voidRetTypeAnnAST() {
-        Tok typeAnnTok = new Tok(":", TokType.COLON);
+        Tok typeAnnTok = new Tok(OpTable.COLON, TokType.COLON, null);
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        Tok dtypeTok = new Tok(VoidType.ID, TokType.ID);
+        Tok dtypeTok = new Tok(VoidType.ID, TokType.ID, null);
         ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
         typeAnnNode.setDtypeNode(dtypeNode);
         return typeAnnNode;
