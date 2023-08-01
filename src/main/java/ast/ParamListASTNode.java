@@ -1,8 +1,10 @@
 package ast;
 
+import toks.SrcRange;
+
 public class ParamListASTNode extends KnaryASTNode {
-    public ParamListASTNode() {
-        super(null, ASTNodeType.PARAM_LIST, null);
+    public ParamListASTNode(SrcRange srcRange) {
+        super(null, srcRange, ASTNodeType.PARAM_LIST, null);
     }
 
     @Override

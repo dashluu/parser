@@ -1,5 +1,6 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -12,9 +13,19 @@ import java.util.ListIterator;
 // Implemented using the Iterator pattern
 public abstract class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
     protected final List<ASTNode> children = new ArrayList<>();
+    protected SrcRange srcRange;
 
-    public KnaryASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {
+    public KnaryASTNode(Tok tok, SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype) {
         super(tok, nodeType, dtype);
+        this.srcRange = srcRange;
+    }
+
+    public SrcRange getSrcRange() {
+        return srcRange;
+    }
+
+    public void setSrcRange(SrcRange srcRange) {
+        this.srcRange = srcRange;
     }
 
     /**

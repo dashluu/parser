@@ -1,10 +1,11 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 
 public class IfElseASTNode extends KnaryASTNode {
-    public IfElseASTNode(Tok tok) {
-        super(tok, ASTNodeType.IF_ELSE, null);
+    public IfElseASTNode(SrcRange srcRange) {
+        super(null, srcRange, ASTNodeType.IF_ELSE, null);
     }
 
     @Override

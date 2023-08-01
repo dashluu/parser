@@ -31,7 +31,7 @@ public class SrcRange {
 
     @Override
     public String toString() {
-        return "line: " + startPos.getLn() + " - " + endPos.getLn() +
-                ", column: " + startPos.getCol() + " - " + endPos.getCol();
+        return "ln " + startPos.getLn() + ", col: " + startPos.getCol() +
+                " - ln " + endPos.getLn() + ", col: " + endPos.getCol();
     }
 }

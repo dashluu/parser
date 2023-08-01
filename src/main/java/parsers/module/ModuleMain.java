@@ -3,7 +3,7 @@ package parsers.module;
 import ast.ASTNode;
 import ast.JSONWalker;
 import exceptions.SyntaxErr;
-import lexers.Lexer;
+import lexers.LexReader;
 import parsers.utils.*;
 
 import java.io.*;
@@ -19,8 +19,8 @@ public class ModuleMain {
             reader = new BufferedReader(new FileReader(inFilename));
             writer = new BufferedWriter(new FileWriter(outFilename));
 
-            Lexer lexer = new Lexer(reader);
-            ModuleParser moduleParser = new ModuleParser(lexer);
+            LexReader lexReader = new LexReader(reader);
+            ModuleParser moduleParser = new ModuleParser(lexReader);
 
             moduleParser.init();
 

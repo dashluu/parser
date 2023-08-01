@@ -1,7 +1,6 @@
 package lexers;
 
 import toks.SrcPos;
-import toks.SrcRange;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -15,7 +14,6 @@ public class LexReader {
     public final static int EOS = -1;
     private final static String SPECIAL_CHARS = "(){}[]+-*/%~!&|<>=,.;:_";
     private final static List<Integer> colList = new ArrayList<>();
-    private SrcRange srcRange;
 
     public LexReader(Reader reader) {
         this.reader = reader;
@@ -81,23 +79,6 @@ public class LexReader {
         int ln = colList.size();
         int col = colList.get(colList.size() - 1);
         return new SrcPos(ln, col);
-    }
-
-    /**
-     * Records the starting position of a source range.
-     */
-    public void startSrcRange() {
-        srcRange = new SrcRange(getSrcPos());
-    }
-
-    /**
-     * Records the ending position of a source range.
-     *
-     * @return the source range from the starting point to the ending point.
-     */
-    public SrcRange endSrcRange() {
-        srcRange.setEndPos(getSrcPos());
-        return srcRange;
     }
 
     /**
@@ -188,11 +169,11 @@ public class LexReader {
     public int read() throws IOException {
         peek();
         int c = buff.pop();
-        int lastColIndex = colList.size() - 1;
 
         if (c == '\n') {
             colList.add(1);
         } else {
+            int lastColIndex = colList.size() - 1;
             colList.set(lastColIndex, colList.get(lastColIndex) + 1);
         }
 

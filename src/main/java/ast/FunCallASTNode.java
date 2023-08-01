@@ -1,11 +1,12 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
 public class FunCallASTNode extends KnaryASTNode {
-    public FunCallASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.FUN_CALL, dtype);
+    public FunCallASTNode(Tok tok, SrcRange srcRange, TypeInfo dtype) {
+        super(tok, srcRange, ASTNodeType.FUN_CALL, dtype);
     }
 
     @Override

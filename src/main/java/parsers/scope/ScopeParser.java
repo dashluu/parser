@@ -1,21 +1,23 @@
 package parsers.scope;
 
-import ast.*;
+import ast.ASTNode;
+import ast.ScopeASTNode;
 import exceptions.ErrMsg;
+import lexers.LexReader;
 import parsers.branch.IfElseParser;
 import parsers.branch.WhileParser;
 import parsers.function.FunDefParser;
 import parsers.stmt.StmtParser;
 import parsers.utils.*;
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
-import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
 
 import java.io.IOException;
 
 public class ScopeParser {
+    private LexReader lexReader;
     private TokParser tokParser;
     private StmtParser stmtParser;
     private FunDefParser funDefParser;
@@ -25,14 +27,16 @@ public class ScopeParser {
     /**
      * Initializes the dependencies.
      *
+     * @param lexReader    a lexeme reader.
      * @param tokParser    a parser that consumes valid tokens.
      * @param stmtParser   a statement parser.
      * @param funDefParser a function definition parser.
      * @param ifElseParser an if-elif-else sequence parser.
      * @param whileParser  a while-loop parser.
      */
-    public void init(TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser,
+    public void init(LexReader lexReader, TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser,
                      IfElseParser ifElseParser, WhileParser whileParser) {
+        this.lexReader = lexReader;
         this.tokParser = tokParser;
         this.stmtParser = stmtParser;
         this.funDefParser = funDefParser;
@@ -56,6 +60,8 @@ public class ScopeParser {
             return ParseResult.fail(curlyResult.getFailTok());
         }
 
+        Tok curlyTok = curlyResult.getData();
+        SrcPos blockStartPos = curlyTok.getSrcRange().getStartPos();
         // Try parsing code in a new scope
         Scope newScope = new Scope(context.getScope());
         ScopeStack scopeStack = context.getScopeStack();
@@ -74,6 +80,11 @@ public class ScopeParser {
             return context.raiseErr(new ErrMsg("Missing '}'", curlyResult.getFailTok()));
         }
 
+        curlyTok = curlyResult.getData();
+        SrcPos blockEndPos = curlyTok.getSrcRange().getEndPos();
+        SrcRange blockRange = new SrcRange(blockStartPos, blockEndPos);
+        ScopeASTNode blockNode = (ScopeASTNode) scopeResult.getData();
+        blockNode.setSrcRange(blockRange);
         scopeStack.pop();
         return scopeResult;
     }
@@ -88,7 +99,10 @@ public class ScopeParser {
     public ParseResult<ASTNode> parseScope(ParseContext context) throws IOException {
         ParseStatus status;
         ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult, whileResult;
-        ScopeASTNode scopeNode = new ScopeASTNode();
+        ScopeASTNode scopeNode = new ScopeASTNode(null);
+        SrcPos scopeStartPos = lexReader.getSrcPos();
+        SrcPos scopeEndPos;
+        SrcRange scopeRange;
         boolean end = false;
 
         while (!end) {
@@ -141,16 +155,17 @@ public class ScopeParser {
                 status = stmtResult.getStatus();
                 if (status == ParseStatus.ERR) {
                     return stmtResult;
-                } else if (status != ParseStatus.EMPTY && !(end = status == ParseStatus.FAIL)) {
-                    scopeNode.addChild(stmtResult.getData());
+                } else if (!(end = status == ParseStatus.FAIL)) {
+                    if (status != ParseStatus.EMPTY) {
+                        scopeNode.addChild(stmtResult.getData());
+                    }
                 }
-            }
-
-            if (end) {
-                return ParseResult.ok(scopeNode);
             }
         }
 
+        scopeEndPos = lexReader.getSrcPos();
+        scopeRange = new SrcRange(scopeStartPos, scopeEndPos);
+        scopeNode.setSrcRange(scopeRange);
         return ParseResult.ok(scopeNode);
     }
 }

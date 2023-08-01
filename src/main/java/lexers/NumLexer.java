@@ -1,6 +1,7 @@
 package lexers;
 
 import exceptions.ErrMsg;
+import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
@@ -123,7 +124,7 @@ public class NumLexer {
      */
     public LexResult<Tok> read() throws IOException {
         StringBuilder tokVal = new StringBuilder();
-        reader.startSrcRange();
+        SrcPos startPos = reader.getSrcPos();
 
         // Read sequence of digits
         String digits = readDigits();
@@ -152,7 +153,8 @@ public class NumLexer {
         }
 
         TokType literalType = (isFp ? TokType.FLOAT_LITERAL : TokType.INT_LITERAL);
-        SrcRange srcRange = reader.endSrcRange();
+        SrcPos endPos = reader.getSrcPos();
+        SrcRange srcRange = new SrcRange(startPos, endPos);
         Tok numTok = new Tok(tokVal.toString(), literalType, srcRange);
         return LexResult.ok(numTok);
     }

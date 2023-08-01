@@ -2,6 +2,7 @@ package parsers.branch;
 
 import ast.*;
 import exceptions.ErrMsg;
+import lexers.LexReader;
 import parsers.expr.ExprParser;
 import parsers.scope.ScopeParser;
 import parsers.utils.*;
@@ -12,6 +13,7 @@ import types.BoolType;
 import java.io.IOException;
 
 public abstract class CondBranchParser {
+    protected LexReader lexReader;
     protected TokParser tokParser;
     protected SemiParser semiParser;
     protected ExprParser exprParser;
@@ -21,12 +23,15 @@ public abstract class CondBranchParser {
     /**
      * Initializes the dependencies.
      *
+     * @param lexReader   a lexeme reader.
      * @param tokParser   a parser that consumes valid tokens.
      * @param semiParser  a parser that consumes trailing semicolons.
      * @param exprParser  an expression parser.
      * @param scopeParser a scope parser.
      */
-    public void init(TokParser tokParser, SemiParser semiParser, ExprParser exprParser, ScopeParser scopeParser) {
+    public void init(LexReader lexReader, TokParser tokParser, SemiParser semiParser,
+                     ExprParser exprParser, ScopeParser scopeParser) {
+        this.lexReader = lexReader;
         this.tokParser = tokParser;
         this.semiParser = semiParser;
         this.exprParser = exprParser;

@@ -2,17 +2,19 @@ package parsers.expr;
 
 import ast.*;
 import exceptions.ErrMsg;
+import global_utils.Pair;
 import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
 import operators.OpTable;
+import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import parsers.utils.TokParser;
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
-import parsers.utils.ParseContext;
-import global_utils.Pair;
 import types.ArrTypeInfo;
 import types.TypeInfo;
 import types.VoidType;
@@ -143,10 +145,8 @@ public class ExprParser {
             return ParseResult.fail(bracketResult.getFailTok());
         }
 
-        if (groupNode.getTok() == null) {
-            groupNode.setTok(bracketResult.getData());
-        }
-
+        Tok bracketTok = bracketResult.getData();
+        SrcPos bracketStartPos = bracketTok.getSrcRange().getStartPos();
         ParseResult<ASTNode> exprResult;
         ParseResult<Tok> commaResult;
         boolean end = false;
@@ -180,6 +180,10 @@ public class ExprParser {
             }
         }
 
+        bracketTok = bracketResult.getData();
+        SrcPos bracketEndPos = bracketTok.getSrcRange().getEndPos();
+        SrcRange bracketRange = new SrcRange(bracketStartPos, bracketEndPos);
+        groupNode.setSrcRange(bracketRange);
         return ParseResult.ok(groupNode);
     }
 
@@ -191,7 +195,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrAccess(Tok arrIdTok) throws IOException {
-        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(arrIdTok, null, false);
+        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(arrIdTok, null, null, false);
         return parseList(TokType.LSQUARE, TokType.RSQUARE, arrAccessNode);
     }
 
@@ -236,7 +240,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArgList(Tok funIdTok) throws IOException {
-        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, null);
+        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, null, null);
         return parseList(TokType.LPAREN, TokType.RPAREN, funCallNode);
     }
 
@@ -262,7 +266,7 @@ public class ExprParser {
      */
     private ParseResult<ASTNode> parseArrLiteral() throws IOException {
         // Set void as the core type and dimension of 1 by default
-        // Semantics checker will reset this later
+        // Semantics checker will set this later
         TypeInfo arrDtype = new ArrTypeInfo(VoidType.getInst(), 1);
         ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null, arrDtype);
         return parseList(TokType.LSQUARE, TokType.RSQUARE, arrLiteralNode);

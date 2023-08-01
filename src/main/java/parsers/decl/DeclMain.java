@@ -3,6 +3,7 @@ package parsers.decl;
 import ast.ASTNode;
 import ast.JSONWalker;
 import exceptions.SyntaxErr;
+import lexers.LexReader;
 import lexers.Lexer;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
@@ -24,7 +25,8 @@ public class DeclMain {
             reader = new BufferedReader(new FileReader(inFilename));
             writer = new BufferedWriter(new FileWriter(outFilename));
 
-            Lexer lexer = new Lexer(reader);
+            LexReader lexReader = new LexReader(reader);
+            Lexer lexer = new Lexer(lexReader);
             TokParser tokParser = new TokParser();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
             ExprParser exprParser = new ExprParser();

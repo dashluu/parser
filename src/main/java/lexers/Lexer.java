@@ -1,14 +1,13 @@
 package lexers;
 
 import exceptions.ErrMsg;
+import parsers.utils.ParseContext;
 import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
-import parsers.utils.ParseContext;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayDeque;
 
 public class Lexer {
@@ -19,12 +18,12 @@ public class Lexer {
     private final OpLexer opLexer;
     private final ArrayDeque<Tok> tokBuff = new ArrayDeque<>();
 
-    public Lexer(Reader reader) {
-        this.reader = new LexReader(reader);
-        alnum_Lexer = new AlnumUnderscoreLexer(this.reader);
-        numLexer = new NumLexer(this.reader);
-        kwLexer = new KeywordLexer(this.reader);
-        opLexer = new OpLexer(this.reader);
+    public Lexer(LexReader reader) {
+        this.reader = reader;
+        alnum_Lexer = new AlnumUnderscoreLexer(reader);
+        numLexer = new NumLexer(reader);
+        kwLexer = new KeywordLexer(reader);
+        opLexer = new OpLexer(reader);
     }
 
     /**

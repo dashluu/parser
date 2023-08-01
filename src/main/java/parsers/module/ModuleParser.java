@@ -2,6 +2,7 @@ package parsers.module;
 
 import ast.ASTNode;
 import exceptions.ErrMsg;
+import lexers.LexReader;
 import lexers.LexResult;
 import lexers.LexStatus;
 import lexers.Lexer;
@@ -25,6 +26,7 @@ import parsers.utils.ParseContext;
 import java.io.IOException;
 
 public class ModuleParser {
+    private final LexReader lexReader;
     private final Lexer lexer;
     private final TokParser tokParser = new TokParser();
     private final SemiParser semiParser = new SemiParser();
@@ -43,8 +45,9 @@ public class ModuleParser {
     private final FunDefParser funDefParser = new FunDefParser();
     private final ScopeParser scopeParser = new ScopeParser();
 
-    public ModuleParser(Lexer lexer) {
-        this.lexer = lexer;
+    public ModuleParser(LexReader lexReader) {
+        this.lexReader = lexReader;
+        lexer = new Lexer(lexReader);
     }
 
     /**
@@ -59,11 +62,11 @@ public class ModuleParser {
         breakParser.init(tokParser);
         contParser.init(tokParser);
         stmtParser.init(tokParser, semiParser, exprParser, declParser, retParser, breakParser, contParser);
-        ifElseParser.init(tokParser, semiParser, exprParser, scopeParser);
-        whileParser.init(tokParser, semiParser, exprParser, scopeParser);
+        ifElseParser.init(lexReader, tokParser, semiParser, exprParser, scopeParser);
+        whileParser.init(lexReader, tokParser, semiParser, exprParser, scopeParser);
         funHeadParser.init(tokParser, funHeadSemanChecker);
         funDefParser.init(funHeadParser, scopeParser);
-        scopeParser.init(tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
+        scopeParser.init(lexReader, tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
     }
 
     /**

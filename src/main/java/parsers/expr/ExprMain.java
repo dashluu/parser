@@ -3,6 +3,7 @@ package parsers.expr;
 import ast.ASTNode;
 import ast.JSONWalker;
 import exceptions.SyntaxErr;
+import lexers.LexReader;
 import lexers.Lexer;
 import parsers.utils.*;
 import parsers.utils.ParseContext;
@@ -22,7 +23,8 @@ public class ExprMain {
             reader = new BufferedReader(new FileReader(inFilename));
             writer = new BufferedWriter(new FileWriter(outFilename));
 
-            Lexer lexer = new Lexer(reader);
+            LexReader lexReader = new LexReader(reader);
+            Lexer lexer = new Lexer(lexReader);
             TokParser tokParser = new TokParser();
             ExprSemanChecker semanChecker = new ExprSemanChecker();
             ExprParser parser = new ExprParser();

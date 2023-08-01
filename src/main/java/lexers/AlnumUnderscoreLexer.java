@@ -1,6 +1,7 @@
 package lexers;
 
 import exceptions.ErrMsg;
+import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
@@ -31,7 +32,7 @@ public class AlnumUnderscoreLexer {
 
         StringBuilder tokStr = new StringBuilder();
         boolean end = false;
-        reader.startSrcRange();
+        SrcPos startPos = reader.getSrcPos();
 
         // Consume the character from the stream until it is a separator or a valid special character
         while (!reader.isSep(c) && !end) {
@@ -48,7 +49,8 @@ public class AlnumUnderscoreLexer {
         }
 
         // The token string cannot be empty
-        SrcRange srcRange = reader.endSrcRange();
+        SrcPos endPos = reader.getSrcPos();
+        SrcRange srcRange = new SrcRange(startPos, endPos);
         Tok tok = new Tok(tokStr.toString(), TokType.UNKNOWN, srcRange);
         return LexResult.ok(tok);
     }

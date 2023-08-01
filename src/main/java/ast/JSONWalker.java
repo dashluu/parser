@@ -19,8 +19,8 @@ public class JSONWalker implements IASTVisitor {
         Tok tok = node.getTok();
         ASTNodeType nodeType = node.getNodeType();
         TypeInfo dtype = node.getDtype();
-        jsonStrBuff.append("\"Node type\":\"").append(nodeType == null ? "null" : nodeType).append("\"")
-                .append(",\"Value\":\"").append(tok == null ? "null" : tok.getVal()).append("\"")
+        jsonStrBuff.append("\"Node type\":\"").append(nodeType).append("\"")
+                .append(",\"Tok\":\"").append(tok == null ? "null" : tok).append("\"")
                 .append(",\"Data type\":\"").append(dtype == null ? "null" : dtype.getId()).append("\"");
     }
 
@@ -92,6 +92,7 @@ public class JSONWalker implements IASTVisitor {
 
     private void knaryNodeToJSON(KnaryASTNode knaryNode) {
         nodeToJSON(knaryNode);
+        jsonStrBuff.append(",\"Source range\":\"").append(knaryNode.srcRange).append("\"");
         jsonStrBuff.append(",\"Children\":[");
         ListIterator<ASTNode> childrenIter = knaryNode.listIterator();
         ASTNode child;

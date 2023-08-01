@@ -33,7 +33,7 @@ public class Tok {
 
     @Override
     public String toString() {
-        return "token: " + val + ", token type: " + type + ", " + srcRange;
+        return "val: " + val + ", tok type: " + type + ", " + srcRange;
     }
 
     @Override

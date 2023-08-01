@@ -7,6 +7,8 @@ import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
 import parsers.utils.TokParser;
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
 import types.VoidType;
@@ -102,9 +104,11 @@ public class FunHeadParser {
             return ParseResult.fail(parenResult.getFailTok());
         }
 
+        Tok parenTok = parenResult.getData();
+        SrcPos paramListStartPos = parenTok.getSrcRange().getStartPos();
+        ParamListASTNode paramListNode = new ParamListASTNode(null);
         ParseResult<Tok> commaResult;
         ParseResult<ASTNode> paramResult;
-        ParamListASTNode paramListNode = new ParamListASTNode();
         boolean end = false;
         // Boolean to indicate if this is the first parameter
         boolean firstArg = true;
@@ -137,6 +141,10 @@ public class FunHeadParser {
             }
         }
 
+        parenTok = parenResult.getData();
+        SrcPos paramListEndPos = parenTok.getSrcRange().getEndPos();
+        SrcRange paramListRange = new SrcRange(paramListStartPos, paramListEndPos);
+        paramListNode.setSrcRange(paramListRange);
         return ParseResult.ok(paramListNode);
     }
 

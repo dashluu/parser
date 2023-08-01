@@ -1,11 +1,12 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
 public class ArrLiteralASTNode extends KnaryASTNode {
-    public ArrLiteralASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.ARR_LITERAL, dtype);
+    public ArrLiteralASTNode(SrcRange srcRange, TypeInfo dtype) {
+        super(null, srcRange, ASTNodeType.ARR_LITERAL, dtype);
     }
 
     @Override

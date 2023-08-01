@@ -1,13 +1,15 @@
 package parsers.branch;
 
-import ast.*;
+import ast.ASTNode;
+import ast.ElseASTNode;
+import ast.IfElseASTNode;
+import ast.ScopeASTNode;
 import exceptions.ErrMsg;
 import parsers.utils.*;
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
-import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
 
 import java.io.IOException;
 
@@ -21,13 +23,15 @@ public class IfElseParser extends CondBranchParser {
      */
     public ParseResult<ASTNode> parseIfElse(ParseContext context) throws IOException {
         this.context = context;
+        SrcPos ifElseStartPos = lexReader.getSrcPos();
+
         ParseResult<ASTNode> result = parseBranch(TokType.IF, context, false);
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.FAIL) {
             return result;
         }
 
         // Create an if-else node to hold if-else sequence
-        IfElseASTNode ifElseNode = new IfElseASTNode(result.getData().getTok());
+        IfElseASTNode ifElseNode = new IfElseASTNode(null);
         ifElseNode.addChild(result.getData());
         boolean end = false;
 
@@ -47,6 +51,9 @@ public class IfElseParser extends CondBranchParser {
             }
         } while (!end);
 
+        SrcPos ifElseEndPos = lexReader.getSrcPos();
+        SrcRange ifElseRange = new SrcRange(ifElseStartPos, ifElseEndPos);
+        ifElseNode.setSrcRange(ifElseRange);
         return ParseResult.ok(ifElseNode);
     }
 

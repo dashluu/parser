@@ -1,13 +1,14 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
 public class ArrAccessASTNode extends KnaryASTNode {
     private boolean mutable;
 
-    public ArrAccessASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
-        super(tok, ASTNodeType.ARR_ACCESS, dtype);
+    public ArrAccessASTNode(Tok tok, SrcRange srcRange, TypeInfo dtype, boolean mutable) {
+        super(tok, srcRange, ASTNodeType.ARR_ACCESS, dtype);
         this.mutable = mutable;
     }
 
