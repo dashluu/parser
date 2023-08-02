@@ -9,6 +9,10 @@ public class SrcPos {
         this.col = col;
     }
 
+    public SrcPos() {
+        this(1, 1);
+    }
+
     public int getLn() {
         return ln;
     }

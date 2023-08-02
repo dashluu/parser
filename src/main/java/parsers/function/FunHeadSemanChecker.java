@@ -1,9 +1,6 @@
 package parsers.function;
 
-import ast.ASTNode;
-import ast.FunDefASTNode;
-import ast.ParamListASTNode;
-import ast.TypeAnnASTNode;
+import ast.*;
 import exceptions.ErrMsg;
 import parsers.utils.*;
 import symbols.FunInfo;
@@ -14,23 +11,24 @@ import types.TypeInfo;
 import parsers.utils.ParseContext;
 import parsers.utils.Scope;
 import parsers.utils.ScopeStack;
+import types.VoidType;
 
 public class FunHeadSemanChecker {
     private ParseContext context;
 
     /**
-     * Checks the semantics of a function header.
+     * Checks the semantics of a function header in the case where a type annotation is present.
      *
      * @param typeAnnNode the type annotation node that contains a function declaration node on the left and a return
      *                    type node on the right.
      * @param context     the parsing context.
-     * @return a ParseResult object as the result of checking the semantics of a function header.
+     * @return a ParseResult object as the result of checking the semantics of the function header.
      */
     public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, ParseContext context) {
         this.context = context;
         FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
         // Check function id
-        ParseResult<FunInfo> idResult = checkId(funDefNode);
+        ParseResult<FunInfo> idResult = checkId(funDefNode.getIdNode());
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
@@ -59,13 +57,43 @@ public class FunHeadSemanChecker {
     }
 
     /**
+     * Checks the semantics of a function header in the case where a type annotation is missing.
+     *
+     * @param funDefNode the function declaration AST node.
+     * @param context    the parsing context.
+     * @return a ParseResult object as the result of checking the semantics of the function header.
+     */
+    public ParseResult<ASTNode> checkSeman(FunDefASTNode funDefNode, ParseContext context) {
+        this.context = context;
+        // Check function id
+        ParseResult<FunInfo> idResult = checkId(funDefNode.getIdNode());
+        if (idResult.getStatus() == ParseStatus.ERR) {
+            return ParseResult.err();
+        }
+
+        FunInfo funInfo = idResult.getData();
+        // Check the parameter list
+        ParamListASTNode paramListNode = funDefNode.getParamListNode();
+        ParseResult<ASTNode> paramListResult = checkParamList(funInfo, paramListNode);
+        if (paramListResult.getStatus() == ParseStatus.ERR) {
+            return paramListResult;
+        }
+
+        // The function's return type is void if the type annotation is missing
+        TypeInfo retDtype = VoidType.getInst();
+        funInfo.setDtype(retDtype);
+        funDefNode.setDtype(retDtype);
+        return ParseResult.ok(funDefNode);
+    }
+
+    /**
      * Checks if a function identifier is valid.
      *
-     * @param funDefNode the AST node associated with the function declaration.
+     * @param idNode the AST node containing the function identifier.
      * @return a ParseResult object as the result of checking the function identifier.
      */
-    private ParseResult<FunInfo> checkId(ASTNode funDefNode) {
-        Tok idTok = funDefNode.getTok();
+    private ParseResult<FunInfo> checkId(IdASTNode idNode) {
+        Tok idTok = idNode.getTok();
         String id = idTok.getVal();
         // Check if the function id is a data type since the id cannot be a keyword
         TypeInfo dtype = context.getTypeTable().getType(id);

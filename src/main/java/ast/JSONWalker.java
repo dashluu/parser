@@ -1,9 +1,8 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
-
-import java.util.ListIterator;
 
 public class JSONWalker implements IASTVisitor {
     private final StringBuilder jsonStrBuff = new StringBuilder();
@@ -17,11 +16,13 @@ public class JSONWalker implements IASTVisitor {
 
     private void nodeToJSON(ASTNode node) {
         Tok tok = node.getTok();
+        SrcRange srcRange = node.getSrcRange();
         ASTNodeType nodeType = node.getNodeType();
         TypeInfo dtype = node.getDtype();
         jsonStrBuff.append("\"Node type\":\"").append(nodeType).append("\"")
                 .append(",\"Tok\":\"").append(tok).append("\"")
-                .append(",\"Data type\":\"").append(dtype == null ? dtype : dtype.getId()).append("\"");
+                .append(",\"Source range\":\"").append(srcRange).append("\"")
+                .append(",\"Data type\":\"").append(dtype == null ? null : dtype.getId()).append("\"");
     }
 
     private void unNodeToJSON(UnASTNode unNode) {
@@ -92,9 +93,8 @@ public class JSONWalker implements IASTVisitor {
 
     private void listNodeToJSON(ListASTNode listNode) {
         nodeToJSON(listNode);
-        jsonStrBuff.append(",\"Source range\":\"").append(listNode.srcRange).append("\"");
         jsonStrBuff.append(",\"Children\":[");
-        ListIterator<ASTNode> childrenIter = listNode.listIterator();
+        IASTNodeIterator childrenIter = listNode.nodeIterator();
         ASTNode child;
         boolean firstChild = true;
 

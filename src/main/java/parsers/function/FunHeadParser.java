@@ -2,13 +2,11 @@ package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
-import operators.OpTable;
 import parsers.utils.*;
 import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
-import types.VoidType;
 
 import java.io.IOException;
 
@@ -72,19 +70,23 @@ public class FunHeadParser {
 
         // Try parsing a return type annotation
         // Failure indicates the function returns void
-        TypeAnnASTNode typeAnnNode;
+        TypeAnnASTNode typeAnnNode = null;
         ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
         } else if (typeAnnResult.getStatus() == ParseStatus.OK) {
             typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
-        } else {
-            typeAnnNode = voidRetTypeAnnAST();
         }
 
-        FunDefASTNode funDefNode = new FunDefASTNode(idResult.getData(), null);
+        FunDefASTNode funDefNode = new FunDefASTNode(kwResult.getData(), null);
+        IdASTNode funIdNode = new IdASTNode(idResult.getData(), null, false);
         ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
+        funDefNode.setIdNode(funIdNode);
         funDefNode.setParamListNode(paramListNode);
+        if (typeAnnNode == null) {
+            return semanChecker.checkSeman(funDefNode, context);
+        }
+
         typeAnnNode.setLeft(funDefNode);
         return semanChecker.checkSeman(typeAnnNode, context);
     }
@@ -106,7 +108,7 @@ public class FunHeadParser {
 
         Tok parenTok = parenResult.getData();
         SrcPos paramListStartPos = parenTok.getSrcRange().getStartPos();
-        ParamListASTNode paramListNode = new ParamListASTNode(null);
+        ParamListASTNode paramListNode = new ParamListASTNode();
         ParseResult<Tok> commaResult;
         ParseResult<ASTNode> paramResult;
         boolean end = false;
@@ -177,20 +179,5 @@ public class FunHeadParser {
         ParamDeclASTNode paramNode = new ParamDeclASTNode(nameTok, null);
         typeAnnNode.setLeft(paramNode);
         return ParseResult.ok(typeAnnNode);
-    }
-
-    /**
-     * Constructs a partial AST for void return type annotation.
-     *
-     * @return an AST node as the root of the constructed AST.
-     */
-    private TypeAnnASTNode voidRetTypeAnnAST() {
-        // A dummy AST for void type so the source range can be null
-        Tok typeAnnTok = new Tok(OpTable.COLON, TokType.COLON, null);
-        TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        Tok dtypeTok = new Tok(VoidType.ID, TokType.ID, null);
-        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
-        typeAnnNode.setDtypeNode(dtypeNode);
-        return typeAnnNode;
     }
 }

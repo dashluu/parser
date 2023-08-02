@@ -1,11 +1,9 @@
 package ast;
 
-import toks.SrcRange;
-
 // Node for code scopes
 public class ScopeASTNode extends ListASTNode {
-    public ScopeASTNode(SrcRange srcRange) {
-        super(srcRange, ASTNodeType.SCOPE, null, false);
+    public ScopeASTNode() {
+        super(ASTNodeType.SCOPE, null, false);
     }
 
     @Override

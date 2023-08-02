@@ -21,7 +21,6 @@ import types.TypeInfoType;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.ListIterator;
 
 public class ExprSemanChecker {
     private ParseContext context;
@@ -156,9 +155,8 @@ public class ExprSemanChecker {
                     operandDtype.getId() + "'", opTok));
         }
 
-        // Update the child node and the source range
+        // Update the child node
         exprNode.setChild(operandNode);
-        exprNode.updateSrcRange();
         // Set the current node's data type to that of the result
         exprNode.setDtype(resultDtype);
         return ParseResult.ok(exprNode);
@@ -252,8 +250,6 @@ public class ExprSemanChecker {
         // Update the left and right child
         exprNode.setLeft(leftNode);
         exprNode.setRight(rightNode);
-        // Update the source range
-        exprNode.updateSrcRange();
         // Set the current node's data type to that of the result
         exprNode.setDtype(resultDtype);
         return ParseResult.ok(exprNode);
@@ -286,7 +282,7 @@ public class ExprSemanChecker {
         ParseResult<ASTNode> indexResult;
         ASTNode indexNode;
         ExprListASTNode indexListNode = arrAccessNode.getIndexListNode();
-        ListIterator<ASTNode> indexIter = indexListNode.listIterator();
+        IASTNodeIterator indexIter = indexListNode.nodeIterator();
         int i = 0;
 
         while (indexIter.hasNext()) {
@@ -316,7 +312,6 @@ public class ExprSemanChecker {
 
         TypeInfo coreDtype = arrDtype.getCoreDtype();
         ArrTypeInfo newArrDtype = new ArrTypeInfo(coreDtype, newArrDim);
-        arrAccessNode.updateSrcRange();
         arrAccessNode.setDtype(newArrDtype);
         return ParseResult.ok(arrAccessNode);
     }
@@ -334,7 +329,7 @@ public class ExprSemanChecker {
         TypeInfo itemDtype, coreArrDtype, coreItemDtype, coreResultDtype;
         ArrTypeInfo arrDtype, itemArrDtype;
         int arrDim, itemArrDim;
-        ListIterator<ASTNode> itemIter = arrLiteralNode.listIterator();
+        IASTNodeIterator itemIter = arrLiteralNode.nodeIterator();
         boolean firstItem = true;
 
         while (itemIter.hasNext()) {
@@ -421,7 +416,7 @@ public class ExprSemanChecker {
         ParseResult<ASTNode> argResult;
         ASTNode argNode;
         ListASTNode argListNode = funCallNode.getArgListNode();
-        ListIterator<ASTNode> argIter = argListNode.listIterator();
+        IASTNodeIterator argIter = argListNode.nodeIterator();
         int i = 0;
 
         while (argIter.hasNext()) {
@@ -450,7 +445,6 @@ public class ExprSemanChecker {
                     i + " for function '" + funId + "'", argListNode.getSrcRange()));
         }
 
-        funCallNode.updateSrcRange();
         funCallNode.setDtype(funInfo.getDtype());
         return ParseResult.ok(funCallNode);
     }

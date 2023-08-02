@@ -99,7 +99,7 @@ public class ScopeParser {
     public ParseResult<ASTNode> parseScope(ParseContext context) throws IOException {
         ParseStatus status;
         ParseResult<ASTNode> stmtResult, funDefResult, blockResult, ifElseResult, whileResult;
-        ScopeASTNode scopeNode = new ScopeASTNode(null);
+        ScopeASTNode scopeNode = new ScopeASTNode();
         SrcPos scopeStartPos = lexReader.getSrcPos();
         SrcPos scopeEndPos;
         SrcRange scopeRange;

@@ -1,6 +1,5 @@
 package ast;
 
-import toks.SrcPos;
 import toks.SrcRange;
 import types.TypeInfo;
 
@@ -9,7 +8,7 @@ public class ArrAccessASTNode extends ASTNode {
     private ExprListASTNode indexListNode;
 
     public ArrAccessASTNode(TypeInfo dtype) {
-        super(null, null, ASTNodeType.ARR_ACCESS, dtype, true);
+        super(null, new SrcRange(), ASTNodeType.ARR_ACCESS, dtype, true);
     }
 
     public IdASTNode getIdNode() {
@@ -18,6 +17,7 @@ public class ArrAccessASTNode extends ASTNode {
 
     public void setIdNode(IdASTNode idNode) {
         this.idNode = idNode;
+        srcRange.setStartPos(idNode.srcRange.getStartPos());
     }
 
     public ExprListASTNode getIndexListNode() {
@@ -26,12 +26,7 @@ public class ArrAccessASTNode extends ASTNode {
 
     public void setIndexListNode(ExprListASTNode indexListNode) {
         this.indexListNode = indexListNode;
-    }
-
-    public void updateSrcRange() {
-        SrcPos startPos = idNode.getSrcRange().getStartPos();
-        SrcPos endPos = indexListNode.getSrcRange().getEndPos();
-        srcRange = new SrcRange(startPos, endPos);
+        srcRange.setEndPos(indexListNode.srcRange.getEndPos());
     }
 
     @Override

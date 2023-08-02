@@ -1,11 +1,10 @@
 package ast;
 
-import toks.SrcRange;
 import types.TypeInfo;
 
 public class ArrLiteralASTNode extends ListASTNode {
-    public ArrLiteralASTNode(SrcRange srcRange, TypeInfo dtype) {
-        super(srcRange, ASTNodeType.ARR_LITERAL, dtype, true);
+    public ArrLiteralASTNode(TypeInfo dtype) {
+        super(ASTNodeType.ARR_LITERAL, dtype, true);
     }
 
     @Override

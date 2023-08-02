@@ -70,7 +70,6 @@ public class DeclParser {
         } else {
             TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
             typeAnnNode.setLeft(idNode);
-            typeAnnNode.updateSrcRange();
             lhsNode = typeAnnNode;
         }
 
@@ -99,7 +98,6 @@ public class DeclParser {
         BinASTNode asgnmtNode = (BinASTNode) asgnmtResult.getData();
         asgnmtNode.setLeft(lhsNode);
         asgnmtNode.setRight(exprResult.getData());
-        asgnmtNode.updateSrcRange();
         return semanChecker.checkSeman(asgnmtNode, context);
     }
 

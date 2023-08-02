@@ -13,6 +13,10 @@ public class SrcRange {
         this(pos, pos);
     }
 
+    public SrcRange() {
+        this(new SrcPos());
+    }
+
     public SrcPos getStartPos() {
         return startPos;
     }

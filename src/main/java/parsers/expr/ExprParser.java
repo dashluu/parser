@@ -149,9 +149,9 @@ public class ExprParser {
         SrcPos bracketStartPos = bracketTok.getSrcRange().getStartPos();
         ListASTNode groupNode;
         if (isArrLiteral) {
-            groupNode = new ArrLiteralASTNode(null, null);
+            groupNode = new ArrLiteralASTNode(null);
         } else {
-            groupNode = new ExprListASTNode(null, null);
+            groupNode = new ExprListASTNode(null);
         }
 
         ParseResult<ASTNode> exprResult;
@@ -212,7 +212,6 @@ public class ExprParser {
         ExprListASTNode indexListNode = (ExprListASTNode) indexListResult.getData();
         arrAccessNode.setIdNode(idNode);
         arrAccessNode.setIndexListNode(indexListNode);
-        arrAccessNode.updateSrcRange();
         return ParseResult.ok(arrAccessNode);
     }
 
@@ -267,7 +266,6 @@ public class ExprParser {
         ExprListASTNode argListNode = (ExprListASTNode) argListResult.getData();
         funCallNode.setIdNode(idNode);
         funCallNode.setArgListNode(argListNode);
-        funCallNode.updateSrcRange();
         return ParseResult.ok(funCallNode);
     }
 
@@ -389,7 +387,6 @@ public class ExprParser {
             } else if (!(end = result.getStatus() == ParseStatus.FAIL)) {
                 currNode = (UnASTNode) result.getData();
                 prevNode.setChild(currNode);
-                prevNode.updateSrcRange();
                 prevNode = currNode;
             }
         }
@@ -435,7 +432,6 @@ public class ExprParser {
         }
 
         prefixLeaf.setChild(postfixResult.getData());
-        prefixLeaf.updateSrcRange();
         return ParseResult.ok(root);
     }
 
@@ -468,7 +464,6 @@ public class ExprParser {
             } else if (!(end = opResult.getStatus() == ParseStatus.FAIL)) {
                 postfixNode = (UnASTNode) opResult.getData();
                 postfixNode.setChild(root);
-                postfixNode.updateSrcRange();
                 root = postfixNode;
             }
         }
@@ -549,7 +544,6 @@ public class ExprParser {
 
             binOpNode.setLeft(leftResult.getData());
             binOpNode.setRight(rightResult.getData());
-            binOpNode.updateSrcRange();
             leftResult = ParseResult.ok(binOpNode);
         }
     }

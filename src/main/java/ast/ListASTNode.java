@@ -1,22 +1,43 @@
 package ast;
 
-import toks.SrcPos;
 import toks.SrcRange;
 import types.TypeInfo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 // AST node with multiple children
 // Implemented using the Iterator pattern
 public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
+    private class ASTNodeIterator implements IASTNodeIterator {
+        private int i;
+
+        public ASTNodeIterator() {
+            i = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return i < children.size();
+        }
+
+        @Override
+        public ASTNode next() {
+            return children.get(i++);
+        }
+
+        @Override
+        public void set(ASTNode node) {
+            children.set(i - 1, node);
+            srcRange.setEndPos(node.srcRange.getEndPos());
+        }
+    }
+
     protected final List<ASTNode> children = new ArrayList<>();
 
-    public ListASTNode(SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
-        super(null, srcRange, nodeType, dtype, valFlag);
-        this.srcRange = srcRange;
+    public ListASTNode(ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
+        super(null, new SrcRange(), nodeType, dtype, valFlag);
     }
 
     /**
@@ -26,6 +47,7 @@ public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
      */
     public void addChild(ASTNode child) {
         children.add(child);
+        srcRange.setEndPos(child.srcRange.getEndPos());
     }
 
     /**
@@ -46,20 +68,12 @@ public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
         return children.isEmpty();
     }
 
-    public void updateSrcRange() {
-        if (!children.isEmpty()) {
-            SrcPos startPos = children.get(0).getSrcRange().getStartPos();
-            SrcPos endPos = children.get(children.size() - 1).getSrcRange().getEndPos();
-            srcRange = new SrcRange(startPos, endPos);
-        }
-    }
-
     @Override
     public Iterator<ASTNode> iterator() {
         return children.iterator();
     }
 
-    public ListIterator<ASTNode> listIterator() {
-        return children.listIterator();
+    public IASTNodeIterator nodeIterator() {
+        return new ASTNodeIterator();
     }
 }

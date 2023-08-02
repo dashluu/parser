@@ -1,7 +1,5 @@
 package ast;
 
-import toks.SrcPos;
-import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -11,8 +9,7 @@ public abstract class BinASTNode extends ASTNode {
     protected ASTNode right;
 
     public BinASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
-        super(tok, null, nodeType, dtype, valFlag);
-        left = right = null;
+        super(tok, tok.getSrcRange(), nodeType, dtype, valFlag);
     }
 
     public ASTNode getLeft() {
@@ -21,6 +18,7 @@ public abstract class BinASTNode extends ASTNode {
 
     public void setLeft(ASTNode left) {
         this.left = left;
+        srcRange.setStartPos(left.srcRange.getStartPos());
     }
 
     public ASTNode getRight() {
@@ -29,11 +27,6 @@ public abstract class BinASTNode extends ASTNode {
 
     public void setRight(ASTNode right) {
         this.right = right;
-    }
-
-    public void updateSrcRange() {
-        SrcPos startPos = left.getSrcRange().getStartPos();
-        SrcPos endPos = right.getSrcRange().getEndPos();
-        srcRange = new SrcRange(startPos, endPos);
+        srcRange.setEndPos(right.srcRange.getEndPos());
     }
 }

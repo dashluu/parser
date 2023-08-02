@@ -1,11 +1,10 @@
 package ast;
 
-import toks.SrcRange;
 import types.TypeInfo;
 
 public class ExprListASTNode extends ListASTNode {
-    public ExprListASTNode(SrcRange srcRange, TypeInfo dtype) {
-        super(srcRange, ASTNodeType.EXPR_LIST, dtype, false);
+    public ExprListASTNode(TypeInfo dtype) {
+        super(ASTNodeType.EXPR_LIST, dtype, false);
     }
 
     @Override

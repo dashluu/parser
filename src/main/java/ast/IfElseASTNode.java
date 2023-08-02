@@ -1,11 +1,8 @@
 package ast;
 
-import toks.SrcPos;
-import toks.SrcRange;
-
 public class IfElseASTNode extends ListASTNode {
-    public IfElseASTNode(SrcRange srcRange) {
-        super(srcRange, ASTNodeType.IF_ELSE, null, false);
+    public IfElseASTNode() {
+        super(ASTNodeType.IF_ELSE, null, false);
     }
 
     @Override

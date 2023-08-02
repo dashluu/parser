@@ -80,8 +80,10 @@ public class RetParser {
             return context.raiseErr(new ErrMsg("Return type is not '" + retType.getId() + "'", kwTok));
         }
 
-        retNode.setChild(exprNode);
-        retNode.updateSrcRange();
+        if (exprNode != null) {
+            retNode.setChild(exprNode);
+        }
+
         return ParseResult.ok(retNode);
     }
 }
