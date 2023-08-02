@@ -2,16 +2,22 @@ package parsers.expr;
 
 import ast.*;
 import exceptions.ErrMsg;
+import operators.BinOpCompat;
 import operators.OpCompat;
 import operators.UnOpCompat;
-import operators.BinOpCompat;
-import types.*;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import symbols.*;
+import symbols.FunInfo;
+import symbols.SymbolInfo;
+import symbols.SymbolTable;
+import symbols.SymbolType;
 import toks.Tok;
 import toks.TokType;
+import types.ArrTypeInfo;
+import types.IntType;
+import types.TypeInfo;
+import types.TypeInfoType;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -30,7 +36,28 @@ public class ExprSemanChecker {
      */
     public ParseResult<ASTNode> checkSeman(ASTNode exprNode, ParseContext context) throws IOException {
         this.context = context;
-        return recurCheckSeman(exprNode);
+        return checkValExprSeman(exprNode);
+    }
+
+    /**
+     * Checks if an expression is a value expression, that is, it carries a value and not just a data type.
+     *
+     * @param exprNode the expression AST's root to be checked.
+     * @return a ParseResult object as the result of checking the expression.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> checkValExprSeman(ASTNode exprNode) throws IOException {
+        ParseResult<ASTNode> result = recurCheckSeman(exprNode);
+        if (result.getStatus() == ParseStatus.ERR) {
+            return result;
+        }
+
+        exprNode = result.getData();
+        if (!exprNode.isVal()) {
+            return context.raiseErr(new ErrMsg("Expected a value expression", exprNode.getSrcRange()));
+        }
+
+        return result;
     }
 
     /**
@@ -90,8 +117,7 @@ public class ExprSemanChecker {
         // Check if the id is valid
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(id);
-        if (symbol == null || (symbol.getSymbolType() != SymbolType.VAR &&
-                symbol.getSymbolType() != SymbolType.PARAM)) {
+        if (symbol == null || (symbol.getSymbolType() != SymbolType.VAR && symbol.getSymbolType() != SymbolType.PARAM)) {
             return context.raiseErr(new ErrMsg("Invalid identifier '" + id + "'", idTok));
         }
 
@@ -110,32 +136,61 @@ public class ExprSemanChecker {
      */
     private ParseResult<ASTNode> typeCheckUnExpr(UnOpASTNode exprNode) throws IOException {
         Tok opTok = exprNode.getTok();
+        String opVal = opTok.getVal();
         TokType opId = opTok.getType();
-        ASTNode childNode = exprNode.getChild();
+        ASTNode operandNode = exprNode.getChild();
 
-        // Recursively analyze the semantics of the child node
-        ParseResult<ASTNode> result = recurCheckSeman(childNode);
+        // Recursively analyze the semantics of the operand node
+        ParseResult<ASTNode> result = checkValExprSeman(operandNode);
         if (result.getStatus() == ParseStatus.ERR) {
             return result;
         }
 
-        // Update the child node
-        childNode = result.getData();
-        exprNode.setChild(childNode);
-        // Get the operand's data type
-        TypeInfo operandDtype = childNode.getDtype();
-
+        operandNode = result.getData();
         // Check the result's data type after applying the operator
+        TypeInfo operandDtype = operandNode.getDtype();
         OpCompat opCompat = new UnOpCompat(opId, operandDtype);
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
-            return context.raiseErr(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
+            return context.raiseErr(new ErrMsg("Operator '" + opVal + "' is not compatible with data type '" +
                     operandDtype.getId() + "'", opTok));
         }
 
+        // Update the child node and the source range
+        exprNode.setChild(operandNode);
+        exprNode.updateSrcRange();
         // Set the current node's data type to that of the result
         exprNode.setDtype(resultDtype);
         return ParseResult.ok(exprNode);
+    }
+
+    /**
+     * Checks if the left-hand side node of an operator is holding an lvalue.
+     *
+     * @param leftNode the left-hand side node of the operator.
+     * @param opTok    the operator token.
+     * @return a ParseResult object as the result of checking the left-hand side node of the operator.
+     */
+    private ParseResult<ASTNode> checkLvalue(ASTNode leftNode, Tok opTok) {
+        IdASTNode leftIdNode;
+        ASTNodeType leftNodeType = leftNode.getNodeType();
+
+        if (leftNodeType == ASTNodeType.ID) {
+            leftIdNode = (IdASTNode) leftNode;
+        } else if (leftNodeType == ASTNodeType.ARR_ACCESS) {
+            ArrAccessASTNode leftArrAccessNode = (ArrAccessASTNode) leftNode;
+            leftIdNode = leftArrAccessNode.getIdNode();
+        } else {
+            return context.raiseErr(new ErrMsg("The left-hand side of '" + opTok.getVal() + "' is not lvalue",
+                    leftNode.getSrcRange()));
+        }
+
+        Tok leftTok = leftIdNode.getTok();
+        if (!leftIdNode.isMutable()) {
+            return context.raiseErr(new ErrMsg("Identifier '" + leftTok.getVal() + "' is not mutable", leftTok));
+        }
+
+        return ParseResult.ok(leftNode);
     }
 
     /**
@@ -147,6 +202,7 @@ public class ExprSemanChecker {
      */
     private ParseResult<ASTNode> typeCheckBinExpr(BinOpASTNode exprNode) throws IOException {
         Tok opTok = exprNode.getTok();
+        String opVal = opTok.getVal();
         TokType opId = opTok.getType();
         // Recursively analyze the semantics of the left child
         ASTNode leftNode = exprNode.getLeft();
@@ -155,9 +211,8 @@ public class ExprSemanChecker {
             return result;
         }
 
-        //Update the left child
         leftNode = result.getData();
-        exprNode.setLeft(leftNode);
+        TypeInfo leftDtype = leftNode.getDtype();
         // Recursively analyze the semantics of the right node
         ASTNode rightNode = exprNode.getRight();
         result = recurCheckSeman(rightNode);
@@ -165,26 +220,40 @@ public class ExprSemanChecker {
             return result;
         }
 
-        // Update the right child
         rightNode = result.getData();
-        exprNode.setRight(rightNode);
-
-        // TODO: Check assignment if there is any
-        if (opId == TokType.ASSIGNMENT) {
-        }
-
-        // Get the left and right node's data type
-        TypeInfo leftDtype = leftNode.getDtype();
         TypeInfo rightDtype = rightNode.getDtype();
+
+        if (opId == TokType.ASSIGNMENT) {
+            // Check assignment operator
+            result = checkLvalue(leftNode, opTok);
+            if (result.getStatus() == ParseStatus.ERR) {
+                return result;
+            }
+            leftNode = result.getData();
+        } else if (opId == TokType.TYPE_CONV) {
+            // Check type conversion operator
+            if (rightNode.getNodeType() != ASTNodeType.DTYPE) {
+                return context.raiseErr(new ErrMsg("Expected a data type on the right-hand side of '" + opVal +
+                        "' operator", rightNode.getSrcRange()));
+            }
+        } else if (!leftNode.isVal() || !rightNode.isVal()) {
+            return context.raiseErr(new ErrMsg("Each operand on both sides of '" + opVal +
+                    "' must either be a value expression", opTok));
+        }
 
         // Check the result's data type after applying the operator
         OpCompat opCompat = new BinOpCompat(opId, leftDtype, rightDtype);
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
-            return context.raiseErr(new ErrMsg("Operator '" + opTok.getVal() + "' is not compatible with type '" +
+            return context.raiseErr(new ErrMsg("Operator '" + opVal + "' is not compatible with type '" +
                     leftDtype.getId() + "' and type '" + rightDtype.getId() + "'", opTok));
         }
 
+        // Update the left and right child
+        exprNode.setLeft(leftNode);
+        exprNode.setRight(rightNode);
+        // Update the source range
+        exprNode.updateSrcRange();
         // Set the current node's data type to that of the result
         exprNode.setDtype(resultDtype);
         return ParseResult.ok(exprNode);
@@ -198,43 +267,44 @@ public class ExprSemanChecker {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> checkArrAccess(ArrAccessASTNode arrAccessNode) throws IOException {
-        Tok arrIdTok = arrAccessNode.getTok();
+        IdASTNode arrIdNode = arrAccessNode.getIdNode();
+        Tok arrIdTok = arrIdNode.getTok();
         String arrId = arrIdTok.getVal();
         // Check if the array id exists
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(arrId);
-        if (symbol == null || (symbol.getSymbolType() != SymbolType.VAR &&
-                symbol.getSymbolType() != SymbolType.PARAM)) {
+        if (symbol == null || (symbol.getSymbolType() != SymbolType.VAR && symbol.getSymbolType() != SymbolType.PARAM)) {
             return context.raiseErr(new ErrMsg("Invalid array identifier '" + arrId + "'", arrIdTok));
         }
 
         // Check if the id is of type array
-        TypeInfo dtype = symbol.getDtype();
+        TypeInfo dtype = arrIdNode.getDtype();
         if (dtype.getInfoType() != TypeInfoType.ARR) {
-            return context.raiseErr(new ErrMsg("Expected an array type from '" + arrId + "'", arrIdTok));
+            return context.raiseErr(new ErrMsg("Expected an array identifier '" + arrId + "'", arrIdTok));
         }
 
-        ParseResult<ASTNode> itemResult;
-        ASTNode itemNode;
-        ListIterator<ASTNode> itemIter = arrAccessNode.listIterator();
+        ParseResult<ASTNode> indexResult;
+        ASTNode indexNode;
+        ExprListASTNode indexListNode = arrAccessNode.getIndexListNode();
+        ListIterator<ASTNode> indexIter = indexListNode.listIterator();
         int i = 0;
 
-        while (itemIter.hasNext()) {
-            itemNode = itemIter.next();
-            itemResult = recurCheckSeman(itemNode);
-            if (itemResult.getStatus() == ParseStatus.ERR) {
-                return itemResult;
+        while (indexIter.hasNext()) {
+            indexNode = indexIter.next();
+            indexResult = checkValExprSeman(indexNode);
+            if (indexResult.getStatus() == ParseStatus.ERR) {
+                return indexResult;
             }
 
             // Check if each index is of type integer
-            itemNode = itemResult.getData();
-            if (!itemNode.getDtype().equals(IntType.getInst())) {
-                return context.raiseErr(new ErrMsg("Expected type '" + IntType.ID + "' for array index",
-                        itemNode.getTok()));
+            indexNode = indexResult.getData();
+            if (!indexNode.getDtype().equals(IntType.getInst())) {
+                return context.raiseErr(new ErrMsg("Expected data type '" + IntType.ID + "' for array index",
+                        indexNode.getSrcRange()));
             }
 
-            // Update the item node at the current position
-            itemIter.set(itemNode);
+            // Update the index node at the current position
+            indexIter.set(indexNode);
             ++i;
         }
 
@@ -246,8 +316,8 @@ public class ExprSemanChecker {
 
         TypeInfo coreDtype = arrDtype.getCoreDtype();
         ArrTypeInfo newArrDtype = new ArrTypeInfo(coreDtype, newArrDim);
+        arrAccessNode.updateSrcRange();
         arrAccessNode.setDtype(newArrDtype);
-        arrAccessNode.setMutable(symbol.isMutable());
         return ParseResult.ok(arrAccessNode);
     }
 
@@ -269,7 +339,7 @@ public class ExprSemanChecker {
 
         while (itemIter.hasNext()) {
             itemNode = itemIter.next();
-            itemResult = recurCheckSeman(itemNode);
+            itemResult = checkValExprSeman(itemNode);
             if (itemResult.getStatus() == ParseStatus.ERR) {
                 return itemResult;
             }
@@ -297,14 +367,14 @@ public class ExprSemanChecker {
                 // Check if the dimensions match
                 if (itemDtype.getInfoType() != TypeInfoType.ARR) {
                     if (arrDim != 1) {
-                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getTok()));
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getSrcRange()));
                     }
                     coreItemDtype = itemDtype;
                 } else {
                     itemArrDtype = (ArrTypeInfo) itemDtype;
                     itemArrDim = itemArrDtype.getDim();
                     if (arrDim != itemArrDim + 1) {
-                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getTok()));
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getSrcRange()));
                     }
                     coreItemDtype = itemArrDtype.getCoreDtype();
                 }
@@ -315,7 +385,7 @@ public class ExprSemanChecker {
                 coreResultDtype = context.getOpTable().getCompatDtype(opCompat);
                 if (coreResultDtype == null) {
                     return context.raiseErr(new ErrMsg("Unable to have data of type '" + coreItemDtype.getId() +
-                            "' in an array of type '" + coreArrDtype.getId() + "'", itemNode.getTok()));
+                            "' in an array of type '" + coreArrDtype.getId() + "'", itemNode.getSrcRange()));
                 }
 
                 arrDtype.setCoreDtype(coreResultDtype);
@@ -335,7 +405,8 @@ public class ExprSemanChecker {
      * @return a ParseResult object as the result of checking the function call.
      */
     private ParseResult<ASTNode> checkFunCall(FunCallASTNode funCallNode) throws IOException {
-        Tok funIdTok = funCallNode.getTok();
+        IdASTNode funIdNode = funCallNode.getIdNode();
+        Tok funIdTok = funIdNode.getTok();
         String funId = funIdTok.getVal();
         // Check if the function id exists
         SymbolTable symbolTable = context.getScope().getSymbolTable();
@@ -349,14 +420,15 @@ public class ExprSemanChecker {
         TypeInfo paramDtype;
         ParseResult<ASTNode> argResult;
         ASTNode argNode;
-        ListIterator<ASTNode> argIter = funCallNode.listIterator();
+        ListASTNode argListNode = funCallNode.getArgListNode();
+        ListIterator<ASTNode> argIter = argListNode.listIterator();
         int i = 0;
 
         while (argIter.hasNext()) {
             argNode = argIter.next();
             // Check if each argument type is as expected
             paramDtype = paramDtypesIter.next();
-            argResult = recurCheckSeman(argNode);
+            argResult = checkValExprSeman(argNode);
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
             }
@@ -364,7 +436,7 @@ public class ExprSemanChecker {
             argNode = argResult.getData();
             if (!argNode.getDtype().equals(paramDtype)) {
                 return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.getId() + "' for argument " + i,
-                        argNode.getTok()));
+                        argNode.getSrcRange()));
             }
 
             // Update the argument node at the current position
@@ -375,9 +447,10 @@ public class ExprSemanChecker {
         int numArgs = funInfo.countParams();
         if (i != numArgs) {
             return context.raiseErr(new ErrMsg("Expected the number of arguments to be " + numArgs + " but got " +
-                    i + " for function '" + funId + "'", funIdTok));
+                    i + " for function '" + funId + "'", argListNode.getSrcRange()));
         }
 
+        funCallNode.updateSrcRange();
         funCallNode.setDtype(funInfo.getDtype());
         return ParseResult.ok(funCallNode);
     }

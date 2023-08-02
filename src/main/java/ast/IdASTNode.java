@@ -7,7 +7,7 @@ public class IdASTNode extends ASTNode {
     private boolean mutable;
 
     public IdASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
-        super(tok, ASTNodeType.ID, dtype);
+        super(tok, tok.getSrcRange(), ASTNodeType.ID, dtype, true);
         this.mutable = mutable;
     }
 

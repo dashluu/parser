@@ -87,13 +87,19 @@ public class DeclSemanChecker {
      * @return a ParseResult object as the result of checking the declaration identifier.
      */
     private ParseResult<SymbolInfo> checkId(ASTNode idNode) {
-        // Check if the declaration id has been defined
         Tok idTok = idNode.getTok();
         String id = idTok.getVal();
+        // Check if the declaration id is a data type since the id cannot be a keyword
+        TypeInfo dtype = context.getTypeTable().getType(id);
+        if (dtype != null) {
+            return context.raiseErr(new ErrMsg("Data type '" + id + "' cannot be used as a variable identifier", idTok));
+        }
+
+        // Check if the declaration id has been defined
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getLocalSymbol(id);
         if (symbol != null) {
-            return context.raiseErr(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return context.raiseErr(new ErrMsg("Identifier '" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new symbol

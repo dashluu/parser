@@ -4,7 +4,7 @@ import toks.Tok;
 
 public class BreakASTNode extends ASTNode {
     public BreakASTNode(Tok tok) {
-        super(tok, ASTNodeType.BREAK, null);
+        super(tok, tok.getSrcRange(), ASTNodeType.BREAK, null, false);
     }
 
     @Override

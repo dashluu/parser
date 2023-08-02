@@ -28,14 +28,16 @@ public class DeclMain {
             LexReader lexReader = new LexReader(reader);
             Lexer lexer = new Lexer(lexReader);
             TokParser tokParser = new TokParser();
+            TypeAnnParser typeAnnParser = new TypeAnnParser();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
             ExprParser exprParser = new ExprParser();
             DeclSemanChecker declSemanChecker = new DeclSemanChecker();
             DeclParser declParser = new DeclParser();
 
             tokParser.init(lexer);
+            typeAnnParser.init(tokParser);
             exprParser.init(lexer, tokParser, exprSemanChecker);
-            declParser.init(tokParser, exprParser, declSemanChecker);
+            declParser.init(tokParser, typeAnnParser, exprParser, declSemanChecker);
 
             ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(null);

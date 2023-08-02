@@ -20,16 +20,16 @@ public class JSONWalker implements IASTVisitor {
         ASTNodeType nodeType = node.getNodeType();
         TypeInfo dtype = node.getDtype();
         jsonStrBuff.append("\"Node type\":\"").append(nodeType).append("\"")
-                .append(",\"Tok\":\"").append(tok == null ? "null" : tok).append("\"")
-                .append(",\"Data type\":\"").append(dtype == null ? "null" : dtype.getId()).append("\"");
+                .append(",\"Tok\":\"").append(tok).append("\"")
+                .append(",\"Data type\":\"").append(dtype == null ? dtype : dtype.getId()).append("\"");
     }
 
     private void unNodeToJSON(UnASTNode unNode) {
         nodeToJSON(unNode);
         ASTNode child = unNode.getChild();
-        jsonStrBuff.append(",\"Left\":");
+        jsonStrBuff.append(",\"Child\":");
         if (child == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(child);
         } else {
             jsonStrBuff.append("{");
             child = child.accept(this);
@@ -45,7 +45,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Left\":");
         if (left == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(left);
         } else {
             jsonStrBuff.append("{");
             left = left.accept(this);
@@ -55,7 +55,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Right\":");
         if (right == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(right);
         } else {
             jsonStrBuff.append("{");
             right = right.accept(this);
@@ -71,7 +71,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Condition\":");
         if (condNode == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(condNode);
         } else {
             jsonStrBuff.append("{");
             condNode = condNode.accept(this);
@@ -81,7 +81,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Body\":");
         if (bodyNode == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(bodyNode);
         } else {
             jsonStrBuff.append("{");
             bodyNode = (ScopeASTNode) bodyNode.accept(this);
@@ -90,11 +90,11 @@ public class JSONWalker implements IASTVisitor {
         }
     }
 
-    private void knaryNodeToJSON(KnaryASTNode knaryNode) {
-        nodeToJSON(knaryNode);
-        jsonStrBuff.append(",\"Source range\":\"").append(knaryNode.srcRange).append("\"");
+    private void listNodeToJSON(ListASTNode listNode) {
+        nodeToJSON(listNode);
+        jsonStrBuff.append(",\"Source range\":\"").append(listNode.srcRange).append("\"");
         jsonStrBuff.append(",\"Children\":[");
-        ListIterator<ASTNode> childrenIter = knaryNode.listIterator();
+        ListIterator<ASTNode> childrenIter = listNode.listIterator();
         ASTNode child;
         boolean firstChild = true;
 
@@ -152,7 +152,7 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitParamList(ASTNode node) {
         ParamListASTNode paramListNode = (ParamListASTNode) node;
-        knaryNodeToJSON(paramListNode);
+        listNodeToJSON(paramListNode);
         return node;
     }
 
@@ -178,7 +178,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Body\":");
         if (bodyNode == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(bodyNode);
         } else {
             jsonStrBuff.append("{");
             bodyNode = (ScopeASTNode) bodyNode.accept(this);
@@ -198,16 +198,44 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitArrAccess(ASTNode node) {
+        nodeToJSON(node);
         ArrAccessASTNode arrAccessNode = (ArrAccessASTNode) node;
-        knaryNodeToJSON(arrAccessNode);
+        IdASTNode idNode = arrAccessNode.getIdNode();
+        ExprListASTNode indexListNode = arrAccessNode.getIndexListNode();
+
+        jsonStrBuff.append(",\"Identifier\":");
+        if (idNode == null) {
+            jsonStrBuff.append(idNode);
+        } else {
+            jsonStrBuff.append("{");
+            idNode = (IdASTNode) idNode.accept(this);
+            jsonStrBuff.append("}");
+            arrAccessNode.setIdNode(idNode);
+        }
+
+        jsonStrBuff.append(",\"Index list\":");
+        if (indexListNode == null) {
+            jsonStrBuff.append(indexListNode);
+        } else {
+            jsonStrBuff.append("{");
+            indexListNode = (ExprListASTNode) indexListNode.accept(this);
+            jsonStrBuff.append("}");
+            arrAccessNode.setIndexListNode(indexListNode);
+        }
+
         return node;
     }
 
     @Override
     public ASTNode visitArrLiteral(ASTNode node) {
         ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) node;
-        arrLiteralNode.setTok(null);
-        knaryNodeToJSON(arrLiteralNode);
+        listNodeToJSON(arrLiteralNode);
+        return node;
+    }
+
+    @Override
+    public ASTNode visitExprList(ASTNode node) {
+        listNodeToJSON((ListASTNode) node);
         return node;
     }
 
@@ -220,7 +248,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Param list\":");
         if (paramListNode == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(paramListNode);
         } else {
             jsonStrBuff.append("{");
             paramListNode = (ParamListASTNode) paramListNode.accept(this);
@@ -230,7 +258,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Body\":");
         if (bodyNode == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(bodyNode);
         } else {
             jsonStrBuff.append("{");
             bodyNode = (ScopeASTNode) bodyNode.accept(this);
@@ -263,14 +291,14 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
-        knaryNodeToJSON(scopeNode);
+        listNodeToJSON(scopeNode);
         return node;
     }
 
     @Override
     public ASTNode visitIfElse(ASTNode node) {
         IfElseASTNode ifElseNode = (IfElseASTNode) node;
-        knaryNodeToJSON(ifElseNode);
+        listNodeToJSON(ifElseNode);
         return node;
     }
 
@@ -290,7 +318,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Left\":");
         if (left == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(left);
         } else {
             jsonStrBuff.append("{");
             left = left.accept(this);
@@ -300,7 +328,7 @@ public class JSONWalker implements IASTVisitor {
 
         jsonStrBuff.append(",\"Data type node\":");
         if (dtypeNode == null) {
-            jsonStrBuff.append("\"null\"");
+            jsonStrBuff.append(dtypeNode);
         } else {
             jsonStrBuff.append("{");
             dtypeNode = dtypeNode.accept(this);
@@ -313,8 +341,31 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitFunCall(ASTNode node) {
+        nodeToJSON(node);
         FunCallASTNode funCallNode = (FunCallASTNode) node;
-        knaryNodeToJSON(funCallNode);
+        IdASTNode idNode = funCallNode.getIdNode();
+        ExprListASTNode argListNode = funCallNode.getArgListNode();
+
+        jsonStrBuff.append(",\"Identifier\":");
+        if (idNode == null) {
+            jsonStrBuff.append(idNode);
+        } else {
+            jsonStrBuff.append("{");
+            idNode = (IdASTNode) idNode.accept(this);
+            jsonStrBuff.append("}");
+            funCallNode.setIdNode(idNode);
+        }
+
+        jsonStrBuff.append(",\"Argument list\":");
+        if (argListNode == null) {
+            jsonStrBuff.append(argListNode);
+        } else {
+            jsonStrBuff.append("{");
+            argListNode = (ExprListASTNode) argListNode.accept(this);
+            jsonStrBuff.append("}");
+            funCallNode.setArgListNode(argListNode);
+        }
+
         return node;
     }
 }

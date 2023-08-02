@@ -6,8 +6,6 @@ import ast.IfElseASTNode;
 import ast.ScopeASTNode;
 import exceptions.ErrMsg;
 import parsers.utils.*;
-import toks.SrcPos;
-import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
 
@@ -23,7 +21,6 @@ public class IfElseParser extends CondBranchParser {
      */
     public ParseResult<ASTNode> parseIfElse(ParseContext context) throws IOException {
         this.context = context;
-        SrcPos ifElseStartPos = lexReader.getSrcPos();
 
         ParseResult<ASTNode> result = parseBranch(TokType.IF, context, false);
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.FAIL) {
@@ -51,9 +48,7 @@ public class IfElseParser extends CondBranchParser {
             }
         } while (!end);
 
-        SrcPos ifElseEndPos = lexReader.getSrcPos();
-        SrcRange ifElseRange = new SrcRange(ifElseStartPos, ifElseEndPos);
-        ifElseNode.setSrcRange(ifElseRange);
+        ifElseNode.updateSrcRange();
         return ParseResult.ok(ifElseNode);
     }
 
@@ -86,6 +81,7 @@ public class IfElseParser extends CondBranchParser {
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         elseNode.setBodyNode(bodyNode);
+        elseNode.updateSrcRange();
         scopeStack.pop();
         return ParseResult.ok(elseNode);
     }

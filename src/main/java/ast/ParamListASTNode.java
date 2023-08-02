@@ -2,9 +2,9 @@ package ast;
 
 import toks.SrcRange;
 
-public class ParamListASTNode extends KnaryASTNode {
+public class ParamListASTNode extends ListASTNode {
     public ParamListASTNode(SrcRange srcRange) {
-        super(null, srcRange, ASTNodeType.PARAM_LIST, null);
+        super(srcRange, ASTNodeType.PARAM_LIST, null, false);
     }
 
     @Override

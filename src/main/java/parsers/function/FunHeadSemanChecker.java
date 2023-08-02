@@ -65,12 +65,18 @@ public class FunHeadSemanChecker {
      * @return a ParseResult object as the result of checking the function identifier.
      */
     private ParseResult<FunInfo> checkId(ASTNode funDefNode) {
-        // Check if the function id has been defined
         Tok idTok = funDefNode.getTok();
         String id = idTok.getVal();
+        // Check if the function id is a data type since the id cannot be a keyword
+        TypeInfo dtype = context.getTypeTable().getType(id);
+        if (dtype != null) {
+            return context.raiseErr(new ErrMsg("Data type '" + id + "' cannot be used as a function identifier", idTok));
+        }
+
+        // Check if the function id has been defined
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         if (symbolTable.getLocalSymbol(id) != null) {
-            return context.raiseErr(new ErrMsg("'" + id + "' cannot be redeclared", idTok));
+            return context.raiseErr(new ErrMsg("Identifier '" + id + "' cannot be redeclared", idTok));
         }
 
         // Create a new function

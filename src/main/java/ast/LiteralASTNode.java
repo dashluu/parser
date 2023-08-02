@@ -5,7 +5,7 @@ import types.TypeInfo;
 
 public class LiteralASTNode extends ASTNode {
     public LiteralASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.LITERAL, dtype);
+        super(tok, tok.getSrcRange(), ASTNodeType.LITERAL, dtype, true);
     }
 
     @Override

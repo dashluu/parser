@@ -12,6 +12,7 @@ import java.io.IOException;
 
 public class DeclParser {
     private TokParser tokParser;
+    private TypeAnnParser typeAnnParser;
     private ExprParser exprParser;
     private DeclSemanChecker semanChecker;
     private ParseContext context;
@@ -19,11 +20,15 @@ public class DeclParser {
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser  a token parser.
-     * @param exprParser an expression parser.
+     * @param tokParser     a token parser.
+     * @param typeAnnParser a type annotation parser.
+     * @param exprParser    an expression parser.
+     * @param semanChecker  a declaration semantics checker.
      */
-    public void init(TokParser tokParser, ExprParser exprParser, DeclSemanChecker semanChecker) {
+    public void init(TokParser tokParser, TypeAnnParser typeAnnParser,
+                     ExprParser exprParser, DeclSemanChecker semanChecker) {
         this.tokParser = tokParser;
+        this.typeAnnParser = typeAnnParser;
         this.exprParser = exprParser;
         this.semanChecker = semanChecker;
     }
@@ -56,7 +61,7 @@ public class DeclParser {
 
         ASTNode idNode = idResult.getData();
         // Parse type annotation
-        ParseResult<ASTNode> typeAnnResult = parseTypeAnn();
+        ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
         ASTNode lhsNode;
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
@@ -65,6 +70,7 @@ public class DeclParser {
         } else {
             TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
             typeAnnNode.setLeft(idNode);
+            typeAnnNode.updateSrcRange();
             lhsNode = typeAnnNode;
         }
 
@@ -93,6 +99,7 @@ public class DeclParser {
         BinASTNode asgnmtNode = (BinASTNode) asgnmtResult.getData();
         asgnmtNode.setLeft(lhsNode);
         asgnmtNode.setRight(exprResult.getData());
+        asgnmtNode.updateSrcRange();
         return semanChecker.checkSeman(asgnmtNode, context);
     }
 
@@ -139,38 +146,6 @@ public class DeclParser {
         Tok idTok = result.getData();
         ASTNode idNode = new VarDeclASTNode(idTok, null, mutable);
         return ParseResult.ok(idNode);
-    }
-
-    /**
-     * Parses a type annotation.
-     *
-     * @return a ParseResult object as the result of parsing a type annotation.
-     * @throws IOException if there is an IO exception.
-     */
-    private ParseResult<ASTNode> parseTypeAnn() throws IOException {
-        // Try parsing ':'
-        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON, context);
-        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(typeAnnResult.getFailTok());
-        }
-
-        // Parse a data type
-        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID, context);
-        if (dtypeResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return context.raiseErr(new ErrMsg("Expected a data type for type annotation",
-                    dtypeResult.getFailTok()));
-        }
-
-        Tok typeAnnTok = typeAnnResult.getData();
-        TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        Tok dtypeTok = dtypeResult.getData();
-        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
-        typeAnnNode.setDtypeNode(dtypeNode);
-        return ParseResult.ok(typeAnnNode);
     }
 
     /**

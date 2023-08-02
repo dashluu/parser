@@ -1,17 +1,26 @@
 package ast;
 
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
 // Node for function definition
 public class FunDefASTNode extends ASTNode {
+    private IdASTNode idNode;
     private ParamListASTNode paramListNode;
     private ScopeASTNode bodyNode;
 
     public FunDefASTNode(Tok tok, TypeInfo retDtype) {
-        super(tok, ASTNodeType.FUN_DEF, retDtype);
-        paramListNode = null;
-        bodyNode = null;
+        super(tok, null, ASTNodeType.FUN_DEF, retDtype, false);
+    }
+
+    public IdASTNode getIdNode() {
+        return idNode;
+    }
+
+    public void setIdNode(IdASTNode idNode) {
+        this.idNode = idNode;
     }
 
     public ParamListASTNode getParamListNode() {
@@ -28,6 +37,12 @@ public class FunDefASTNode extends ASTNode {
 
     public void setBodyNode(ScopeASTNode bodyNode) {
         this.bodyNode = bodyNode;
+    }
+
+    public void updateSrcRange() {
+        SrcPos startPos = tok.getSrcRange().getStartPos();
+        SrcPos endPos = bodyNode.getSrcRange().getEndPos();
+        srcRange = new SrcRange(startPos, endPos);
     }
 
     @Override

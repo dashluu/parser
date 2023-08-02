@@ -1,5 +1,7 @@
 package ast;
 
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -8,7 +10,7 @@ public class TypeAnnASTNode extends ASTNode {
     private ASTNode dtypeNode;
 
     public TypeAnnASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.TYPE_ANN, dtype);
+        super(tok, tok.getSrcRange(), ASTNodeType.TYPE_ANN, dtype, false);
     }
 
     public ASTNode getLeft() {
@@ -25,6 +27,12 @@ public class TypeAnnASTNode extends ASTNode {
 
     public void setDtypeNode(ASTNode dtypeNode) {
         this.dtypeNode = dtypeNode;
+    }
+
+    public void updateSrcRange() {
+        SrcPos startPos = left.getSrcRange().getStartPos();
+        SrcPos endPos = dtypeNode.getSrcRange().getEndPos();
+        srcRange = new SrcRange(startPos, endPos);
     }
 
     @Override

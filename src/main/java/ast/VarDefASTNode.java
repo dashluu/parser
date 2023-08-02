@@ -7,7 +7,7 @@ public class VarDefASTNode extends BinASTNode {
     private boolean mutable;
 
     public VarDefASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
-        super(tok, ASTNodeType.DEF, dtype);
+        super(tok, ASTNodeType.DEF, dtype, false);
         this.mutable = mutable;
     }
 

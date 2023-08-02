@@ -1,6 +1,7 @@
 package exceptions;
 
 import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 
 public class ErrMsg {
@@ -10,6 +11,10 @@ public class ErrMsg {
     public ErrMsg(String val, SrcPos srcPos) {
         this.val = val;
         this.srcPos = srcPos;
+    }
+
+    public ErrMsg(String val, SrcRange srcRange) {
+        this(val, srcRange.getStartPos());
     }
 
     public ErrMsg(String val, Tok tok) {

@@ -3,10 +3,7 @@ package parsers.function;
 import ast.*;
 import exceptions.ErrMsg;
 import operators.OpTable;
-import parsers.utils.ParseContext;
-import parsers.utils.ParseResult;
-import parsers.utils.ParseStatus;
-import parsers.utils.TokParser;
+import parsers.utils.*;
 import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
@@ -17,17 +14,20 @@ import java.io.IOException;
 
 public class FunHeadParser {
     private TokParser tokParser;
+    private TypeAnnParser typeAnnParser;
     private FunHeadSemanChecker semanChecker;
     private ParseContext context;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser    a token parser.
-     * @param semanChecker a semantics checker for function headers.
+     * @param tokParser     a token parser.
+     * @param typeAnnParser a type annotation parser.
+     * @param semanChecker  a semantics checker for function headers.
      */
-    public void init(TokParser tokParser, FunHeadSemanChecker semanChecker) {
+    public void init(TokParser tokParser, TypeAnnParser typeAnnParser, FunHeadSemanChecker semanChecker) {
         this.tokParser = tokParser;
+        this.typeAnnParser = typeAnnParser;
         this.semanChecker = semanChecker;
     }
 
@@ -73,7 +73,7 @@ public class FunHeadParser {
         // Try parsing a return type annotation
         // Failure indicates the function returns void
         TypeAnnASTNode typeAnnNode;
-        ParseResult<ASTNode> typeAnnResult = parseTypeAnn();
+        ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
         } else if (typeAnnResult.getStatus() == ParseStatus.OK) {
@@ -165,7 +165,7 @@ public class FunHeadParser {
 
         Tok nameTok = nameResult.getData();
         // Parse the type annotation
-        ParseResult<ASTNode> typeAnnResult = parseTypeAnn();
+        ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
         } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
@@ -180,43 +180,12 @@ public class FunHeadParser {
     }
 
     /**
-     * Parses a type annotation.
-     *
-     * @return a ParseResult object as the result of parsing a type annotation.
-     * @throws IOException if there is an IO exception.
-     */
-    private ParseResult<ASTNode> parseTypeAnn() throws IOException {
-        // Try parsing ':'
-        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON, context);
-        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(typeAnnResult.getFailTok());
-        }
-
-        // Parse a data type
-        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID, context);
-        if (dtypeResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
-            return context.raiseErr(new ErrMsg("Expected a data type for type annotation",
-                    dtypeResult.getFailTok()));
-        }
-
-        Tok typeAnnTok = typeAnnResult.getData();
-        TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        Tok dtypeTok = dtypeResult.getData();
-        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
-        typeAnnNode.setDtypeNode(dtypeNode);
-        return ParseResult.ok(typeAnnNode);
-    }
-
-    /**
      * Constructs a partial AST for void return type annotation.
      *
      * @return an AST node as the root of the constructed AST.
      */
     private TypeAnnASTNode voidRetTypeAnnAST() {
+        // A dummy AST for void type so the source range can be null
         Tok typeAnnTok = new Tok(OpTable.COLON, TokType.COLON, null);
         TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
         Tok dtypeTok = new Tok(VoidType.ID, TokType.ID, null);

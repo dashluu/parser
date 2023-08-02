@@ -81,6 +81,7 @@ public class RetParser {
         }
 
         retNode.setChild(exprNode);
+        retNode.updateSrcRange();
         return ParseResult.ok(retNode);
     }
 }

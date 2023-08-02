@@ -132,11 +132,11 @@ public class ExprParser {
      *
      * @param leftTokType  the left bracket type identified by its token type.
      * @param rightTokType the right bracket type identified by its token type.
-     * @param groupNode    the parent node of expression AST nodes in the list.
+     * @param isArrLiteral true if this is an array literal and false otherwise.
      * @return a ParseResult object as the result of parsing a list of expressions.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, KnaryASTNode groupNode)
+    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, boolean isArrLiteral)
             throws IOException {
         ParseResult<Tok> bracketResult = tokParser.parseTok(leftTokType, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
@@ -147,6 +147,13 @@ public class ExprParser {
 
         Tok bracketTok = bracketResult.getData();
         SrcPos bracketStartPos = bracketTok.getSrcRange().getStartPos();
+        ListASTNode groupNode;
+        if (isArrLiteral) {
+            groupNode = new ArrLiteralASTNode(null, null);
+        } else {
+            groupNode = new ExprListASTNode(null, null);
+        }
+
         ParseResult<ASTNode> exprResult;
         ParseResult<Tok> commaResult;
         boolean end = false;
@@ -168,7 +175,7 @@ public class ExprParser {
                     }
                 }
 
-                exprResult = parseExpr(context);
+                exprResult = parseInfixExpr(null);
                 if (exprResult.getStatus() == ParseStatus.ERR) {
                     return exprResult;
                 } else if (exprResult.getStatus() == ParseStatus.FAIL) {
@@ -195,8 +202,18 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrAccess(Tok arrIdTok) throws IOException {
-        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(arrIdTok, null, null, false);
-        return parseList(TokType.LSQUARE, TokType.RSQUARE, arrAccessNode);
+        ParseResult<ASTNode> indexListResult = parseList(TokType.LSQUARE, TokType.RSQUARE, false);
+        if (indexListResult.getStatus() == ParseStatus.ERR || indexListResult.getStatus() == ParseStatus.FAIL) {
+            return indexListResult;
+        }
+
+        ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(null);
+        IdASTNode idNode = new IdASTNode(arrIdTok, null, false);
+        ExprListASTNode indexListNode = (ExprListASTNode) indexListResult.getData();
+        arrAccessNode.setIdNode(idNode);
+        arrAccessNode.setIndexListNode(indexListNode);
+        arrAccessNode.updateSrcRange();
+        return ParseResult.ok(arrAccessNode);
     }
 
     /**
@@ -240,8 +257,18 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArgList(Tok funIdTok) throws IOException {
-        FunCallASTNode funCallNode = new FunCallASTNode(funIdTok, null, null);
-        return parseList(TokType.LPAREN, TokType.RPAREN, funCallNode);
+        ParseResult<ASTNode> argListResult = parseList(TokType.LPAREN, TokType.RPAREN, false);
+        if (argListResult.getStatus() == ParseStatus.ERR || argListResult.getStatus() == ParseStatus.FAIL) {
+            return argListResult;
+        }
+
+        FunCallASTNode funCallNode = new FunCallASTNode(null);
+        IdASTNode idNode = new IdASTNode(funIdTok, null, false);
+        ExprListASTNode argListNode = (ExprListASTNode) argListResult.getData();
+        funCallNode.setIdNode(idNode);
+        funCallNode.setArgListNode(argListNode);
+        funCallNode.updateSrcRange();
+        return ParseResult.ok(funCallNode);
     }
 
     /**
@@ -265,11 +292,17 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrLiteral() throws IOException {
+        ParseResult<ASTNode> arrLiteralResult = parseList(TokType.LSQUARE, TokType.RSQUARE, true);
+        if (arrLiteralResult.getStatus() == ParseStatus.ERR || arrLiteralResult.getStatus() == ParseStatus.FAIL) {
+            return arrLiteralResult;
+        }
+
         // Set void as the core type and dimension of 1 by default
-        // Semantics checker will set this later
+        // Semantics checker will update this later
         TypeInfo arrDtype = new ArrTypeInfo(VoidType.getInst(), 1);
-        ArrLiteralASTNode arrLiteralNode = new ArrLiteralASTNode(null, arrDtype);
-        return parseList(TokType.LSQUARE, TokType.RSQUARE, arrLiteralNode);
+        ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) arrLiteralResult.getData();
+        arrLiteralNode.setDtype(arrDtype);
+        return ParseResult.ok(arrLiteralNode);
     }
 
     /**
@@ -311,7 +344,7 @@ public class ExprParser {
             return ParseResult.fail(parenResult.getFailTok());
         }
 
-        ParseResult<ASTNode> exprResult = parseExpr(context);
+        ParseResult<ASTNode> exprResult = parseInfixExpr(null);
         // Do not return when failed, parse ')' before returning
         if (exprResult.getStatus() == ParseStatus.ERR) {
             return exprResult;
@@ -356,6 +389,7 @@ public class ExprParser {
             } else if (!(end = result.getStatus() == ParseStatus.FAIL)) {
                 currNode = (UnASTNode) result.getData();
                 prevNode.setChild(currNode);
+                prevNode.updateSrcRange();
                 prevNode = currNode;
             }
         }
@@ -401,6 +435,7 @@ public class ExprParser {
         }
 
         prefixLeaf.setChild(postfixResult.getData());
+        prefixLeaf.updateSrcRange();
         return ParseResult.ok(root);
     }
 
@@ -433,6 +468,7 @@ public class ExprParser {
             } else if (!(end = opResult.getStatus() == ParseStatus.FAIL)) {
                 postfixNode = (UnASTNode) opResult.getData();
                 postfixNode.setChild(root);
+                postfixNode.updateSrcRange();
                 root = postfixNode;
             }
         }
@@ -513,6 +549,7 @@ public class ExprParser {
 
             binOpNode.setLeft(leftResult.getData());
             binOpNode.setRight(rightResult.getData());
+            binOpNode.updateSrcRange();
             leftResult = ParseResult.ok(binOpNode);
         }
     }

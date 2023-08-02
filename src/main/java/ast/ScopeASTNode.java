@@ -3,9 +3,9 @@ package ast;
 import toks.SrcRange;
 
 // Node for code scopes
-public class ScopeASTNode extends KnaryASTNode {
+public class ScopeASTNode extends ListASTNode {
     public ScopeASTNode(SrcRange srcRange) {
-        super(null, srcRange, ASTNodeType.SCOPE, null);
+        super(srcRange, ASTNodeType.SCOPE, null, false);
     }
 
     @Override

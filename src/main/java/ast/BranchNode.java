@@ -1,5 +1,7 @@
 package ast;
 
+import toks.SrcPos;
+import toks.SrcRange;
 import toks.Tok;
 
 public abstract class BranchNode extends ASTNode {
@@ -7,7 +9,7 @@ public abstract class BranchNode extends ASTNode {
     protected ScopeASTNode bodyNode;
 
     public BranchNode(Tok tok, ASTNodeType nodeType) {
-        super(tok, nodeType, null);
+        super(tok, null, nodeType, null, false);
     }
 
     public ASTNode getCondNode() {
@@ -24,5 +26,11 @@ public abstract class BranchNode extends ASTNode {
 
     public void setBodyNode(ScopeASTNode bodyNode) {
         this.bodyNode = bodyNode;
+    }
+
+    public void updateSrcRange() {
+        SrcPos startPos = tok.getSrcRange().getStartPos();
+        SrcPos endPos = bodyNode.getSrcRange().getEndPos();
+        srcRange = new SrcRange(startPos, endPos);
     }
 }

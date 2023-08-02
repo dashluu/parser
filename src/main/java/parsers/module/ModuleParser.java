@@ -29,6 +29,7 @@ public class ModuleParser {
     private final LexReader lexReader;
     private final Lexer lexer;
     private final TokParser tokParser = new TokParser();
+    private final TypeAnnParser typeAnnParser = new TypeAnnParser();
     private final SemiParser semiParser = new SemiParser();
     private final ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
     private final ExprParser exprParser = new ExprParser();
@@ -55,16 +56,17 @@ public class ModuleParser {
      */
     public void init() {
         tokParser.init(lexer);
+        typeAnnParser.init(tokParser);
         semiParser.init(tokParser);
         exprParser.init(lexer, tokParser, exprSemanChecker);
-        declParser.init(tokParser, exprParser, declSemanChecker);
+        declParser.init(tokParser, typeAnnParser, exprParser, declSemanChecker);
         retParser.init(tokParser, exprParser);
         breakParser.init(tokParser);
         contParser.init(tokParser);
         stmtParser.init(tokParser, semiParser, exprParser, declParser, retParser, breakParser, contParser);
-        ifElseParser.init(lexReader, tokParser, semiParser, exprParser, scopeParser);
-        whileParser.init(lexReader, tokParser, semiParser, exprParser, scopeParser);
-        funHeadParser.init(tokParser, funHeadSemanChecker);
+        ifElseParser.init(tokParser, semiParser, exprParser, scopeParser);
+        whileParser.init(tokParser, semiParser, exprParser, scopeParser);
+        funHeadParser.init(tokParser, typeAnnParser, funHeadSemanChecker);
         funDefParser.init(funHeadParser, scopeParser);
         scopeParser.init(lexReader, tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
     }

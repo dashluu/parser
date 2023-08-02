@@ -1,7 +1,7 @@
 package ast;
 
+import toks.SrcPos;
 import toks.SrcRange;
-import toks.Tok;
 import types.TypeInfo;
 
 import java.util.ArrayList;
@@ -11,20 +11,11 @@ import java.util.ListIterator;
 
 // AST node with multiple children
 // Implemented using the Iterator pattern
-public abstract class KnaryASTNode extends ASTNode implements Iterable<ASTNode> {
+public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
     protected final List<ASTNode> children = new ArrayList<>();
-    protected SrcRange srcRange;
 
-    public KnaryASTNode(Tok tok, SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype) {
-        super(tok, nodeType, dtype);
-        this.srcRange = srcRange;
-    }
-
-    public SrcRange getSrcRange() {
-        return srcRange;
-    }
-
-    public void setSrcRange(SrcRange srcRange) {
+    public ListASTNode(SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
+        super(null, srcRange, nodeType, dtype, valFlag);
         this.srcRange = srcRange;
     }
 
@@ -53,6 +44,14 @@ public abstract class KnaryASTNode extends ASTNode implements Iterable<ASTNode> 
      */
     public boolean isEmpty() {
         return children.isEmpty();
+    }
+
+    public void updateSrcRange() {
+        if (!children.isEmpty()) {
+            SrcPos startPos = children.get(0).getSrcRange().getStartPos();
+            SrcPos endPos = children.get(children.size() - 1).getSrcRange().getEndPos();
+            srcRange = new SrcRange(startPos, endPos);
+        }
     }
 
     @Override

@@ -44,4 +44,6 @@ public interface IASTVisitor {
     ASTNode visitArrAccess(ASTNode node);
 
     ASTNode visitArrLiteral(ASTNode node);
+
+    ASTNode visitExprList(ASTNode node);
 }

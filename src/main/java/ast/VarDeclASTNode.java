@@ -7,7 +7,7 @@ public class VarDeclASTNode extends ASTNode {
     private boolean mutable;
 
     public VarDeclASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
-        super(tok, ASTNodeType.VAR_DECL, dtype);
+        super(tok, tok.getSrcRange(), ASTNodeType.VAR_DECL, dtype, false);
         this.mutable = mutable;
     }
 
