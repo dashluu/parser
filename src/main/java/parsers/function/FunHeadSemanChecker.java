@@ -17,49 +17,9 @@ public class FunHeadSemanChecker {
     private ParseContext context;
 
     /**
-     * Checks the semantics of a function header in the case where a type annotation is present.
+     * Checks the semantics of a function header.
      *
-     * @param typeAnnNode the type annotation node that contains a function declaration node on the left and a return
-     *                    type node on the right.
-     * @param context     the parsing context.
-     * @return a ParseResult object as the result of checking the semantics of the function header.
-     */
-    public ParseResult<ASTNode> checkSeman(TypeAnnASTNode typeAnnNode, ParseContext context) {
-        this.context = context;
-        FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
-        // Check function id
-        ParseResult<FunInfo> idResult = checkId(funDefNode.getIdNode());
-        if (idResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        }
-
-        FunInfo funInfo = idResult.getData();
-        // Check the parameter list
-        ParamListASTNode paramListNode = funDefNode.getParamListNode();
-        ParseResult<ASTNode> paramListResult = checkParamList(funInfo, paramListNode);
-        if (paramListResult.getStatus() == ParseStatus.ERR) {
-            return paramListResult;
-        }
-
-        // Check the return type
-        ASTNode retDtypeNode = typeAnnNode.getDtypeNode();
-        ParseResult<TypeInfo> retDtypeResult = checkDtype(retDtypeNode);
-        if (retDtypeResult.getStatus() == ParseStatus.ERR) {
-            return ParseResult.err();
-        }
-
-        TypeInfo retDtype = retDtypeResult.getData();
-        funInfo.setDtype(retDtype);
-        typeAnnNode.setDtype(retDtype);
-        funDefNode.setDtype(retDtype);
-        retDtypeNode.setDtype(retDtype);
-        return ParseResult.ok(typeAnnNode);
-    }
-
-    /**
-     * Checks the semantics of a function header in the case where a type annotation is missing.
-     *
-     * @param funDefNode the function declaration AST node.
+     * @param funDefNode the function definition AST's root.
      * @param context    the parsing context.
      * @return a ParseResult object as the result of checking the semantics of the function header.
      */
@@ -72,18 +32,50 @@ public class FunHeadSemanChecker {
         }
 
         FunInfo funInfo = idResult.getData();
+        // Check the function signature
+        ParseResult<ASTNode> funSignResult = checkFunSign(funDefNode.getSignNode(), funInfo);
+        if (funSignResult.getStatus() == ParseStatus.ERR) {
+            return funSignResult;
+        }
+
+        // Update the return type
+        funDefNode.setDtype(funSignResult.getData().getDtype());
+        return ParseResult.ok(funDefNode);
+    }
+
+    /**
+     * Checks if a function signature is valid, which includes the parameter list and the return type.
+     *
+     * @param funSignNode the AST node associated with the function signature.
+     * @param funInfo     the function object to be updated in the symbol table.
+     * @return a ParseResult object as the result of checking the function signature.
+     */
+    private ParseResult<ASTNode> checkFunSign(FunSignASTNode funSignNode, FunInfo funInfo) {
         // Check the parameter list
-        ParamListASTNode paramListNode = funDefNode.getParamListNode();
-        ParseResult<ASTNode> paramListResult = checkParamList(funInfo, paramListNode);
+        ParamListASTNode paramListNode = funSignNode.getParamListNode();
+        ParseResult<ASTNode> paramListResult = checkParamList(paramListNode, funInfo);
         if (paramListResult.getStatus() == ParseStatus.ERR) {
             return paramListResult;
         }
 
-        // The function's return type is void if the type annotation is missing
-        TypeInfo retDtype = VoidType.getInst();
+        // Check the return type
+        DtypeASTNode retDtypeNode = funSignNode.getRetDtypeNode();
+        TypeInfo retDtype;
+        if (retDtypeNode == null) {
+            retDtype = VoidType.getInst();
+        } else {
+            // Check the return type
+            ParseResult<TypeInfo> retDtypeResult = checkDtype(retDtypeNode);
+            if (retDtypeResult.getStatus() == ParseStatus.ERR) {
+                return ParseResult.err();
+            }
+            retDtype = retDtypeResult.getData();
+            retDtypeNode.setDtype(retDtype);
+        }
+
         funInfo.setDtype(retDtype);
-        funDefNode.setDtype(retDtype);
-        return ParseResult.ok(funDefNode);
+        funSignNode.setDtype(retDtype);
+        return ParseResult.ok(funSignNode);
     }
 
     /**
@@ -116,11 +108,11 @@ public class FunHeadSemanChecker {
     /**
      * Checks a function's parameter list.
      *
-     * @param funInfo       the function symbol.
      * @param paramListNode the AST node associated with the parameter list.
+     * @param funInfo       the function symbol.
      * @return a ParseResult object as the result of checking the parameter list.
      */
-    private ParseResult<ASTNode> checkParamList(FunInfo funInfo, ParamListASTNode paramListNode) {
+    private ParseResult<ASTNode> checkParamList(ParamListASTNode paramListNode, FunInfo funInfo) {
         ParseResult<TypeInfo> paramResult;
         TypeInfo paramDtype;
         ScopeStack scopeStack = context.getScopeStack();
@@ -128,8 +120,8 @@ public class FunHeadSemanChecker {
         Scope paramScope = new Scope(scopeStack.peek());
         scopeStack.push(paramScope);
 
-        for (ASTNode typeAnnNode : paramListNode) {
-            paramResult = checkParam((TypeAnnASTNode) typeAnnNode, paramScope);
+        for (ASTNode paramDeclNode : paramListNode) {
+            paramResult = checkParam((ParamDeclASTNode) paramDeclNode, paramScope);
             if (paramResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             }
@@ -141,25 +133,24 @@ public class FunHeadSemanChecker {
     }
 
     /**
-     * Checks if a parameter, including its name and data type, is valid.
+     * Checks if a parameter declaration, including its name and data type, is valid.
      *
-     * @param typeAnnNode the type annotation node that contains a parameter declaration node on the left and a data
-     *                    type node on the right.
-     * @param paramScope  the scope containing the parameter.
-     * @return a ParseResult object as the result of checking the parameter.
+     * @param paramDeclNode the AST node associated with the parameter declaration.
+     * @param paramScope    the scope containing the parameter.
+     * @return a ParseResult object as the result of checking the parameter declaration.
      */
-    private ParseResult<TypeInfo> checkParam(TypeAnnASTNode typeAnnNode, Scope paramScope) {
-        // Check if the parameter has been defined
-        ASTNode paramDeclNode = typeAnnNode.getLeft();
-        Tok nameTok = paramDeclNode.getTok();
+    private ParseResult<TypeInfo> checkParam(ParamDeclASTNode paramDeclNode, Scope paramScope) {
+        // Check if the parameter has been declared
+        IdASTNode nameNode = paramDeclNode.getIdNode();
+        Tok nameTok = nameNode.getTok();
         String name = nameTok.getVal();
         SymbolTable symbolTable = paramScope.getSymbolTable();
         if (symbolTable.getLocalSymbol(name) != null) {
-            return context.raiseErr(new ErrMsg("'" + name + "' cannot be redeclared", nameTok));
+            return context.raiseErr(new ErrMsg("Parameter '" + name + "' cannot be redeclared", nameTok));
         }
 
         // Check the parameter's data type
-        ASTNode dtypeNode = typeAnnNode.getDtypeNode();
+        DtypeASTNode dtypeNode = paramDeclNode.getDtypeNode();
         ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return dtypeResult;
@@ -169,9 +160,9 @@ public class FunHeadSemanChecker {
         // Add parameter to the symbol table
         ParamInfo paramInfo = new ParamInfo(name, dtype);
         symbolTable.registerSymbol(paramInfo);
-        typeAnnNode.setDtype(dtype);
-        paramDeclNode.setDtype(dtype);
+        nameNode.setDtype(dtype);
         dtypeNode.setDtype(dtype);
+        paramDeclNode.setDtype(dtype);
         return ParseResult.ok(dtype);
     }
 
@@ -179,9 +170,9 @@ public class FunHeadSemanChecker {
      * Checks if a data type is valid.
      *
      * @param dtypeNode the AST node that stores a data type token.
-     * @return a ParseResult object as the result of checking a data type.
+     * @return a ParseResult object as the result of checking the data type.
      */
-    private ParseResult<TypeInfo> checkDtype(ASTNode dtypeNode) {
+    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
         Tok dtypeTok = dtypeNode.getTok();
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = context.getTypeTable().getType(dtypeId);

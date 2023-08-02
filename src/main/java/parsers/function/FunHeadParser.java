@@ -57,10 +57,35 @@ public class FunHeadParser {
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
-            return context.raiseErr(new ErrMsg("Missing function's name", idResult.getFailTok()));
+            return context.raiseErr(new ErrMsg("Missing a function identifier", idResult.getFailTok()));
         }
 
-        // Try parsing a parameter list
+        // Parse the function signature
+        ParseResult<ASTNode> funSignResult = parseFunSign();
+        if (funSignResult.getStatus() == ParseStatus.ERR) {
+            return funSignResult;
+        } else if (funSignResult.getStatus() == ParseStatus.FAIL) {
+            return context.raiseErr(new ErrMsg("Missing a function signature", funSignResult.getFailTok()));
+        }
+
+        FunDefASTNode funDefNode = new FunDefASTNode(kwResult.getData(), null);
+        IdASTNode funIdNode = new IdASTNode(idResult.getData(), null, false);
+        FunSignASTNode funSignNode = (FunSignASTNode) funSignResult.getData();
+        funDefNode.setIdNode(funIdNode);
+        funDefNode.setSignNode(funSignNode);
+        return semanChecker.checkSeman(funDefNode, context);
+    }
+
+    /**
+     * Parses a function signature.
+     *
+     * @return a ParseResult object as the result of parsing the function signature.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> parseFunSign() throws IOException {
+        FunSignASTNode funSignNode = new FunSignASTNode(null);
+
+        // Parse a parameter list
         ParseResult<ASTNode> paramListResult = parseParamList();
         if (paramListResult.getStatus() == ParseStatus.ERR) {
             return paramListResult;
@@ -68,27 +93,20 @@ public class FunHeadParser {
             return context.raiseErr(new ErrMsg("Invalid parameter list", paramListResult.getFailTok()));
         }
 
-        // Try parsing a return type annotation
-        // Failure indicates the function returns void
-        TypeAnnASTNode typeAnnNode = null;
+        ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
+        funSignNode.setParamListNode(paramListNode);
+
+        // Parse return type annotation
         ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
-        } else if (typeAnnResult.getStatus() == ParseStatus.OK) {
-            typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
+        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
+            return ParseResult.ok(funSignNode);
         }
 
-        FunDefASTNode funDefNode = new FunDefASTNode(kwResult.getData(), null);
-        IdASTNode funIdNode = new IdASTNode(idResult.getData(), null, false);
-        ParamListASTNode paramListNode = (ParamListASTNode) paramListResult.getData();
-        funDefNode.setIdNode(funIdNode);
-        funDefNode.setParamListNode(paramListNode);
-        if (typeAnnNode == null) {
-            return semanChecker.checkSeman(funDefNode, context);
-        }
-
-        typeAnnNode.setLeft(funDefNode);
-        return semanChecker.checkSeman(typeAnnNode, context);
+        DtypeASTNode retDtypeNode = (DtypeASTNode) typeAnnResult.getData();
+        funSignNode.setRetDtypeNode(retDtypeNode);
+        return ParseResult.ok(funSignNode);
     }
 
     /**
@@ -166,7 +184,8 @@ public class FunHeadParser {
         }
 
         Tok nameTok = nameResult.getData();
-        // Parse the type annotation
+        IdASTNode nameNode = new IdASTNode(nameTok, null, false);
+        // Parse a type annotation
         ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
@@ -175,9 +194,10 @@ public class FunHeadParser {
                     typeAnnResult.getFailTok()));
         }
 
-        TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
-        ParamDeclASTNode paramNode = new ParamDeclASTNode(nameTok, null);
-        typeAnnNode.setLeft(paramNode);
-        return ParseResult.ok(typeAnnNode);
+        DtypeASTNode dtypeNode = (DtypeASTNode) typeAnnResult.getData();
+        ParamDeclASTNode paramDeclNode = new ParamDeclASTNode(null);
+        paramDeclNode.setIdNode(nameNode);
+        paramDeclNode.setDtypeNode(dtypeNode);
+        return ParseResult.ok(paramDeclNode);
     }
 }

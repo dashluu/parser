@@ -29,11 +29,11 @@ public class TypeAnnParser {
      */
     public ParseResult<ASTNode> parseTypeAnn(ParseContext context) throws IOException {
         // Try parsing ':'
-        ParseResult<Tok> typeAnnResult = tokParser.parseTok(TokType.COLON, context);
-        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
+        ParseResult<Tok> colonResult = tokParser.parseTok(TokType.COLON, context);
+        if (colonResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(typeAnnResult.getFailTok());
+        } else if (colonResult.getStatus() == ParseStatus.FAIL) {
+            return ParseResult.fail(colonResult.getFailTok());
         }
 
         // Parse a data type
@@ -45,11 +45,7 @@ public class TypeAnnParser {
                     dtypeResult.getFailTok()));
         }
 
-        Tok typeAnnTok = typeAnnResult.getData();
-        TypeAnnASTNode typeAnnNode = new TypeAnnASTNode(typeAnnTok, null);
-        Tok dtypeTok = dtypeResult.getData();
-        ASTNode dtypeNode = new DtypeASTNode(dtypeTok, null);
-        typeAnnNode.setDtypeNode(dtypeNode);
-        return ParseResult.ok(typeAnnNode);
+        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeResult.getData(), null);
+        return ParseResult.ok(dtypeNode);
     }
 }

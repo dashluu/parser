@@ -11,14 +11,14 @@ public abstract class ASTNode {
     // The type of data held inside the node
     protected TypeInfo dtype;
     // Whether this node can be treated as a value
-    protected final boolean valFlag;
+    protected final boolean valExprFlag;
 
-    public ASTNode(Tok tok, SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
+    public ASTNode(Tok tok, SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
         this.tok = tok;
         this.srcRange = srcRange;
         this.nodeType = nodeType;
         this.dtype = dtype;
-        this.valFlag = valFlag;
+        this.valExprFlag = valExprFlag;
     }
 
     public Tok getTok() {
@@ -49,8 +49,8 @@ public abstract class ASTNode {
         this.dtype = dtype;
     }
 
-    public boolean isVal() {
-        return valFlag;
+    public boolean isValExpr() {
+        return valExprFlag;
     }
 
     public abstract ASTNode accept(IASTVisitor visitor);

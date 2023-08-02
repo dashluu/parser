@@ -52,7 +52,7 @@ public class StmtParser {
      */
     public ParseResult<ASTNode> parseStmt(ParseContext context) throws IOException {
         // Parse a declaration statement
-        ParseResult<ASTNode> stmtResult = declParser.parseDecl(context);
+        ParseResult<ASTNode> stmtResult = declParser.parseVarDecl(context);
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {

@@ -3,7 +3,6 @@ package parsers.function;
 import ast.ASTNode;
 import ast.FunDefASTNode;
 import ast.ScopeASTNode;
-import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
 import parsers.scope.ScopeParser;
 import parsers.utils.*;
@@ -39,8 +38,7 @@ public class FunDefParser {
             return funHeadResult;
         }
 
-        TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) funHeadResult.getData();
-        FunDefASTNode funDefNode = (FunDefASTNode) typeAnnNode.getLeft();
+        FunDefASTNode funDefNode = (FunDefASTNode) funHeadResult.getData();
         TypeInfo retType = funDefNode.getDtype();
         Scope bodyScope = new Scope(context.getScope());
         ScopeStack scopeStack = context.getScopeStack();
@@ -60,6 +58,6 @@ public class FunDefParser {
         scopeStack.pop();
         // Pop parameters' scope
         scopeStack.pop();
-        return funHeadResult;
+        return ParseResult.ok(funDefNode);
     }
 }

@@ -1,11 +1,32 @@
 package ast;
 
-import toks.Tok;
+import toks.SrcRange;
 import types.TypeInfo;
 
 public class ParamDeclASTNode extends ASTNode {
-    public ParamDeclASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, tok.getSrcRange(), ASTNodeType.PARAM_DECL, dtype, false);
+    private IdASTNode idNode;
+    private DtypeASTNode dtypeNode;
+
+    public ParamDeclASTNode(TypeInfo dtype) {
+        super(null, new SrcRange(), ASTNodeType.PARAM_DECL, dtype, false);
+    }
+
+    public IdASTNode getIdNode() {
+        return idNode;
+    }
+
+    public void setIdNode(IdASTNode idNode) {
+        this.idNode = idNode;
+        srcRange.setStartPos(idNode.srcRange.getStartPos());
+    }
+
+    public DtypeASTNode getDtypeNode() {
+        return dtypeNode;
+    }
+
+    public void setDtypeNode(DtypeASTNode dtypeNode) {
+        this.dtypeNode = dtypeNode;
+        srcRange.setEndPos(dtypeNode.srcRange.getEndPos());
     }
 
     @Override

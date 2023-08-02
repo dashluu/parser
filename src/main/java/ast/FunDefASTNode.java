@@ -6,7 +6,7 @@ import types.TypeInfo;
 // Node for function definition
 public class FunDefASTNode extends ASTNode {
     private IdASTNode idNode;
-    private ParamListASTNode paramListNode;
+    private FunSignASTNode signNode;
     private ScopeASTNode bodyNode;
 
     public FunDefASTNode(Tok tok, TypeInfo retDtype) {
@@ -21,12 +21,12 @@ public class FunDefASTNode extends ASTNode {
         this.idNode = idNode;
     }
 
-    public ParamListASTNode getParamListNode() {
-        return paramListNode;
+    public FunSignASTNode getSignNode() {
+        return signNode;
     }
 
-    public void setParamListNode(ParamListASTNode paramListNode) {
-        this.paramListNode = paramListNode;
+    public void setSignNode(FunSignASTNode signNode) {
+        this.signNode = signNode;
     }
 
     public ScopeASTNode getBodyNode() {

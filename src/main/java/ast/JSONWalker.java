@@ -21,8 +21,7 @@ public class JSONWalker implements IASTVisitor {
         TypeInfo dtype = node.getDtype();
         jsonStrBuff.append("\"Node type\":\"").append(nodeType).append("\"")
                 .append(",\"Tok\":\"").append(tok).append("\"")
-                .append(",\"Source range\":\"").append(srcRange).append("\"")
-                .append(",\"Data type\":\"").append(dtype == null ? null : dtype.getId()).append("\"");
+                .append(",\"Source range\":\"").append(srcRange).append("\"");
     }
 
     private void unNodeToJSON(UnASTNode unNode) {
@@ -133,6 +132,30 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitVarDecl(ASTNode node) {
         nodeToJSON(node);
+        VarDeclASTNode varDeclNode = (VarDeclASTNode) node;
+        IdASTNode idNode = varDeclNode.getIdNode();
+        DtypeASTNode dtypeNode = varDeclNode.getDtypeNode();
+
+        jsonStrBuff.append(",\"Identifier\":");
+        if (idNode == null) {
+            jsonStrBuff.append(idNode);
+        } else {
+            jsonStrBuff.append("{");
+            idNode = (IdASTNode) idNode.accept(this);
+            jsonStrBuff.append("}");
+            varDeclNode.setIdNode(idNode);
+        }
+
+        jsonStrBuff.append(",\"Data type\":");
+        if (dtypeNode == null) {
+            jsonStrBuff.append(dtypeNode);
+        } else {
+            jsonStrBuff.append("{");
+            dtypeNode = (DtypeASTNode) dtypeNode.accept(this);
+            jsonStrBuff.append("}");
+            varDeclNode.setDtypeNode(dtypeNode);
+        }
+
         return node;
     }
 
@@ -146,6 +169,30 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitParamDecl(ASTNode node) {
         nodeToJSON(node);
+        ParamDeclASTNode paramDeclNode = (ParamDeclASTNode) node;
+        IdASTNode idNode = paramDeclNode.getIdNode();
+        DtypeASTNode dtypeNode = paramDeclNode.getDtypeNode();
+
+        jsonStrBuff.append(",\"Identifier\":");
+        if (idNode == null) {
+            jsonStrBuff.append(idNode);
+        } else {
+            jsonStrBuff.append("{");
+            idNode = (IdASTNode) idNode.accept(this);
+            jsonStrBuff.append("}");
+            paramDeclNode.setIdNode(idNode);
+        }
+
+        jsonStrBuff.append(",\"Data type\":");
+        if (dtypeNode == null) {
+            jsonStrBuff.append(dtypeNode);
+        } else {
+            jsonStrBuff.append("{");
+            dtypeNode = (DtypeASTNode) dtypeNode.accept(this);
+            jsonStrBuff.append("}");
+            paramDeclNode.setDtypeNode(dtypeNode);
+        }
+
         return node;
     }
 
@@ -243,17 +290,28 @@ public class JSONWalker implements IASTVisitor {
     public ASTNode visitFunDef(ASTNode node) {
         nodeToJSON(node);
         FunDefASTNode funDefNode = (FunDefASTNode) node;
-        ParamListASTNode paramListNode = funDefNode.getParamListNode();
+        IdASTNode idNode = funDefNode.getIdNode();
+        FunSignASTNode funSignNode = funDefNode.getSignNode();
         ScopeASTNode bodyNode = funDefNode.getBodyNode();
 
-        jsonStrBuff.append(",\"Param list\":");
-        if (paramListNode == null) {
-            jsonStrBuff.append(paramListNode);
+        jsonStrBuff.append(",\"Identifier\":");
+        if (idNode == null) {
+            jsonStrBuff.append(idNode);
         } else {
             jsonStrBuff.append("{");
-            paramListNode = (ParamListASTNode) paramListNode.accept(this);
+            idNode = (IdASTNode) idNode.accept(this);
             jsonStrBuff.append("}");
-            funDefNode.setParamListNode(paramListNode);
+            funDefNode.setIdNode(idNode);
+        }
+
+        jsonStrBuff.append(",\"Function signature\":");
+        if (funSignNode == null) {
+            jsonStrBuff.append(funSignNode);
+        } else {
+            jsonStrBuff.append("{");
+            funSignNode = (FunSignASTNode) funSignNode.accept(this);
+            jsonStrBuff.append("}");
+            funDefNode.setSignNode(funSignNode);
         }
 
         jsonStrBuff.append(",\"Body\":");
@@ -264,6 +322,36 @@ public class JSONWalker implements IASTVisitor {
             bodyNode = (ScopeASTNode) bodyNode.accept(this);
             jsonStrBuff.append("}");
             funDefNode.setBodyNode(bodyNode);
+        }
+
+        return node;
+    }
+
+    @Override
+    public ASTNode visitFunSign(ASTNode node) {
+        nodeToJSON(node);
+        FunSignASTNode funSignNode = (FunSignASTNode) node;
+        ParamListASTNode paramListNode = funSignNode.getParamListNode();
+        DtypeASTNode retDtypeNode = funSignNode.getRetDtypeNode();
+
+        jsonStrBuff.append(",\"Parameter list\":");
+        if (paramListNode == null) {
+            jsonStrBuff.append(paramListNode);
+        } else {
+            jsonStrBuff.append("{");
+            paramListNode = (ParamListASTNode) paramListNode.accept(this);
+            jsonStrBuff.append("}");
+            funSignNode.setParamListNode(paramListNode);
+        }
+
+        jsonStrBuff.append(",\"Return type\":");
+        if (retDtypeNode == null) {
+            jsonStrBuff.append(retDtypeNode);
+        } else {
+            jsonStrBuff.append("{");
+            retDtypeNode = (DtypeASTNode) retDtypeNode.accept(this);
+            jsonStrBuff.append("}");
+            funSignNode.setRetDtypeNode(retDtypeNode);
         }
 
         return node;

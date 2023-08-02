@@ -2,6 +2,7 @@ package parsers.decl;
 
 import ast.*;
 import exceptions.ErrMsg;
+import keywords.KeywordTable;
 import parsers.expr.ExprParser;
 import parsers.utils.*;
 import toks.Tok;
@@ -34,23 +35,25 @@ public class DeclParser {
     }
 
     /**
-     * Parses a declaration statement.
+     * Parses a variable declaration or definition.
      *
      * @param context the parsing context.
-     * @return a ParseResult object as the result of parsing the declaration statement.
+     * @return a ParseResult object as the result of parsing the variable declaration or definition.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseDecl(ParseContext context) throws IOException {
+    public ParseResult<ASTNode> parseVarDecl(ParseContext context) throws IOException {
         this.context = context;
         // Parse head
-        ParseResult<Boolean> headResult = parseHead();
+        ParseResult<Tok> headResult = parseHead();
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (headResult.getStatus() == ParseStatus.FAIL) {
             return ParseResult.fail(headResult.getFailTok());
         }
 
-        boolean mutable = headResult.getData();
+        Tok headTok = headResult.getData();
+        boolean mutable = headTok.getVal().equals(KeywordTable.VAR);
+        VarDeclASTNode varDeclNode = new VarDeclASTNode(headTok, null);
         // Parse id
         ParseResult<ASTNode> idResult = parseId(mutable);
         if (idResult.getStatus() == ParseStatus.ERR) {
@@ -59,31 +62,28 @@ public class DeclParser {
             return context.raiseErr(new ErrMsg("Expected an identifier", idResult.getFailTok()));
         }
 
-        ASTNode idNode = idResult.getData();
-        // Parse type annotation
+        IdASTNode idNode = (IdASTNode) idResult.getData();
+        varDeclNode.setIdNode(idNode);
+        // Parse the data type with type annotation
         ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
-        ASTNode lhsNode;
+        DtypeASTNode dtypeNode;
         if (typeAnnResult.getStatus() == ParseStatus.ERR) {
             return typeAnnResult;
-        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
-            lhsNode = idNode;
-        } else {
-            TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) typeAnnResult.getData();
-            typeAnnNode.setLeft(idNode);
-            lhsNode = typeAnnNode;
+        } else if (typeAnnResult.getStatus() == ParseStatus.OK) {
+            dtypeNode = (DtypeASTNode) typeAnnResult.getData();
+            varDeclNode.setDtypeNode(dtypeNode);
         }
 
         // Parse assignment
-        ParseResult<ASTNode> asgnmtResult = parseAsgnmt(mutable);
+        ParseResult<ASTNode> asgnmtResult = parseAsgnmt();
         if (asgnmtResult.getStatus() == ParseStatus.ERR) {
             return asgnmtResult;
         } else if (asgnmtResult.getStatus() == ParseStatus.FAIL) {
             if (typeAnnResult.getStatus() == ParseStatus.OK) {
                 // No rhs expression but the data type is defined
-                return semanChecker.checkSeman(lhsNode, context);
+                return semanChecker.checkSeman(varDeclNode, context);
             }
-            String id = lhsNode.getTok().getVal();
-            return context.raiseErr(new ErrMsg("Cannot determine the data type of '" + id + "'",
+            return context.raiseErr(new ErrMsg("Cannot determine the data type of '" + idNode.getTok().getVal() + "'",
                     asgnmtResult.getFailTok()));
         }
 
@@ -96,41 +96,39 @@ public class DeclParser {
         }
 
         BinASTNode asgnmtNode = (BinASTNode) asgnmtResult.getData();
-        asgnmtNode.setLeft(lhsNode);
+        asgnmtNode.setLeft(varDeclNode);
         asgnmtNode.setRight(exprResult.getData());
         return semanChecker.checkSeman(asgnmtNode, context);
     }
 
     /**
-     * Parses a declaration head.
+     * Parses a variable declaration head.
      *
-     * @return a ParseResult object as the result of parsing a declaration head.
+     * @return a ParseResult object as the result of parsing a variable declaration head.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<Boolean> parseHead() throws IOException {
+    private ParseResult<Tok> parseHead() throws IOException {
         ParseResult<Tok> headResult = tokParser.parseTok(TokType.VAR_DECL, context);
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (headResult.getStatus() == ParseStatus.OK) {
-            return ParseResult.ok(true);
+            return headResult;
         }
 
         // If variable keyword is not present, try parsing constant keyword
         headResult = tokParser.parseTok(TokType.CONST_DECL, context);
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
-        } else if (headResult.getStatus() == ParseStatus.FAIL) {
-            return ParseResult.fail(headResult.getFailTok());
         }
 
-        return ParseResult.ok(false);
+        return headResult;
     }
 
     /**
-     * Parses a declaration identifier.
+     * Parses a variable declaration identifier.
      *
-     * @param mutable boolean value for declaration's mutability.
-     * @return a ParseResult object as the result of parsing the declaration identifier.
+     * @param mutable true if the variable is mutable and false otherwise.
+     * @return a ParseResult object as the result of parsing the variable declaration identifier.
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseId(boolean mutable) throws IOException {
@@ -142,18 +140,17 @@ public class DeclParser {
         }
 
         Tok idTok = result.getData();
-        ASTNode idNode = new VarDeclASTNode(idTok, null, mutable);
+        IdASTNode idNode = new IdASTNode(idTok, null, mutable);
         return ParseResult.ok(idNode);
     }
 
     /**
      * Parses an assignment operator.
      *
-     * @param mutable boolean value for declaration's mutability.
      * @return a ParseResult object as the result of parsing an assignment operator.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseAsgnmt(boolean mutable) throws IOException {
+    private ParseResult<ASTNode> parseAsgnmt() throws IOException {
         ParseResult<Tok> result = tokParser.parseTok(TokType.ASSIGNMENT, context);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -162,7 +159,7 @@ public class DeclParser {
         }
 
         Tok asgnmtTok = result.getData();
-        ASTNode asgnmtNode = new VarDefASTNode(asgnmtTok, null, mutable);
+        VarDefASTNode asgnmtNode = new VarDefASTNode(asgnmtTok, null);
         return ParseResult.ok(asgnmtNode);
     }
 }

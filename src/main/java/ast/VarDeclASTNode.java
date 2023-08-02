@@ -4,19 +4,29 @@ import toks.Tok;
 import types.TypeInfo;
 
 public class VarDeclASTNode extends ASTNode {
-    private boolean mutable;
+    private IdASTNode idNode;
+    private DtypeASTNode dtypeNode;
 
-    public VarDeclASTNode(Tok tok, TypeInfo dtype, boolean mutable) {
+    public VarDeclASTNode(Tok tok, TypeInfo dtype) {
         super(tok, tok.getSrcRange(), ASTNodeType.VAR_DECL, dtype, false);
-        this.mutable = mutable;
     }
 
-    public boolean isMutable() {
-        return mutable;
+    public IdASTNode getIdNode() {
+        return idNode;
     }
 
-    public void setMutable(boolean mutable) {
-        this.mutable = mutable;
+    public void setIdNode(IdASTNode idNode) {
+        this.idNode = idNode;
+        srcRange.setEndPos(idNode.srcRange.getEndPos());
+    }
+
+    public DtypeASTNode getDtypeNode() {
+        return dtypeNode;
+    }
+
+    public void setDtypeNode(DtypeASTNode dtypeNode) {
+        this.dtypeNode = dtypeNode;
+        srcRange.setEndPos(dtypeNode.srcRange.getEndPos());
     }
 
     @Override

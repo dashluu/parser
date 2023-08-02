@@ -25,6 +25,8 @@ public interface IASTVisitor {
 
     ASTNode visitFunDef(ASTNode node);
 
+    ASTNode visitFunSign(ASTNode node);
+
     ASTNode visitRet(ASTNode node);
 
     ASTNode visitBreak(ASTNode node);

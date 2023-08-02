@@ -18,75 +18,70 @@ public class DeclSemanChecker {
     private ParseContext context;
 
     /**
-     * Checks the semantics of a declaration statement.
+     * Checks the semantics of a variable declaration or definition.
      *
-     * @param declNode the declaration AST's root.
-     * @param context  the parsing context.
-     * @return a ParseResult object as the result of checking the declaration statement's semantics.
+     * @param root    the variable declaration or definition AST's root.
+     * @param context the parsing context.
+     * @return a ParseResult object as the result of checking the variable declaration or definition's semantics.
      */
-    public ParseResult<ASTNode> checkSeman(ASTNode declNode, ParseContext context) {
+    public ParseResult<ASTNode> checkSeman(ASTNode root, ParseContext context) {
         this.context = context;
-        ParseResult<SymbolInfo> lhsResult;
-        ASTNodeType declNodeType = declNode.getNodeType();
-        if (declNodeType == ASTNodeType.TYPE_ANN) {
-            // Declaration without rhs expression
-            lhsResult = checkTypeAnn((TypeAnnASTNode) declNode);
-            if (lhsResult.getStatus() == ParseStatus.ERR) {
+        ParseResult<SymbolInfo> varDeclResult;
+        VarDeclASTNode varDeclNode;
+        ASTNodeType rootNodeType = root.getNodeType();
+        if (rootNodeType == ASTNodeType.VAR_DECL) {
+            // Variable declaration without rhs expression
+            varDeclNode = (VarDeclASTNode) root;
+            varDeclResult = checkVarDecl(varDeclNode);
+            if (varDeclResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             }
-            return ParseResult.ok(declNode);
+            return ParseResult.ok(root);
         }
 
-        BinASTNode asgnmtNode = (BinASTNode) declNode;
-        ASTNode lhsNode = asgnmtNode.getLeft();
-        if (lhsNode.getNodeType() == ASTNodeType.TYPE_ANN) {
-            lhsResult = checkTypeAnn((TypeAnnASTNode) lhsNode);
-        } else {
-            lhsResult = checkId(lhsNode);
-        }
-
-        if (lhsResult.getStatus() == ParseStatus.ERR) {
+        BinASTNode asgnmtNode = (BinASTNode) root;
+        varDeclNode = (VarDeclASTNode) asgnmtNode.getLeft();
+        varDeclResult = checkVarDecl(varDeclNode);
+        if (varDeclResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
-        SymbolInfo symbol = lhsResult.getData();
-        return typeCheckAsgnmt(symbol, asgnmtNode);
+        return typeCheckAsgnmt(varDeclResult.getData(), asgnmtNode);
     }
 
     /**
-     * Checks the type annotation of a declaration statement.
+     * Checks a variable declaration, that is, its identifier and data type.
      *
-     * @param typeAnnNode the type annotation node that contains a node with a symbol's identifier on the left and a
-     *                    data type node on the right.
-     * @return a ParseResult object as the result of checking the declaration statement's type annotation.
+     * @param varDeclNode the AST node associated with the variable declaration.
+     * @return a ParseResult object as the result of checking the variable declaration.
      */
-    private ParseResult<SymbolInfo> checkTypeAnn(TypeAnnASTNode typeAnnNode) {
-        ASTNode idNode = typeAnnNode.getLeft();
+    private ParseResult<SymbolInfo> checkVarDecl(VarDeclASTNode varDeclNode) {
+        IdASTNode idNode = varDeclNode.getIdNode();
         ParseResult<SymbolInfo> idResult = checkId(idNode);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
-        ASTNode dtypeNode = typeAnnNode.getDtypeNode();
+        DtypeASTNode dtypeNode = varDeclNode.getDtypeNode();
         ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
         TypeInfo dtype = dtypeResult.getData();
-        typeAnnNode.setDtype(dtype);
+        varDeclNode.setDtype(dtype);
         idNode.setDtype(dtype);
         dtypeNode.setDtype(dtype);
         return ParseResult.ok(idResult.getData());
     }
 
     /**
-     * Checks if a declaration identifier is valid.
+     * Checks if a variable declaration identifier is valid.
      *
-     * @param idNode the AST node containing the declaration identifier.
-     * @return a ParseResult object as the result of checking the declaration identifier.
+     * @param idNode the AST node containing the variable declaration identifier.
+     * @return a ParseResult object as the result of checking the variable declaration identifier.
      */
-    private ParseResult<SymbolInfo> checkId(ASTNode idNode) {
+    private ParseResult<SymbolInfo> checkId(IdASTNode idNode) {
         Tok idTok = idNode.getTok();
         String id = idTok.getVal();
         // Check if the declaration id is a data type since the id cannot be a keyword
@@ -103,8 +98,7 @@ public class DeclSemanChecker {
         }
 
         // Create a new symbol
-        VarDeclASTNode varDeclNode = (VarDeclASTNode) idNode;
-        symbol = new VarInfo(id, null, varDeclNode.isMutable());
+        symbol = new VarInfo(id, null, idNode.isMutable());
         symbolTable.registerSymbol(symbol);
         return ParseResult.ok(symbol);
     }
@@ -113,9 +107,9 @@ public class DeclSemanChecker {
      * Checks if a data type is valid.
      *
      * @param dtypeNode the AST node that stores a data type token.
-     * @return a ParseResult object as the result of checking a data type.
+     * @return a ParseResult object as the result of checking the data type.
      */
-    private ParseResult<TypeInfo> checkDtype(ASTNode dtypeNode) {
+    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
         Tok dtypeTok = dtypeNode.getTok();
         String dtypeId = dtypeTok.getVal();
         TypeInfo dtype = context.getTypeTable().getType(dtypeId);
@@ -128,15 +122,15 @@ public class DeclSemanChecker {
     /**
      * Checks type compatibility between the left-hand side and right-hand side of the assignment, or the definition.
      *
-     * @param lhsSymbol  the symbol on the left-hand side.
+     * @param varSymbol  the symbol on the left-hand side.
      * @param asgnmtNode the declaration AST's root.
      * @return a ParseResult object as the result of type checking both sides of the assignment.
      */
-    private ParseResult<ASTNode> typeCheckAsgnmt(SymbolInfo lhsSymbol, BinASTNode asgnmtNode) {
+    private ParseResult<ASTNode> typeCheckAsgnmt(SymbolInfo varSymbol, BinASTNode asgnmtNode) {
         Tok asgmtTok = asgnmtNode.getTok();
-        ASTNode lhsNode = asgnmtNode.getLeft();
+        ASTNode varDeclNode = asgnmtNode.getLeft();
         ASTNode exprNode = asgnmtNode.getRight();
-        TypeInfo lhsDtype = lhsNode.getDtype();
+        TypeInfo lhsDtype = varDeclNode.getDtype();
         TypeInfo rhsDtype = exprNode.getDtype();
 
         // Compare and check if the lhs and rhs have compatible types
@@ -150,8 +144,8 @@ public class DeclSemanChecker {
                             "' to data of type '" + lhsDtype.getId() + "'", asgmtTok));
                 }
             }
-            lhsNode.setDtype(rhsDtype);
-            lhsSymbol.setDtype(rhsDtype);
+            varDeclNode.setDtype(rhsDtype);
+            varSymbol.setDtype(rhsDtype);
         }
 
         asgnmtNode.setDtype(rhsDtype);

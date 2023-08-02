@@ -52,7 +52,7 @@ public class ExprSemanChecker {
         }
 
         exprNode = result.getData();
-        if (!exprNode.isVal()) {
+        if (!exprNode.isValExpr()) {
             return context.raiseErr(new ErrMsg("Expected a value expression", exprNode.getSrcRange()));
         }
 
@@ -234,7 +234,7 @@ public class ExprSemanChecker {
                 return context.raiseErr(new ErrMsg("Expected a data type on the right-hand side of '" + opVal +
                         "' operator", rightNode.getSrcRange()));
             }
-        } else if (!leftNode.isVal() || !rightNode.isVal()) {
+        } else if (!leftNode.isValExpr() || !rightNode.isValExpr()) {
             return context.raiseErr(new ErrMsg("Each operand on both sides of '" + opVal +
                     "' must either be a value expression", opTok));
         }

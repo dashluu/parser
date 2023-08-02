@@ -24,6 +24,9 @@ finite automata. If there is any way to improve this project, which I'm sure the
     * [Swift's grammar](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/summaryofthegrammar#app-top)
     * [Swift's compiler](https://www.swift.org/swift-compiler/)
     * [Kotlin's grammar](https://kotlinlang.org/docs/reference/grammar.html)
+* There are also websites that I used to play with Abstract Syntax Tree(AST):
+    * [AST Explorer](https://astexplorer.net/)
+    * [Swift AST Explorer](https://swift-ast-explorer.com/)
 
 ## Computer system basics
 
@@ -49,7 +52,7 @@ There are several phases in the compilation process:
   tokens similar to how a sentence is tokenized into a list of words.
 * **Parsing**: We can divide parsing into two smaller phases.
     * **Syntax analysis**: consumes the tokens and "stitches" them together by following some rules, or
-      grammar. The result produced by parser is an abstract syntax tree, or AST.
+      grammar. The result produced by parser is an AST.
     * **Semantic analysis**: figures out what the code is trying to do. Some things to do in this phase are
       type checking and resolving references to variables or functions.
 * **Code generation**:
@@ -93,8 +96,7 @@ The code for parser is in the package `parsers`, which includes smaller packages
 
 In this project, smaller parsers typically consist of two components:
 
-* The first pass checks if the syntax is correct, that is, if the grammatical rules are followed, and constructs an
-  Abstract Syntax Tree(AST).
+* The first pass checks if the syntax is correct, that is, if the grammatical rules are followed, and constructs an AST.
 * The second pass traverses the constructed AST and checks the semantics, including identifiers, data types, and
   operator compatibilities.
 
@@ -118,8 +120,8 @@ The code for AST is stored in the package `ast`.
     * `ASTNode`: the base class for other AST node classes.
 * AST traversal:
     * `IASTVisitor`: an interface that uses the visitor pattern to traverse and process each node in the tree.
-    * `IASTNodeCallback`: an interface that is used to run a callback function on each child node of AST nodes with
-      multiple children such as `KnaryASTNode`.
+    * `IASTNodeIterator`: an interface that is used to loop over children nodes. This can only be applied to a node with
+      multiple children, that is, it must inherit from `ListASTNode`.
     * `JSONWalker`: an implementation of `IASTVisitor` that displays the AST using JSON.
 
 ## Other components
@@ -149,7 +151,8 @@ The code for AST is stored in the package `ast`.
 * The code for the symbol table is in the package `symbols`.
 * Symbols refer to variables, constants, parameters, and functions.
 * Symbol table maps an identifier to a `SymbolInfo` object that stores a symbol's information, including its data type.
-* The currently supported primitive data types include 32-bit `Int`, `Float`, `Void`, and 8-bit `Bool`.
+* The currently supported primitive data types include 32-bit `Int`, `Float`, `Void`, and 8-bit `Bool`. Arrays are also
+  being implemented.
 * The compiler is statically typed(like C++ or Java) and not dynamically typed(like Python or JavaScript).
 
 ### Type compatibilities and operators

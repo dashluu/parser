@@ -43,7 +43,7 @@ public class DeclMain {
             Scope globalScope = new Scope(null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
-            ParseResult<ASTNode> result = declParser.parseDecl(context);
+            ParseResult<ASTNode> result = declParser.parseVarDecl(context);
             scopeStack.pop();
             if (context.hasErr()) {
                 throw new SyntaxErr(context.getErrMsg());
