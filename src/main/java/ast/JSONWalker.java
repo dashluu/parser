@@ -2,7 +2,6 @@ package ast;
 
 import toks.SrcRange;
 import toks.Tok;
-import types.TypeInfo;
 
 public class JSONWalker implements IASTVisitor {
     private final StringBuilder jsonStrBuff = new StringBuilder();
@@ -18,7 +17,6 @@ public class JSONWalker implements IASTVisitor {
         Tok tok = node.getTok();
         SrcRange srcRange = node.getSrcRange();
         ASTNodeType nodeType = node.getNodeType();
-        TypeInfo dtype = node.getDtype();
         jsonStrBuff.append("\"Node type\":\"").append(nodeType).append("\"")
                 .append(",\"Tok\":\"").append(tok).append("\"")
                 .append(",\"Source range\":\"").append(srcRange).append("\"");
@@ -161,8 +159,31 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitVarDef(ASTNode node) {
+        nodeToJSON(node);
         VarDefASTNode varDefNode = (VarDefASTNode) node;
-        binNodeToJSON(varDefNode);
+        VarDeclASTNode varDeclNode = varDefNode.getVarDeclNode();
+        ASTNode exprNode = varDefNode.getExprNode();
+
+        jsonStrBuff.append(",\"Declaration\":");
+        if (varDeclNode == null) {
+            jsonStrBuff.append(varDeclNode);
+        } else {
+            jsonStrBuff.append("{");
+            varDeclNode = (VarDeclASTNode) varDeclNode.accept(this);
+            jsonStrBuff.append("}");
+            varDefNode.setVarDeclNode(varDeclNode);
+        }
+
+        jsonStrBuff.append(",\"Expression\":");
+        if (exprNode == null) {
+            jsonStrBuff.append(exprNode);
+        } else {
+            jsonStrBuff.append("{");
+            exprNode = exprNode.accept(this);
+            jsonStrBuff.append("}");
+            varDefNode.setExprNode(exprNode);
+        }
+
         return node;
     }
 
@@ -394,36 +415,6 @@ public class JSONWalker implements IASTVisitor {
     public ASTNode visitIf(ASTNode node) {
         IfASTNode ifNode = (IfASTNode) node;
         brNodeToJSON(ifNode);
-        return node;
-    }
-
-    @Override
-    public ASTNode visitTypeAnn(ASTNode node) {
-        nodeToJSON(node);
-        TypeAnnASTNode typeAnnNode = (TypeAnnASTNode) node;
-        ASTNode left = typeAnnNode.getLeft();
-        ASTNode dtypeNode = typeAnnNode.getDtypeNode();
-
-        jsonStrBuff.append(",\"Left\":");
-        if (left == null) {
-            jsonStrBuff.append(left);
-        } else {
-            jsonStrBuff.append("{");
-            left = left.accept(this);
-            jsonStrBuff.append("}");
-            typeAnnNode.setLeft(left);
-        }
-
-        jsonStrBuff.append(",\"Data type node\":");
-        if (dtypeNode == null) {
-            jsonStrBuff.append(dtypeNode);
-        } else {
-            jsonStrBuff.append("{");
-            dtypeNode = dtypeNode.accept(this);
-            jsonStrBuff.append("}");
-            typeAnnNode.setDtypeNode(dtypeNode);
-        }
-
         return node;
     }
 

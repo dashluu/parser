@@ -1,4 +1,4 @@
-package parsers.decl;
+package parsers.decl_stmt;
 
 import ast.*;
 import exceptions.ErrMsg;
@@ -14,62 +14,62 @@ import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
 
-public class DeclSemanChecker {
+public class DeclStmtSemanChecker {
     private ParseContext context;
 
     /**
-     * Checks the semantics of a variable declaration or definition.
+     * Checks the semantics of a variable declaration statement.
      *
-     * @param root    the variable declaration or definition AST's root.
+     * @param root    the variable declaration statement AST's root.
      * @param context the parsing context.
-     * @return a ParseResult object as the result of checking the variable declaration or definition's semantics.
+     * @return a ParseResult object as the result of checking the variable declaration statement's semantics.
      */
     public ParseResult<ASTNode> checkSeman(ASTNode root, ParseContext context) {
         this.context = context;
-        ParseResult<SymbolInfo> varDeclResult;
-        VarDeclASTNode varDeclNode;
+        ParseResult<SymbolInfo> declResult;
+        VarDeclASTNode declNode;
         ASTNodeType rootNodeType = root.getNodeType();
         if (rootNodeType == ASTNodeType.VAR_DECL) {
             // Variable declaration without rhs expression
-            varDeclNode = (VarDeclASTNode) root;
-            varDeclResult = checkVarDecl(varDeclNode);
-            if (varDeclResult.getStatus() == ParseStatus.ERR) {
+            declNode = (VarDeclASTNode) root;
+            declResult = checkVarDecl(declNode);
+            if (declResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             }
             return ParseResult.ok(root);
         }
 
-        BinASTNode asgnmtNode = (BinASTNode) root;
-        varDeclNode = (VarDeclASTNode) asgnmtNode.getLeft();
-        varDeclResult = checkVarDecl(varDeclNode);
-        if (varDeclResult.getStatus() == ParseStatus.ERR) {
+        VarDefASTNode defNode = (VarDefASTNode) root;
+        declNode = defNode.getVarDeclNode();
+        declResult = checkVarDecl(declNode);
+        if (declResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
-        return typeCheckAsgnmt(varDeclResult.getData(), asgnmtNode);
+        return typeCheckVarDef(declResult.getData(), defNode);
     }
 
     /**
      * Checks a variable declaration, that is, its identifier and data type.
      *
-     * @param varDeclNode the AST node associated with the variable declaration.
+     * @param declNode the AST node associated with the variable declaration.
      * @return a ParseResult object as the result of checking the variable declaration.
      */
-    private ParseResult<SymbolInfo> checkVarDecl(VarDeclASTNode varDeclNode) {
-        IdASTNode idNode = varDeclNode.getIdNode();
+    private ParseResult<SymbolInfo> checkVarDecl(VarDeclASTNode declNode) {
+        IdASTNode idNode = declNode.getIdNode();
         ParseResult<SymbolInfo> idResult = checkId(idNode);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
-        DtypeASTNode dtypeNode = varDeclNode.getDtypeNode();
+        DtypeASTNode dtypeNode = declNode.getDtypeNode();
         ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
         TypeInfo dtype = dtypeResult.getData();
-        varDeclNode.setDtype(dtype);
+        declNode.setDtype(dtype);
         idNode.setDtype(dtype);
         dtypeNode.setDtype(dtype);
         return ParseResult.ok(idResult.getData());
@@ -120,35 +120,35 @@ public class DeclSemanChecker {
     }
 
     /**
-     * Checks type compatibility between the left-hand side and right-hand side of the assignment, or the definition.
+     * Checks type compatibility between the left-hand side and right-hand side of the variable definition.
      *
-     * @param varSymbol  the symbol on the left-hand side.
-     * @param asgnmtNode the declaration AST's root.
-     * @return a ParseResult object as the result of type checking both sides of the assignment.
+     * @param varSymbol the symbol on the left-hand side.
+     * @param defNode   the AST node associated with the variable definition.
+     * @return a ParseResult object as the result of type checking both sides of the variable definition.
      */
-    private ParseResult<ASTNode> typeCheckAsgnmt(SymbolInfo varSymbol, BinASTNode asgnmtNode) {
-        Tok asgmtTok = asgnmtNode.getTok();
-        ASTNode varDeclNode = asgnmtNode.getLeft();
-        ASTNode exprNode = asgnmtNode.getRight();
-        TypeInfo lhsDtype = varDeclNode.getDtype();
+    private ParseResult<ASTNode> typeCheckVarDef(SymbolInfo varSymbol, VarDefASTNode defNode) {
+        Tok defTok = defNode.getTok();
+        VarDeclASTNode declNode = defNode.getVarDeclNode();
+        ASTNode exprNode = defNode.getExprNode();
+        TypeInfo lhsDtype = declNode.getDtype();
         TypeInfo rhsDtype = exprNode.getDtype();
 
         // Compare and check if the lhs and rhs have compatible types
         if (rhsDtype == null) {
-            return context.raiseErr(new ErrMsg("No type detected on the right-hand side", asgmtTok));
+            return context.raiseErr(new ErrMsg("No type detected on the right-hand side", defTok));
         } else if (lhsDtype != rhsDtype) {
             if (lhsDtype != null) {
                 OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
                 if (context.getOpTable().getCompatDtype(opCompat) == null) {
                     return context.raiseErr(new ErrMsg("Unable to assign data of type '" + rhsDtype.getId() +
-                            "' to data of type '" + lhsDtype.getId() + "'", asgmtTok));
+                            "' to data of type '" + lhsDtype.getId() + "'", defTok));
                 }
             }
-            varDeclNode.setDtype(rhsDtype);
+            declNode.setDtype(rhsDtype);
             varSymbol.setDtype(rhsDtype);
         }
 
-        asgnmtNode.setDtype(rhsDtype);
-        return ParseResult.ok(asgnmtNode);
+        defNode.setDtype(rhsDtype);
+        return ParseResult.ok(defNode);
     }
 }

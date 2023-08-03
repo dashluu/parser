@@ -2,7 +2,6 @@ package parsers.utils;
 
 import ast.ASTNode;
 import ast.DtypeASTNode;
-import ast.TypeAnnASTNode;
 import exceptions.ErrMsg;
 import toks.Tok;
 import toks.TokType;

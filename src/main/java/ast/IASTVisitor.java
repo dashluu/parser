@@ -19,8 +19,6 @@ public interface IASTVisitor {
 
     ASTNode visitBinOp(ASTNode node);
 
-    ASTNode visitTypeAnn(ASTNode node);
-
     ASTNode visitFunCall(ASTNode node);
 
     ASTNode visitFunDef(ASTNode node);

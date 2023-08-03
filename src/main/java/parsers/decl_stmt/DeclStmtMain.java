@@ -1,4 +1,4 @@
-package parsers.decl;
+package parsers.decl_stmt;
 
 import ast.ASTNode;
 import ast.JSONWalker;
@@ -14,7 +14,7 @@ import parsers.utils.ScopeStack;
 
 import java.io.*;
 
-public class DeclMain {
+public class DeclStmtMain {
     public static void main(String[] args) {
         String inFilename = args[0];
         String outFilename = args[1];
@@ -31,19 +31,19 @@ public class DeclMain {
             TypeAnnParser typeAnnParser = new TypeAnnParser();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
             ExprParser exprParser = new ExprParser();
-            DeclSemanChecker declSemanChecker = new DeclSemanChecker();
-            DeclParser declParser = new DeclParser();
+            DeclStmtSemanChecker declStmtSemanChecker = new DeclStmtSemanChecker();
+            DeclStmtParser declStmtParser = new DeclStmtParser();
 
             tokParser.init(lexer);
             typeAnnParser.init(tokParser);
             exprParser.init(lexer, tokParser, exprSemanChecker);
-            declParser.init(tokParser, typeAnnParser, exprParser, declSemanChecker);
+            declStmtParser.init(tokParser, typeAnnParser, exprParser, declStmtSemanChecker);
 
             ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
-            ParseResult<ASTNode> result = declParser.parseVarDecl(context);
+            ParseResult<ASTNode> result = declStmtParser.parseDeclStmt(context);
             scopeStack.pop();
             if (context.hasErr()) {
                 throw new SyntaxErr(context.getErrMsg());
