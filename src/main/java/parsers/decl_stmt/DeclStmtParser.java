@@ -65,12 +65,12 @@ public class DeclStmtParser {
         IdASTNode idNode = (IdASTNode) idResult.getData();
         declNode.setIdNode(idNode);
         // Parse the data type with type annotation
-        ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
+        ParseResult<ASTNode> dtypeResult = typeAnnParser.parseTypeAnn(context);
         DtypeASTNode dtypeNode;
-        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
-            return typeAnnResult;
-        } else if (typeAnnResult.getStatus() == ParseStatus.OK) {
-            dtypeNode = (DtypeASTNode) typeAnnResult.getData();
+        if (dtypeResult.getStatus() == ParseStatus.ERR) {
+            return dtypeResult;
+        } else if (dtypeResult.getStatus() == ParseStatus.OK) {
+            dtypeNode = (DtypeASTNode) dtypeResult.getData();
             declNode.setDtypeNode(dtypeNode);
         }
 
@@ -79,7 +79,7 @@ public class DeclStmtParser {
         if (defResult.getStatus() == ParseStatus.ERR) {
             return defResult;
         } else if (defResult.getStatus() == ParseStatus.FAIL) {
-            if (typeAnnResult.getStatus() == ParseStatus.OK) {
+            if (dtypeResult.getStatus() == ParseStatus.OK) {
                 // No rhs expression but the data type is defined
                 return semanChecker.checkSeman(declNode, context);
             }

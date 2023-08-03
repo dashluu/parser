@@ -97,14 +97,14 @@ public class FunHeadParser {
         funSignNode.setParamListNode(paramListNode);
 
         // Parse return type annotation
-        ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
-        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
-            return typeAnnResult;
-        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
+        ParseResult<ASTNode> retDtypeResult = typeAnnParser.parseTypeAnn(context);
+        if (retDtypeResult.getStatus() == ParseStatus.ERR) {
+            return retDtypeResult;
+        } else if (retDtypeResult.getStatus() == ParseStatus.FAIL) {
             return ParseResult.ok(funSignNode);
         }
 
-        DtypeASTNode retDtypeNode = (DtypeASTNode) typeAnnResult.getData();
+        DtypeASTNode retDtypeNode = (DtypeASTNode) retDtypeResult.getData();
         funSignNode.setRetDtypeNode(retDtypeNode);
         return ParseResult.ok(funSignNode);
     }
@@ -185,16 +185,16 @@ public class FunHeadParser {
 
         Tok nameTok = nameResult.getData();
         IdASTNode nameNode = new IdASTNode(nameTok, null, false);
-        // Parse a type annotation
-        ParseResult<ASTNode> typeAnnResult = typeAnnParser.parseTypeAnn(context);
-        if (typeAnnResult.getStatus() == ParseStatus.ERR) {
-            return typeAnnResult;
-        } else if (typeAnnResult.getStatus() == ParseStatus.FAIL) {
+        // Parse the data type with type annotation
+        ParseResult<ASTNode> dtypeResult = typeAnnParser.parseTypeAnn(context);
+        if (dtypeResult.getStatus() == ParseStatus.ERR) {
+            return dtypeResult;
+        } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {
             return context.raiseErr(new ErrMsg("Missing a data type for parameter '" + nameTok.getVal() + "'",
-                    typeAnnResult.getFailTok()));
+                    dtypeResult.getFailTok()));
         }
 
-        DtypeASTNode dtypeNode = (DtypeASTNode) typeAnnResult.getData();
+        DtypeASTNode dtypeNode = (DtypeASTNode) dtypeResult.getData();
         ParamDeclASTNode paramDeclNode = new ParamDeclASTNode(null);
         paramDeclNode.setIdNode(nameNode);
         paramDeclNode.setDtypeNode(dtypeNode);
