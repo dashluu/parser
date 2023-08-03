@@ -6,18 +6,18 @@ import types.TypeInfo;
 
 // Node with data type and one child
 public abstract class UnASTNode extends ASTNode {
-    protected ASTNode child;
+    protected ASTNode exprNode;
 
-    public UnASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
-        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype, valFlag);
+    public UnASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
+        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype, valExprFlag);
     }
 
-    public ASTNode getChild() {
-        return child;
+    public ASTNode getExprNode() {
+        return exprNode;
     }
 
-    public void setChild(ASTNode child) {
-        this.child = child;
-        srcRange.setEndPos(child.srcRange.getEndPos());
+    public void setExprNode(ASTNode exprNode) {
+        this.exprNode = exprNode;
+        srcRange.setEndPos(exprNode.srcRange.getEndPos());
     }
 }

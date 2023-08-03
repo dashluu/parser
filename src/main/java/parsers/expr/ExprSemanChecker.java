@@ -129,25 +129,25 @@ public class ExprSemanChecker {
     /**
      * Checks the type compatibilities in a unary expression.
      *
-     * @param exprNode the unary expression AST's root.
+     * @param unOpNode the unary expression AST's root.
      * @return a ParseResult object as the result of type checking a unary expression.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> typeCheckUnExpr(UnOpASTNode exprNode) throws IOException {
-        Tok opTok = exprNode.getTok();
+    private ParseResult<ASTNode> typeCheckUnExpr(UnOpASTNode unOpNode) throws IOException {
+        Tok opTok = unOpNode.getTok();
         String opVal = opTok.getVal();
         TokType opId = opTok.getType();
-        ASTNode operandNode = exprNode.getChild();
+        ASTNode exprNode = unOpNode.getExprNode();
 
         // Recursively analyze the semantics of the operand node
-        ParseResult<ASTNode> result = checkValExprSeman(operandNode);
+        ParseResult<ASTNode> result = checkValExprSeman(exprNode);
         if (result.getStatus() == ParseStatus.ERR) {
             return result;
         }
 
-        operandNode = result.getData();
+        exprNode = result.getData();
         // Check the result's data type after applying the operator
-        TypeInfo operandDtype = operandNode.getDtype();
+        TypeInfo operandDtype = exprNode.getDtype();
         OpCompat opCompat = new UnOpCompat(opId, operandDtype);
         TypeInfo resultDtype = context.getOpTable().getCompatDtype(opCompat);
         if (resultDtype == null) {
@@ -156,10 +156,10 @@ public class ExprSemanChecker {
         }
 
         // Update the child node
-        exprNode.setChild(operandNode);
+        unOpNode.setExprNode(exprNode);
         // Set the current node's data type to that of the result
-        exprNode.setDtype(resultDtype);
-        return ParseResult.ok(exprNode);
+        unOpNode.setDtype(resultDtype);
+        return ParseResult.ok(unOpNode);
     }
 
     /**
@@ -194,16 +194,16 @@ public class ExprSemanChecker {
     /**
      * Checks the type compatibilities in a binary expression.
      *
-     * @param exprNode the binary expression AST's root.
+     * @param binOpNode the binary expression AST's root.
      * @return a ParseResult object as the result of type checking a binary expression.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> typeCheckBinExpr(BinOpASTNode exprNode) throws IOException {
-        Tok opTok = exprNode.getTok();
+    private ParseResult<ASTNode> typeCheckBinExpr(BinOpASTNode binOpNode) throws IOException {
+        Tok opTok = binOpNode.getTok();
         String opVal = opTok.getVal();
         TokType opId = opTok.getType();
         // Recursively analyze the semantics of the left child
-        ASTNode leftNode = exprNode.getLeft();
+        ASTNode leftNode = binOpNode.getLeft();
         ParseResult<ASTNode> result = recurCheckSeman(leftNode);
         if (result.getStatus() == ParseStatus.ERR) {
             return result;
@@ -212,7 +212,7 @@ public class ExprSemanChecker {
         leftNode = result.getData();
         TypeInfo leftDtype = leftNode.getDtype();
         // Recursively analyze the semantics of the right node
-        ASTNode rightNode = exprNode.getRight();
+        ASTNode rightNode = binOpNode.getRight();
         result = recurCheckSeman(rightNode);
         if (result.getStatus() == ParseStatus.ERR) {
             return result;
@@ -236,7 +236,7 @@ public class ExprSemanChecker {
             }
         } else if (!leftNode.isValExpr() || !rightNode.isValExpr()) {
             return context.raiseErr(new ErrMsg("Each operand on both sides of '" + opVal +
-                    "' must either be a value expression", opTok));
+                    "' must be a value expression", opTok));
         }
 
         // Check the result's data type after applying the operator
@@ -248,11 +248,11 @@ public class ExprSemanChecker {
         }
 
         // Update the left and right child
-        exprNode.setLeft(leftNode);
-        exprNode.setRight(rightNode);
+        binOpNode.setLeft(leftNode);
+        binOpNode.setRight(rightNode);
         // Set the current node's data type to that of the result
-        exprNode.setDtype(resultDtype);
-        return ParseResult.ok(exprNode);
+        binOpNode.setDtype(resultDtype);
+        return ParseResult.ok(binOpNode);
     }
 
     /**
@@ -307,7 +307,7 @@ public class ExprSemanChecker {
         ArrTypeInfo arrDtype = (ArrTypeInfo) dtype;
         int newArrDim = arrDtype.getDim() - i;
         if (newArrDim < 0) {
-            return context.raiseErr(new ErrMsg("Cannot get item from non-array element '" + arrId + "'", arrIdTok));
+            return context.raiseErr(new ErrMsg("Cannot get element from non-array object '" + arrId + "'", arrIdTok));
         }
 
         TypeInfo coreDtype = arrDtype.getCoreDtype();
@@ -324,70 +324,70 @@ public class ExprSemanChecker {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> checkArrLiteral(ArrLiteralASTNode arrLiteralNode) throws IOException {
-        ParseResult<ASTNode> itemResult;
-        ASTNode itemNode;
-        TypeInfo itemDtype, coreArrDtype, coreItemDtype, coreResultDtype;
-        ArrTypeInfo arrDtype, itemArrDtype;
-        int arrDim, itemArrDim;
-        IASTNodeIterator itemIter = arrLiteralNode.nodeIterator();
-        boolean firstItem = true;
+        ParseResult<ASTNode> elmResult;
+        ASTNode elmNode;
+        TypeInfo elmDtype, coreArrDtype, coreElmDtype, coreResultDtype;
+        ArrTypeInfo arrDtype, elmArrDtype;
+        int arrDim, elmArrDim;
+        IASTNodeIterator elmIter = arrLiteralNode.nodeIterator();
+        boolean firstElm = true;
 
-        while (itemIter.hasNext()) {
-            itemNode = itemIter.next();
-            itemResult = checkValExprSeman(itemNode);
-            if (itemResult.getStatus() == ParseStatus.ERR) {
-                return itemResult;
+        while (elmIter.hasNext()) {
+            elmNode = elmIter.next();
+            elmResult = checkValExprSeman(elmNode);
+            if (elmResult.getStatus() == ParseStatus.ERR) {
+                return elmResult;
             }
 
-            // Check if the current item node's data type is compatible with that of the array
-            itemNode = itemResult.getData();
+            // Check if the current element node's data type is compatible with that of the array
+            elmNode = elmResult.getData();
             arrDtype = (ArrTypeInfo) arrLiteralNode.getDtype();
-            itemDtype = itemNode.getDtype();
+            elmDtype = elmNode.getDtype();
 
-            if (firstItem) {
-                firstItem = false;
-                if (itemDtype.getInfoType() != TypeInfoType.ARR) {
-                    // The item is not an array
-                    arrDtype.setCoreDtype(itemDtype);
+            if (firstElm) {
+                firstElm = false;
+                if (elmDtype.getInfoType() != TypeInfoType.ARR) {
+                    // The element is not an array
+                    arrDtype.setCoreDtype(elmDtype);
                 } else {
-                    itemArrDtype = (ArrTypeInfo) itemDtype;
-                    coreArrDtype = itemArrDtype.getCoreDtype();
-                    itemArrDim = itemArrDtype.getDim();
-                    arrDim = itemArrDim + 1;
+                    elmArrDtype = (ArrTypeInfo) elmDtype;
+                    coreArrDtype = elmArrDtype.getCoreDtype();
+                    elmArrDim = elmArrDtype.getDim();
+                    arrDim = elmArrDim + 1;
                     arrDtype.setCoreDtype(coreArrDtype);
                     arrDtype.setDim(arrDim);
                 }
             } else {
                 arrDim = arrDtype.getDim();
                 // Check if the dimensions match
-                if (itemDtype.getInfoType() != TypeInfoType.ARR) {
+                if (elmDtype.getInfoType() != TypeInfoType.ARR) {
                     if (arrDim != 1) {
-                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getSrcRange()));
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", elmNode.getSrcRange()));
                     }
-                    coreItemDtype = itemDtype;
+                    coreElmDtype = elmDtype;
                 } else {
-                    itemArrDtype = (ArrTypeInfo) itemDtype;
-                    itemArrDim = itemArrDtype.getDim();
-                    if (arrDim != itemArrDim + 1) {
-                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", itemNode.getSrcRange()));
+                    elmArrDtype = (ArrTypeInfo) elmDtype;
+                    elmArrDim = elmArrDtype.getDim();
+                    if (arrDim != elmArrDim + 1) {
+                        return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", elmNode.getSrcRange()));
                     }
-                    coreItemDtype = itemArrDtype.getCoreDtype();
+                    coreElmDtype = elmArrDtype.getCoreDtype();
                 }
 
                 // Treat the current node as a type conversion node and check if the data types are compatible
                 coreArrDtype = arrDtype.getCoreDtype();
-                OpCompat opCompat = new BinOpCompat(TokType.ARR_TYPE_CONV, coreArrDtype, coreItemDtype);
+                OpCompat opCompat = new BinOpCompat(TokType.ARR_TYPE_CONV, coreArrDtype, coreElmDtype);
                 coreResultDtype = context.getOpTable().getCompatDtype(opCompat);
                 if (coreResultDtype == null) {
-                    return context.raiseErr(new ErrMsg("Unable to have data of type '" + coreItemDtype.getId() +
-                            "' in an array of type '" + coreArrDtype.getId() + "'", itemNode.getSrcRange()));
+                    return context.raiseErr(new ErrMsg("Unable to have data of type '" + coreElmDtype.getId() +
+                            "' in an array of type '" + coreArrDtype.getId() + "'", elmNode.getSrcRange()));
                 }
 
                 arrDtype.setCoreDtype(coreResultDtype);
             }
 
-            // Update the item node at the current position
-            itemIter.set(itemNode);
+            // Update the element node at the current position
+            elmIter.set(elmNode);
         }
 
         return ParseResult.ok(arrLiteralNode);

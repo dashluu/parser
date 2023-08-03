@@ -81,7 +81,7 @@ public class RetParser {
         }
 
         if (exprNode != null) {
-            retNode.setChild(exprNode);
+            retNode.setExprNode(exprNode);
         }
 
         return ParseResult.ok(retNode);

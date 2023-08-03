@@ -24,15 +24,15 @@ public class JSONWalker implements IASTVisitor {
 
     private void unNodeToJSON(UnASTNode unNode) {
         nodeToJSON(unNode);
-        ASTNode child = unNode.getChild();
-        jsonStrBuff.append(",\"Child\":");
-        if (child == null) {
-            jsonStrBuff.append(child);
+        ASTNode exprNode = unNode.getExprNode();
+        jsonStrBuff.append(",\"Expression\":");
+        if (exprNode == null) {
+            jsonStrBuff.append(exprNode);
         } else {
             jsonStrBuff.append("{");
-            child = child.accept(this);
+            exprNode = exprNode.accept(this);
             jsonStrBuff.append("}");
-            unNode.setChild(child);
+            unNode.setExprNode(exprNode);
         }
     }
 

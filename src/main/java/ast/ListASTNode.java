@@ -36,8 +36,8 @@ public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
 
     protected final List<ASTNode> children = new ArrayList<>();
 
-    public ListASTNode(ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
-        super(null, new SrcRange(), nodeType, dtype, valFlag);
+    public ListASTNode(ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
+        super(null, new SrcRange(), nodeType, dtype, valExprFlag);
     }
 
     /**

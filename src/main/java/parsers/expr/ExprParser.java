@@ -386,7 +386,7 @@ public class ExprParser {
                 return ParseResult.err();
             } else if (!(end = result.getStatus() == ParseStatus.FAIL)) {
                 currNode = (UnASTNode) result.getData();
-                prevNode.setChild(currNode);
+                prevNode.setExprNode(currNode);
                 prevNode = currNode;
             }
         }
@@ -431,7 +431,7 @@ public class ExprParser {
             return postfixResult;
         }
 
-        prefixLeaf.setChild(postfixResult.getData());
+        prefixLeaf.setExprNode(postfixResult.getData());
         return ParseResult.ok(root);
     }
 
@@ -463,7 +463,7 @@ public class ExprParser {
                 return opResult;
             } else if (!(end = opResult.getStatus() == ParseStatus.FAIL)) {
                 postfixNode = (UnASTNode) opResult.getData();
-                postfixNode.setChild(root);
+                postfixNode.setExprNode(root);
                 root = postfixNode;
             }
         }
