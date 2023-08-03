@@ -1,5 +1,6 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -8,7 +9,7 @@ public abstract class UnASTNode extends ASTNode {
     protected ASTNode child;
 
     public UnASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
-        super(tok, tok.getSrcRange(), nodeType, dtype, valFlag);
+        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype, valFlag);
     }
 
     public ASTNode getChild() {

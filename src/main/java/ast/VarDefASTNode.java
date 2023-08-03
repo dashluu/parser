@@ -1,5 +1,6 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -8,7 +9,7 @@ public class VarDefASTNode extends ASTNode {
     private ASTNode exprNode;
 
     public VarDefASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, tok.getSrcRange(), ASTNodeType.VAR_DEF, dtype, false);
+        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.VAR_DEF, dtype, false);
     }
 
     public VarDeclASTNode getVarDeclNode() {

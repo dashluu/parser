@@ -9,6 +9,10 @@ public class SrcRange {
         this.endPos = endPos;
     }
 
+    public SrcRange(SrcRange srcRange) {
+        this(new SrcPos(srcRange.startPos), new SrcPos(srcRange.endPos));
+    }
+
     public SrcRange(SrcPos pos) {
         this(pos, pos);
     }

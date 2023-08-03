@@ -9,6 +9,10 @@ public class SrcPos {
         this.col = col;
     }
 
+    public SrcPos(SrcPos srcPos) {
+        this(srcPos.ln, srcPos.col);
+    }
+
     public SrcPos() {
         this(1, 1);
     }

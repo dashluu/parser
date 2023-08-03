@@ -1,5 +1,6 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -9,7 +10,7 @@ public abstract class BinASTNode extends ASTNode {
     protected ASTNode right;
 
     public BinASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valFlag) {
-        super(tok, tok.getSrcRange(), nodeType, dtype, valFlag);
+        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype, valFlag);
     }
 
     public ASTNode getLeft() {

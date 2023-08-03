@@ -1,5 +1,6 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
@@ -10,7 +11,7 @@ public class FunDefASTNode extends ASTNode {
     private ScopeASTNode bodyNode;
 
     public FunDefASTNode(Tok tok, TypeInfo retDtype) {
-        super(tok, tok.getSrcRange(), ASTNodeType.FUN_DEF, retDtype, false);
+        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.FUN_DEF, retDtype, false);
     }
 
     public IdASTNode getIdNode() {
