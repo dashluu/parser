@@ -3,7 +3,7 @@ package ast;
 public interface IASTVisitor {
     ASTNode visitId(ASTNode node);
 
-    ASTNode visitDtype(ASTNode node);
+    ASTNode visitSimpleDtype(ASTNode node);
 
     ASTNode visitLiteral(ASTNode node);
 

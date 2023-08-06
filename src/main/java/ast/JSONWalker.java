@@ -116,7 +116,7 @@ public class JSONWalker implements IASTVisitor {
     }
 
     @Override
-    public ASTNode visitDtype(ASTNode node) {
+    public ASTNode visitSimpleDtype(ASTNode node) {
         nodeToJSON(node);
         return node;
     }

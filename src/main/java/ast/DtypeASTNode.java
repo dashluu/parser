@@ -1,17 +1,13 @@
 package ast;
 
+import toks.SrcRange;
 import toks.Tok;
 import types.TypeInfo;
 
-public class DtypeASTNode extends ASTNode {
-    public DtypeASTNode(Tok tok, TypeInfo dtype) {
+public abstract class DtypeASTNode extends ASTNode {
+    public DtypeASTNode(Tok tok, SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype) {
         // The data type node cannot be a value for an operator except for the type conversion operator
         // This will be checked by the semantics checker
-        super(tok, tok.getSrcRange(), ASTNodeType.DTYPE, dtype, false);
-    }
-
-    @Override
-    public ASTNode accept(IASTVisitor visitor) {
-        return visitor.visitDtype(this);
+        super(tok, srcRange, nodeType, dtype, false);
     }
 }

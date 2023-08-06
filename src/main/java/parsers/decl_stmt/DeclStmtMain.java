@@ -5,6 +5,7 @@ import ast.JSONWalker;
 import exceptions.SyntaxErr;
 import lexers.LexReader;
 import lexers.Lexer;
+import parsers.dtype.DtypeParser;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
 import parsers.utils.*;
@@ -28,16 +29,16 @@ public class DeclStmtMain {
             LexReader lexReader = new LexReader(reader);
             Lexer lexer = new Lexer(lexReader);
             TokParser tokParser = new TokParser();
-            TypeAnnParser typeAnnParser = new TypeAnnParser();
+            DtypeParser dtypeParser = new DtypeParser();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
             ExprParser exprParser = new ExprParser();
             DeclStmtSemanChecker declStmtSemanChecker = new DeclStmtSemanChecker();
             DeclStmtParser declStmtParser = new DeclStmtParser();
 
             tokParser.init(lexer);
-            typeAnnParser.init(tokParser);
+            dtypeParser.init(tokParser);
             exprParser.init(lexer, tokParser, exprSemanChecker);
-            declStmtParser.init(tokParser, typeAnnParser, exprParser, declStmtSemanChecker);
+            declStmtParser.init(tokParser, dtypeParser, exprParser, declStmtSemanChecker);
 
             ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(null);

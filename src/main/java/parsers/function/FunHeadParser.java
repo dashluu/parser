@@ -2,6 +2,7 @@ package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
+import parsers.dtype.DtypeParser;
 import parsers.utils.*;
 import toks.SrcPos;
 import toks.SrcRange;
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 public class FunHeadParser {
     private TokParser tokParser;
-    private TypeAnnParser typeAnnParser;
+    private DtypeParser dtypeParser;
     private FunHeadSemanChecker semanChecker;
     private ParseContext context;
 
@@ -20,12 +21,12 @@ public class FunHeadParser {
      * Initializes the dependencies.
      *
      * @param tokParser     a token parser.
-     * @param typeAnnParser a type annotation parser.
+     * @param dtypeParser a type annotation parser.
      * @param semanChecker  a semantics checker for function headers.
      */
-    public void init(TokParser tokParser, TypeAnnParser typeAnnParser, FunHeadSemanChecker semanChecker) {
+    public void init(TokParser tokParser, DtypeParser dtypeParser, FunHeadSemanChecker semanChecker) {
         this.tokParser = tokParser;
-        this.typeAnnParser = typeAnnParser;
+        this.dtypeParser = dtypeParser;
         this.semanChecker = semanChecker;
     }
 
@@ -97,7 +98,7 @@ public class FunHeadParser {
         funSignNode.setParamListNode(paramListNode);
 
         // Parse return type annotation
-        ParseResult<ASTNode> retDtypeResult = typeAnnParser.parseTypeAnn(context);
+        ParseResult<ASTNode> retDtypeResult = dtypeParser.parseTypeAnn(context);
         if (retDtypeResult.getStatus() == ParseStatus.ERR) {
             return retDtypeResult;
         } else if (retDtypeResult.getStatus() == ParseStatus.FAIL) {
@@ -186,7 +187,7 @@ public class FunHeadParser {
         Tok nameTok = nameResult.getData();
         IdASTNode nameNode = new IdASTNode(nameTok, null, false);
         // Parse the data type with type annotation
-        ParseResult<ASTNode> dtypeResult = typeAnnParser.parseTypeAnn(context);
+        ParseResult<ASTNode> dtypeResult = dtypeParser.parseTypeAnn(context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return dtypeResult;
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {

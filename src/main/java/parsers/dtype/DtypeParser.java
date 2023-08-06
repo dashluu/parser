@@ -1,14 +1,19 @@
-package parsers.utils;
+package parsers.dtype;
 
 import ast.ASTNode;
 import ast.DtypeASTNode;
+import ast.SimpleDtypeASTNode;
 import exceptions.ErrMsg;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
+import parsers.utils.TokParser;
 import toks.Tok;
 import toks.TokType;
 
 import java.io.IOException;
 
-public class TypeAnnParser {
+public class DtypeParser {
     private TokParser tokParser;
 
     /**
@@ -44,7 +49,7 @@ public class TypeAnnParser {
                     dtypeResult.getFailTok()));
         }
 
-        DtypeASTNode dtypeNode = new DtypeASTNode(dtypeResult.getData(), null);
+        DtypeASTNode dtypeNode = new SimpleDtypeASTNode(dtypeResult.getData(), null);
         return ParseResult.ok(dtypeNode);
     }
 }

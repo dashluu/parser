@@ -62,7 +62,12 @@ public class DeclStmtSemanChecker {
             return ParseResult.err();
         }
 
+        SymbolInfo idSymbol = idResult.getData();
         DtypeASTNode dtypeNode = declNode.getDtypeNode();
+        if (dtypeNode == null) {
+            return ParseResult.ok(idSymbol);
+        }
+
         ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -72,7 +77,7 @@ public class DeclStmtSemanChecker {
         declNode.setDtype(dtype);
         idNode.setDtype(dtype);
         dtypeNode.setDtype(dtype);
-        return ParseResult.ok(idResult.getData());
+        return ParseResult.ok(idSymbol);
     }
 
     /**

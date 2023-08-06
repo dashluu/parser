@@ -109,7 +109,7 @@ public class ExprSemanChecker {
         // Check if the id corresponds to a data type
         TypeInfo dtype = context.getTypeTable().getType(id);
         if (dtype != null) {
-            idNode = new DtypeASTNode(idTok, dtype);
+            idNode = new SimpleDtypeASTNode(idTok, dtype);
             return ParseResult.ok(idNode);
         }
 
@@ -230,7 +230,7 @@ public class ExprSemanChecker {
             leftNode = result.getData();
         } else if (opId == TokType.TYPE_CONV) {
             // Check type conversion operator
-            if (rightNode.getNodeType() != ASTNodeType.DTYPE) {
+            if (rightNode.getNodeType() != ASTNodeType.SIMPLE_DTYPE) {
                 return context.raiseErr(new ErrMsg("Expected a data type on the right-hand side of '" + opVal +
                         "' operator", rightNode.getSrcRange()));
             }

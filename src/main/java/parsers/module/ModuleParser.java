@@ -12,6 +12,7 @@ import parsers.control_transfer.BreakParser;
 import parsers.control_transfer.ContParser;
 import parsers.decl_stmt.DeclStmtParser;
 import parsers.decl_stmt.DeclStmtSemanChecker;
+import parsers.dtype.DtypeParser;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
 import parsers.function.*;
@@ -29,7 +30,7 @@ public class ModuleParser {
     private final LexReader lexReader;
     private final Lexer lexer;
     private final TokParser tokParser = new TokParser();
-    private final TypeAnnParser typeAnnParser = new TypeAnnParser();
+    private final DtypeParser dtypeParser = new DtypeParser();
     private final SemiParser semiParser = new SemiParser();
     private final ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
     private final ExprParser exprParser = new ExprParser();
@@ -56,17 +57,17 @@ public class ModuleParser {
      */
     public void init() {
         tokParser.init(lexer);
-        typeAnnParser.init(tokParser);
+        dtypeParser.init(tokParser);
         semiParser.init(tokParser);
         exprParser.init(lexer, tokParser, exprSemanChecker);
-        declStmtParser.init(tokParser, typeAnnParser, exprParser, declStmtSemanChecker);
+        declStmtParser.init(tokParser, dtypeParser, exprParser, declStmtSemanChecker);
         retParser.init(tokParser, exprParser);
         breakParser.init(tokParser);
         contParser.init(tokParser);
         stmtParser.init(tokParser, semiParser, exprParser, declStmtParser, retParser, breakParser, contParser);
         ifElseParser.init(tokParser, semiParser, exprParser, scopeParser);
         whileParser.init(tokParser, semiParser, exprParser, scopeParser);
-        funHeadParser.init(tokParser, typeAnnParser, funHeadSemanChecker);
+        funHeadParser.init(tokParser, dtypeParser, funHeadSemanChecker);
         funDefParser.init(funHeadParser, scopeParser);
         scopeParser.init(lexReader, tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
     }

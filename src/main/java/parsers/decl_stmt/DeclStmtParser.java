@@ -3,6 +3,7 @@ package parsers.decl_stmt;
 import ast.*;
 import exceptions.ErrMsg;
 import keywords.KeywordTable;
+import parsers.dtype.DtypeParser;
 import parsers.expr.ExprParser;
 import parsers.utils.*;
 import toks.Tok;
@@ -13,7 +14,7 @@ import java.io.IOException;
 
 public class DeclStmtParser {
     private TokParser tokParser;
-    private TypeAnnParser typeAnnParser;
+    private DtypeParser dtypeParser;
     private ExprParser exprParser;
     private DeclStmtSemanChecker semanChecker;
     private ParseContext context;
@@ -22,14 +23,14 @@ public class DeclStmtParser {
      * Initializes the dependencies.
      *
      * @param tokParser     a token parser.
-     * @param typeAnnParser a type annotation parser.
+     * @param dtypeParser a type annotation parser.
      * @param exprParser    an expression parser.
      * @param semanChecker  a semantics checker for variable declaration statements.
      */
-    public void init(TokParser tokParser, TypeAnnParser typeAnnParser,
+    public void init(TokParser tokParser, DtypeParser dtypeParser,
                      ExprParser exprParser, DeclStmtSemanChecker semanChecker) {
         this.tokParser = tokParser;
-        this.typeAnnParser = typeAnnParser;
+        this.dtypeParser = dtypeParser;
         this.exprParser = exprParser;
         this.semanChecker = semanChecker;
     }
@@ -65,7 +66,7 @@ public class DeclStmtParser {
         IdASTNode idNode = (IdASTNode) idResult.getData();
         declNode.setIdNode(idNode);
         // Parse the data type with type annotation
-        ParseResult<ASTNode> dtypeResult = typeAnnParser.parseTypeAnn(context);
+        ParseResult<ASTNode> dtypeResult = dtypeParser.parseTypeAnn(context);
         DtypeASTNode dtypeNode;
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return dtypeResult;
