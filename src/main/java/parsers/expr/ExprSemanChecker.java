@@ -90,7 +90,7 @@ public class ExprSemanChecker {
      * @return a ParseResult object as the result of assigning a data type to a literal.
      */
     private ParseResult<ASTNode> typeCheckLiteral(LiteralASTNode literalNode) {
-        TokType literalTokType = literalNode.getTok().getType();
+        TokType literalTokType = literalNode.getTok().getTokType();
         TypeInfo dtype = context.getTypeTable().getType(literalTokType);
         literalNode.setDtype(dtype);
         return ParseResult.ok(literalNode);
@@ -136,7 +136,7 @@ public class ExprSemanChecker {
     private ParseResult<ASTNode> typeCheckUnExpr(UnOpASTNode unOpNode) throws IOException {
         Tok opTok = unOpNode.getTok();
         String opVal = opTok.getVal();
-        TokType opId = opTok.getType();
+        TokType opId = opTok.getTokType();
         ASTNode exprNode = unOpNode.getExprNode();
 
         // Recursively analyze the semantics of the operand node
@@ -201,7 +201,7 @@ public class ExprSemanChecker {
     private ParseResult<ASTNode> typeCheckBinExpr(BinOpASTNode binOpNode) throws IOException {
         Tok opTok = binOpNode.getTok();
         String opVal = opTok.getVal();
-        TokType opId = opTok.getType();
+        TokType opId = opTok.getTokType();
         // Recursively analyze the semantics of the left child
         ASTNode leftNode = binOpNode.getLeft();
         ParseResult<ASTNode> result = recurCheckSeman(leftNode);

@@ -92,7 +92,7 @@ public class Lexer {
         result = alnum_Lexer.read();
         if (result.getStatus() == LexStatus.OK) {
             tok = result.getData();
-            tok.setType(TokType.ID);
+            tok.setTokType(TokType.ID);
             tokBuff.addLast(tok);
             return result;
         }

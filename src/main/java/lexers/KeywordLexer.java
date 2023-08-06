@@ -32,7 +32,7 @@ public class KeywordLexer extends AlnumUnderscoreLexer {
             reader.putBack(kwStr);
             return LexResult.fail();
         }
-        kwTok.setType(kwId);
+        kwTok.setTokType(kwId);
         return LexResult.ok(kwTok);
     }
 }

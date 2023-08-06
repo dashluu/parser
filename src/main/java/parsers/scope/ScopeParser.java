@@ -47,11 +47,12 @@ public class ScopeParser {
     /**
      * Parses code components, including declarations, if-else, loops, etc. and checks their semantics in a block.
      *
-     * @param context the parsing context.
+     * @param scopeType the scope type of the block.
+     * @param context   the parsing context.
      * @return a ParseResult object as the result of parsing a code block.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<ASTNode> parseBlock(ParseContext context) throws IOException {
+    public ParseResult<ASTNode> parseBlock(ScopeType scopeType, ParseContext context) throws IOException {
         // Try parsing '{'
         ParseResult<Tok> curlyResult = tokParser.parseTok(TokType.LCURLY, context);
         if (curlyResult.getStatus() == ParseStatus.ERR) {
@@ -63,7 +64,7 @@ public class ScopeParser {
         Tok curlyTok = curlyResult.getData();
         SrcPos blockStartPos = curlyTok.getSrcRange().getStartPos();
         // Try parsing code in a new scope
-        Scope newScope = new Scope(context.getScope());
+        Scope newScope = new Scope(scopeType, context.getScope());
         ScopeStack scopeStack = context.getScopeStack();
         scopeStack.push(newScope);
         ParseResult<ASTNode> scopeResult = parseScope(context);
@@ -140,7 +141,7 @@ public class ScopeParser {
 
             if (end) {
                 // Try parsing a block
-                blockResult = parseBlock(context);
+                blockResult = parseBlock(ScopeType.SIMPLE, context);
                 status = blockResult.getStatus();
                 if (status == ParseStatus.ERR) {
                     return blockResult;

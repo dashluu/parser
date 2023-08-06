@@ -4,6 +4,7 @@ import ast.*;
 import exceptions.ErrMsg;
 import parsers.expr.ExprParser;
 import parsers.scope.ScopeParser;
+import parsers.scope.ScopeType;
 import parsers.utils.*;
 import toks.Tok;
 import toks.TokType;
@@ -36,13 +37,13 @@ public abstract class CondBranchParser {
     /**
      * Parses a conditional branch block, which includes its condition and body.
      *
-     * @param tokType the token type of the branch keyword.
-     * @param context the parsing context.
-     * @param isLoop  whether the branch is a loop.
+     * @param tokType   the token type of the branch keyword.
+     * @param scopeType the scope type of the branch.
+     * @param context   the parsing context.
      * @return a ParseResult object as the result of parsing the conditional branch block.
      * @throws IOException if there is an IO exception.
      */
-    protected ParseResult<ASTNode> parseBranch(TokType tokType, ParseContext context, boolean isLoop)
+    protected ParseResult<ASTNode> parseBranch(TokType tokType, ScopeType scopeType, ParseContext context)
             throws IOException {
         this.context = context;
         // Parse the condition
@@ -55,25 +56,19 @@ public abstract class CondBranchParser {
 
         BranchNode brNode = (BranchNode) condResult.getData();
         // Parse the body
-        Scope bodyScope = new Scope(context.getScope());
-        bodyScope.setInLoop(isLoop);
-        ScopeStack scopeStack = context.getScopeStack();
-        scopeStack.push(bodyScope);
-        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
+        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(scopeType, context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
-            if (!isLoop) {
+            if (scopeType != ScopeType.LOOP) {
                 return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
             }
-            scopeStack.pop();
             // Check for trailing ';'
             return semiParser.parseSemi(condResult, context);
         }
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         brNode.setBodyNode(bodyNode);
-        scopeStack.pop();
         return ParseResult.ok(brNode);
     }
 

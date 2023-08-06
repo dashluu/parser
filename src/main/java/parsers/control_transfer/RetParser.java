@@ -4,6 +4,8 @@ import ast.ASTNode;
 import ast.RetASTNode;
 import exceptions.ErrMsg;
 import parsers.expr.ExprParser;
+import parsers.scope.RetState;
+import parsers.scope.Scope;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
@@ -47,7 +49,7 @@ public class RetParser {
         }
 
         // Detect unexpected return statement in a non-function scope
-        TypeInfo retType = context.getScope().getRetDtype();
+        TypeInfo retType = context.getScope().isInFun();
         if (retType == null) {
             return context.raiseErr(new ErrMsg("Return statements can only exist inside a function",
                     kwResult.getData()));
@@ -84,6 +86,9 @@ public class RetParser {
             retNode.setExprNode(exprNode);
         }
 
+        // Update the return state of the current scope
+        Scope scope = context.getScope();
+        scope.setRetState(RetState.PRESENT);
         return ParseResult.ok(retNode);
     }
 }

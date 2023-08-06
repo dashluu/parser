@@ -2,12 +2,12 @@ package toks;
 
 public class Tok {
     private final String val;
-    private TokType type;
+    private TokType tokType;
     private SrcRange srcRange;
 
-    public Tok(String val, TokType type, SrcRange srcRange) {
+    public Tok(String val, TokType tokType, SrcRange srcRange) {
         this.val = val;
-        this.type = type;
+        this.tokType = tokType;
         this.srcRange = srcRange;
     }
 
@@ -15,12 +15,12 @@ public class Tok {
         return val;
     }
 
-    public TokType getType() {
-        return type;
+    public TokType getTokType() {
+        return tokType;
     }
 
-    public void setType(TokType type) {
-        this.type = type;
+    public void setTokType(TokType tokType) {
+        this.tokType = tokType;
     }
 
     public SrcRange getSrcRange() {
@@ -33,7 +33,7 @@ public class Tok {
 
     @Override
     public String toString() {
-        return "val: " + val + ", tok type: " + type + ", " + srcRange;
+        return "val: " + val + ", tok type: " + tokType + ", " + srcRange;
     }
 
     @Override
@@ -44,6 +44,6 @@ public class Tok {
         if (!(obj instanceof Tok tok)) {
             return false;
         }
-        return val.equals(tok.getVal()) && type == tok.type;
+        return val.equals(tok.getVal()) && tokType == tok.tokType;
     }
 }

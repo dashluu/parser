@@ -47,7 +47,7 @@ public class FunHeadParser {
             return ParseResult.fail(kwResult.getFailTok());
         }
 
-        if (context.getScope().getRetDtype() != null) {
+        if (context.getScope().isInFun() != null) {
             // Function is defined inside another function
             return context.raiseErr(new ErrMsg("A function definition cannot exist inside another function",
                     kwResult.getData()));

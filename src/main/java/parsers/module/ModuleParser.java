@@ -96,7 +96,7 @@ public class ModuleParser {
             return context.raiseErr(lexResult.getErrMsg());
         } else {
             Tok errTok = lexResult.getData();
-            if (errTok.getType() != TokType.EOS) {
+            if (errTok.getTokType() != TokType.EOS) {
                 return context.raiseErr(new ErrMsg("Invalid syntax at '" + errTok.getVal() + "'", errTok));
             }
         }

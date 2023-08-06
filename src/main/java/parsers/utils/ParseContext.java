@@ -3,6 +3,8 @@ package parsers.utils;
 import exceptions.ErrMsg;
 import keywords.KeywordTable;
 import operators.OpTable;
+import parsers.scope.Scope;
+import parsers.scope.ScopeStack;
 import types.TypeTable;
 
 public class ParseContext {

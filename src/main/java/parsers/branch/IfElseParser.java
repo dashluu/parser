@@ -5,7 +5,10 @@ import ast.ElseASTNode;
 import ast.IfElseASTNode;
 import ast.ScopeASTNode;
 import exceptions.ErrMsg;
-import parsers.utils.*;
+import parsers.scope.ScopeType;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
 import toks.Tok;
 import toks.TokType;
 
@@ -22,7 +25,7 @@ public class IfElseParser extends CondBranchParser {
     public ParseResult<ASTNode> parseIfElse(ParseContext context) throws IOException {
         this.context = context;
 
-        ParseResult<ASTNode> result = parseBranch(TokType.IF, context, false);
+        ParseResult<ASTNode> result = parseBranch(TokType.IF, ScopeType.IF, context);
         if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.FAIL) {
             return result;
         }
@@ -33,7 +36,7 @@ public class IfElseParser extends CondBranchParser {
         boolean end = false;
 
         do {
-            result = parseBranch(TokType.ELIF, context, false);
+            result = parseBranch(TokType.ELIF, ScopeType.IF, context);
             if (result.getStatus() == ParseStatus.ERR) {
                 return result;
             } else if (result.getStatus() == ParseStatus.OK) {
@@ -68,10 +71,7 @@ public class IfElseParser extends CondBranchParser {
 
         ElseASTNode elseNode = new ElseASTNode(kwResult.getData());
         // Parse the body
-        Scope bodyScope = new Scope(context.getScope());
-        ScopeStack scopeStack = context.getScopeStack();
-        scopeStack.push(bodyScope);
-        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
+        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(ScopeType.ELSE, context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
@@ -80,7 +80,6 @@ public class IfElseParser extends CondBranchParser {
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         elseNode.setBodyNode(bodyNode);
-        scopeStack.pop();
         return ParseResult.ok(elseNode);
     }
 }

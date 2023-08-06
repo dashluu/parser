@@ -8,10 +8,11 @@ import lexers.Lexer;
 import parsers.dtype.DtypeParser;
 import parsers.expr.ExprParser;
 import parsers.expr.ExprSemanChecker;
+import parsers.scope.ScopeType;
 import parsers.utils.*;
 import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
+import parsers.scope.Scope;
+import parsers.scope.ScopeStack;
 
 import java.io.*;
 
@@ -41,7 +42,7 @@ public class DeclStmtMain {
             declStmtParser.init(tokParser, dtypeParser, exprParser, declStmtSemanChecker);
 
             ParseContext context = ParseContext.createContext();
-            Scope globalScope = new Scope(null);
+            Scope globalScope = new Scope(ScopeType.MOD, null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = declStmtParser.parseDeclStmt(context);

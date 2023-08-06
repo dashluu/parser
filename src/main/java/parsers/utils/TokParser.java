@@ -34,7 +34,7 @@ public class TokParser {
             return context.raiseErr(tokResult.getErrMsg());
         }
         Tok tok = tokResult.getData();
-        if (tok.getType() != tokType) {
+        if (tok.getTokType() != tokType) {
             return ParseResult.fail(tok);
         }
         lexer.consume();

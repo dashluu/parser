@@ -2,15 +2,17 @@ package parsers.function;
 
 import ast.*;
 import exceptions.ErrMsg;
-import parsers.utils.*;
+import parsers.scope.FunScope;
+import parsers.scope.Scope;
+import parsers.scope.ScopeStack;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
 import symbols.FunInfo;
 import symbols.ParamInfo;
 import symbols.SymbolTable;
 import toks.Tok;
 import types.TypeInfo;
-import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
 import types.VoidType;
 
 public class FunHeadSemanChecker {
@@ -73,6 +75,9 @@ public class FunHeadSemanChecker {
             retDtypeNode.setDtype(retDtype);
         }
 
+        // Set the return data type for the function scope
+        FunScope funScope = (FunScope) context.getScope();
+        funScope.setRetDtype(retDtype);
         funInfo.setDtype(retDtype);
         funSignNode.setDtype(retDtype);
         return ParseResult.ok(funSignNode);
@@ -117,11 +122,11 @@ public class FunHeadSemanChecker {
         TypeInfo paramDtype;
         ScopeStack scopeStack = context.getScopeStack();
         // Peeking from scope stack is the same as getting the current scope from context
-        Scope paramScope = new Scope(scopeStack.peek());
-        scopeStack.push(paramScope);
+        Scope funScope = new FunScope(scopeStack.peek(), null);
+        scopeStack.push(funScope);
 
         for (ASTNode paramDeclNode : paramListNode) {
-            paramResult = checkParam((ParamDeclASTNode) paramDeclNode, paramScope);
+            paramResult = checkParam((ParamDeclASTNode) paramDeclNode, funScope);
             if (paramResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             }

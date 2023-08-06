@@ -75,7 +75,7 @@ public class ExprParser {
         }
 
         Tok opTok = opResult.getData();
-        if (opTok.getType() == TokType.EOS || !context.getOpTable().isPrefixOp(opTok.getType())) {
+        if (opTok.getTokType() == TokType.EOS || !context.getOpTable().isPrefixOp(opTok.getTokType())) {
             return ParseResult.fail(opTok);
         }
 
@@ -97,8 +97,8 @@ public class ExprParser {
         }
 
         Tok opTok = tokResult.getData();
-        TokType opId = opTok.getType();
-        if (opTok.getType() == TokType.EOS || !context.getOpTable().isPostfixOp(opId)) {
+        TokType opId = opTok.getTokType();
+        if (opTok.getTokType() == TokType.EOS || !context.getOpTable().isPostfixOp(opId)) {
             return ParseResult.fail(opTok);
         }
 
@@ -316,7 +316,7 @@ public class ExprParser {
         }
 
         Tok literalTok = literalResult.getData();
-        TokType literalTokType = literalTok.getType();
+        TokType literalTokType = literalTok.getTokType();
         if (literalTokType != TokType.INT_LITERAL &&
                 literalTokType != TokType.FLOAT_LITERAL &&
                 literalTokType != TokType.BOOL_LITERAL) {
@@ -485,7 +485,7 @@ public class ExprParser {
         }
 
         Tok opTok = opResult.getData();
-        TokType opId = opTok.getType();
+        TokType opId = opTok.getTokType();
         if (opId == TokType.EOS || opId == TokType.SEMI || opId == TokType.COMMA ||
                 opId == TokType.RPAREN || opId == TokType.RCURLY || opId == TokType.RSQUARE) {
             return ParseResult.fail(opTok);
@@ -527,7 +527,7 @@ public class ExprParser {
             }
 
             opTok = opResult.getData();
-            if (prevOpTok != null && opTable.cmpPreced(opTok.getType(), prevOpTok.getType()) < 0) {
+            if (prevOpTok != null && opTable.cmpPreced(opTok.getTokType(), prevOpTok.getTokType()) < 0) {
                 // The current operator has lower precedence than the previous operator
                 return leftResult;
             }

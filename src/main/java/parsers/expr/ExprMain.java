@@ -5,10 +5,11 @@ import ast.JSONWalker;
 import exceptions.SyntaxErr;
 import lexers.LexReader;
 import lexers.Lexer;
+import parsers.scope.ScopeType;
 import parsers.utils.*;
 import parsers.utils.ParseContext;
-import parsers.utils.Scope;
-import parsers.utils.ScopeStack;
+import parsers.scope.Scope;
+import parsers.scope.ScopeStack;
 
 import java.io.*;
 
@@ -33,7 +34,7 @@ public class ExprMain {
             parser.init(lexer, tokParser, semanChecker);
 
             ParseContext context = ParseContext.createContext();
-            Scope globalScope = new Scope(null);
+            Scope globalScope = new Scope(ScopeType.MOD, null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = parser.parseExpr(context);

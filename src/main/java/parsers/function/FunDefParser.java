@@ -2,11 +2,19 @@ package parsers.function;
 
 import ast.ASTNode;
 import ast.FunDefASTNode;
+import ast.RetASTNode;
 import ast.ScopeASTNode;
 import exceptions.ErrMsg;
-import parsers.scope.ScopeParser;
-import parsers.utils.*;
-import types.TypeInfo;
+import keywords.KeywordTable;
+import parsers.scope.*;
+import parsers.utils.ParseContext;
+import parsers.utils.ParseResult;
+import parsers.utils.ParseStatus;
+import toks.SrcPos;
+import toks.SrcRange;
+import toks.Tok;
+import toks.TokType;
+import types.VoidType;
 
 import java.io.IOException;
 
@@ -39,12 +47,7 @@ public class FunDefParser {
         }
 
         FunDefASTNode funDefNode = (FunDefASTNode) funHeadResult.getData();
-        TypeInfo retType = funDefNode.getDtype();
-        Scope bodyScope = new Scope(context.getScope());
-        ScopeStack scopeStack = context.getScopeStack();
-        scopeStack.push(bodyScope);
-        bodyScope.setRetDtype(retType);
-        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(context);
+        ParseResult<ASTNode> bodyResult = scopeParser.parseBlock(ScopeType.SIMPLE, context);
         if (bodyResult.getStatus() == ParseStatus.ERR) {
             return bodyResult;
         } else if (bodyResult.getStatus() == ParseStatus.FAIL) {
@@ -54,10 +57,23 @@ public class FunDefParser {
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
         funDefNode.setBodyNode(bodyNode);
-        // Pop body's scope
-        scopeStack.pop();
-        // Pop parameters' scope
-        scopeStack.pop();
+        // Pop function scope that was pushed earlier when the parameter list and the return type was parsed
+        ScopeStack scopeStack = context.getScopeStack();
+        Scope funScope = scopeStack.pop();
+
+        // Check if the return statement is present
+        if (funScope.getRetState() != RetState.PRESENT) {
+            SrcPos funDefEnd = funDefNode.getSrcRange().getEndPos();
+            if (funDefNode.getDtype() != VoidType.getInst()) {
+                return context.raiseErr(new ErrMsg("Missing a return statement", funDefEnd));
+            } else {
+                // Add a dummy return statement to the body
+                Tok retTok = new Tok(KeywordTable.RET, TokType.RET, new SrcRange(funDefEnd));
+                RetASTNode retNode = new RetASTNode(retTok, VoidType.getInst());
+                bodyNode.addChild(retNode);
+            }
+        }
+
         return ParseResult.ok(funDefNode);
     }
 }

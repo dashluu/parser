@@ -4,6 +4,9 @@ import ast.ASTNode;
 import ast.JSONWalker;
 import exceptions.SyntaxErr;
 import lexers.LexReader;
+import parsers.scope.Scope;
+import parsers.scope.ScopeStack;
+import parsers.scope.ScopeType;
 import parsers.utils.*;
 
 import java.io.*;
@@ -25,7 +28,7 @@ public class ModuleMain {
             moduleParser.init();
 
             ParseContext context = ParseContext.createContext();
-            Scope globalScope = new Scope(null);
+            Scope globalScope = new Scope(ScopeType.MOD, null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = moduleParser.parseModule(context);
