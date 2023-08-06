@@ -6,7 +6,7 @@ public class FunScope extends Scope {
     private TypeInfo retDtype;
 
     public FunScope(Scope parent, TypeInfo retDtype) {
-        super(ScopeType.FUN, parent);
+        super(ScopeType.FUNCTION, parent);
         this.retDtype = retDtype;
     }
 

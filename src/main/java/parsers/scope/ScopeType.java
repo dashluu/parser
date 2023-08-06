@@ -1,5 +1,5 @@
 package parsers.scope;
 
 public enum ScopeType {
-    SIMPLE, IF, ELSE, LOOP, FUN, MOD
+    SIMPLE, IF, ELSE, LOOP, FUNCTION, MODULE
 }

@@ -42,7 +42,7 @@ public class DeclStmtMain {
             declStmtParser.init(tokParser, dtypeParser, exprParser, declStmtSemanChecker);
 
             ParseContext context = ParseContext.createContext();
-            Scope globalScope = new Scope(ScopeType.MOD, null);
+            Scope globalScope = new Scope(ScopeType.MODULE, null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = declStmtParser.parseDeclStmt(context);

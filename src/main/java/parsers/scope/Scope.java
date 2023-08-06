@@ -44,7 +44,7 @@ public class Scope {
     public TypeInfo isInFun() {
         Scope upScope = this;
         while (upScope != null) {
-            if (upScope.scopeType == ScopeType.FUN) {
+            if (upScope.scopeType == ScopeType.FUNCTION) {
                 FunScope funScope = (FunScope) upScope;
                 return funScope.getRetDtype();
             }

@@ -28,7 +28,7 @@ public class ModuleMain {
             moduleParser.init();
 
             ParseContext context = ParseContext.createContext();
-            Scope globalScope = new Scope(ScopeType.MOD, null);
+            Scope globalScope = new Scope(ScopeType.MODULE, null);
             ScopeStack scopeStack = context.getScopeStack();
             scopeStack.push(globalScope);
             ParseResult<ASTNode> result = moduleParser.parseModule(context);
