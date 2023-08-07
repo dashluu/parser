@@ -166,8 +166,27 @@ several classes associated with type compatibilities:
 * **BinOpCompat**: a class inherited from `OpCompat` that determines binary operator compatibilities.
 * **UnOpCompat**: a class inherited from `OpCompat` that determines unary operator compatibilities.
 
+## Some language features
+
+Keep in mind that the language is still buggy and these features might not work as expected.
+
+* **Type inference**: the data type on the right-hand side of a variable definition can be deduced and assigned to the
+  left-hand side. For example, the following is valid.
+
+```
+// Here, the compiler knows 'a' is of type Int using type inference
+var a = 6;
+// The statement above is equivalent to
+var a:Int = 6;
+```
+
+* **Return statement tracking**: The compiler knows when a return statement is missing. If the function returns type
+  `Void`, it automatically adds a return statement to the function body.
+* **Entry-free program**: There is no need for entry point and the code is executed from top to bottom by default just
+  like Python.
+
 ## Other related projects
 
-* [microIR](https://github.com/dashluu/microIR): takes the AST produced by this parser and generates IR instructions.
+* [ir](https://github.com/dashluu/ir): takes the AST produced by this parser and generates IR instructions.
 * [langtools](https://github.com/dashluu/langtools): a demo web app that combines this parser with the IR
-  generator [microIR](https://github.com/dashluu/microIR).
+  generator [ir](https://github.com/dashluu/ir).
