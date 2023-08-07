@@ -166,10 +166,13 @@ several classes associated with type compatibilities:
 * **BinOpCompat**: a class inherited from `OpCompat` that determines binary operator compatibilities.
 * **UnOpCompat**: a class inherited from `OpCompat` that determines unary operator compatibilities.
 
-## Some language features
+## Current language features
 
 Keep in mind that the language is still buggy and these features might not work as expected.
 
+### Variables
+
+* **Variable declaration**: The user can use the `var` keyword to declare variables and `let` to declare constants.
 * **Type inference**: the data type on the right-hand side of a variable definition can be deduced and assigned to the
   left-hand side. For example, the following is valid.
 
@@ -180,10 +183,47 @@ var a = 6;
 var a:Int = 6;
 ```
 
-* **Return statement tracking**: The compiler knows when a return statement is missing. If the function returns type
-  `Void`, it automatically adds a return statement to the function body.
-* **Entry-free program**: There is no need for entry point and the code is executed from top to bottom by default just
-  like Python.
+### Functions
+
+* A function is declared using the `fun` keyword.
+* The compiler knows when a return statement is missing. If that is the case and the function returns type `Void`, it
+  automatically adds a return statement to the function body.
+* The compiler raises an error if the expected return type and the data type of the return value do not match.
+
+```
+// Sample function definition
+fun def(a: Int): Int {...}
+```
+
+### Branches and loops
+
+* The language supports if-else sequences and only while loops for now.
+* The ternary operator is not supported.
+* If-else blocks must be surrounded by curly braces.
+
+```
+// Sample if-else sequence
+if (a == 3) {
+  a = 4;
+} elif (a == 4) {
+  a = 5;
+} else {
+  a = 6;
+}
+
+// Not valid if-else
+if (a == 3) a = 4;
+else        a = 5;
+
+// Sample while loop
+while (a < 4) {
+  a = a - 1;
+}
+```
+
+### Program flow
+
+There is no need for an entry point and the code is executed from top to bottom just like Python.
 
 ## Other related projects
 
