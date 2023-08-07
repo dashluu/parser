@@ -13,7 +13,7 @@ public class LexReader {
     private final Reader reader;
     public final static int EOS = -1;
     private final static String SPECIAL_CHARS = "(){}[]+-*/%~!&|<>=,.;:_";
-    private final static List<Integer> colList = new ArrayList<>();
+    private final List<Integer> colList = new ArrayList<>();
 
     public LexReader(Reader reader) {
         this.reader = reader;
