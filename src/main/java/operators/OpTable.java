@@ -9,6 +9,7 @@ import java.util.HashSet;
 // Table for storing operators and their properties
 public class OpTable {
     private final HashMap<String, TokType> opMap = new HashMap<>();
+    private final HashSet<String> opPrefixStrSet = new HashSet<>();
     private final HashSet<TokType> prefixOps = new HashSet<>();
     private final HashSet<TokType> infixOps = new HashSet<>();
     private final HashSet<TokType> postfixOps = new HashSet<>();
@@ -40,35 +41,35 @@ public class OpTable {
     public static OpTable createTable() {
         OpTable table = new OpTable();
         // Add operators to table
-        table.opMap.put(LOG_NOT, TokType.LOG_NOT);
-        table.opMap.put(LOG_OR, TokType.LOG_OR);
-        table.opMap.put(LOG_AND, TokType.LOG_AND);
-        table.opMap.put(EQ, TokType.EQ);
-        table.opMap.put(NEQ, TokType.NEQ);
-        table.opMap.put(LESS, TokType.LESS);
-        table.opMap.put(GREATER, TokType.GREATER);
-        table.opMap.put(LEQ, TokType.LEQ);
-        table.opMap.put(GEQ, TokType.GEQ);
-        table.opMap.put(ADD, TokType.ADD);
-        table.opMap.put(SUB, TokType.SUB);
-        table.opMap.put(MUL, TokType.MUL);
-        table.opMap.put(DIV, TokType.DIV);
-        table.opMap.put(MOD, TokType.MOD);
-        table.opMap.put(SHL, TokType.SHL);
-        table.opMap.put(ART_SHR, TokType.ART_SHR);
-        table.opMap.put(LOG_SHR, TokType.LOG_SHR);
-        table.opMap.put(DOT, TokType.DOT);
-        table.opMap.put(COLON, TokType.COLON);
-        table.opMap.put(ASSIGNMENT, TokType.ASSIGNMENT);
-        table.opMap.put(TYPE_CONV, TokType.TYPE_CONV);
-        table.opMap.put(LPAREN, TokType.LPAREN);
-        table.opMap.put(RPAREN, TokType.RPAREN);
-        table.opMap.put(LCURLY, TokType.LCURLY);
-        table.opMap.put(RCURLY, TokType.RCURLY);
-        table.opMap.put(LSQUARE, TokType.LSQUARE);
-        table.opMap.put(RSQUARE, TokType.RSQUARE);
-        table.opMap.put(SEMI, TokType.SEMI);
-        table.opMap.put(COMMA, TokType.COMMA);
+        table.registerOp(LOG_NOT, TokType.LOG_NOT);
+        table.registerOp(LOG_OR, TokType.LOG_OR);
+        table.registerOp(LOG_AND, TokType.LOG_AND);
+        table.registerOp(EQ, TokType.EQ);
+        table.registerOp(NEQ, TokType.NEQ);
+        table.registerOp(LESS, TokType.LESS);
+        table.registerOp(GREATER, TokType.GREATER);
+        table.registerOp(LEQ, TokType.LEQ);
+        table.registerOp(GEQ, TokType.GEQ);
+        table.registerOp(ADD, TokType.ADD);
+        table.registerOp(SUB, TokType.SUB);
+        table.registerOp(MUL, TokType.MUL);
+        table.registerOp(DIV, TokType.DIV);
+        table.registerOp(MOD, TokType.MOD);
+        table.registerOp(SHL, TokType.SHL);
+        table.registerOp(ART_SHR, TokType.ART_SHR);
+        table.registerOp(LOG_SHR, TokType.LOG_SHR);
+        table.registerOp(DOT, TokType.DOT);
+        table.registerOp(COLON, TokType.COLON);
+        table.registerOp(ASSIGNMENT, TokType.ASSIGNMENT);
+        table.registerOp(TYPE_CONV, TokType.TYPE_CONV);
+        table.registerOp(LPAREN, TokType.LPAREN);
+        table.registerOp(RPAREN, TokType.RPAREN);
+        table.registerOp(LCURLY, TokType.LCURLY);
+        table.registerOp(RCURLY, TokType.RCURLY);
+        table.registerOp(LSQUARE, TokType.LSQUARE);
+        table.registerOp(RSQUARE, TokType.RSQUARE);
+        table.registerOp(SEMI, TokType.SEMI);
+        table.registerOp(COMMA, TokType.COMMA);
 
         // Initialize prefix table
         table.prefixOps.add(TokType.ADD);
@@ -243,12 +244,26 @@ public class OpTable {
      * @return true if the given string is a prefix of an operator string and false otherwise.
      */
     public boolean isOpPrefixStr(String prefixStr) {
-        for (String opStr : opMap.keySet()) {
-            if (opStr.indexOf(prefixStr) == 0) {
-                return true;
-            }
+        return opPrefixStrSet.contains(prefixStr);
+    }
+
+    /**
+     * Adds an operator to the table.
+     *
+     * @param opStr the input string to identify the operator.
+     * @param opId  a token type that is used as the operator identifier.
+     */
+    private void registerOp(String opStr, TokType opId) {
+        opMap.put(opStr, opId);
+        StringBuilder opPrefixStr = new StringBuilder();
+        char c;
+
+        // This is not wasteful since the operator is at most 3 characters long
+        for (int i = 0; i < opStr.length(); ++i) {
+            c = opStr.charAt(i);
+            opPrefixStr.append(c);
+            opPrefixStrSet.add(opPrefixStr.toString());
         }
-        return false;
     }
 
     /**
