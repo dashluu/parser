@@ -10,7 +10,7 @@ public class KeywordTable {
     // List of keywords for direct access
     public static final String VAR = "var", CONST = "let",
             TRUE = "true", FALSE = "false",
-            FUN = "fun", RET = "return",
+            FUNCTION = "fun", RET = "return",
             IF = "if", ELIF = "elif", ELSE = "else", WHILE = "while",
             BREAK = "break", CONT = "continue";
 
@@ -29,7 +29,7 @@ public class KeywordTable {
         table.kwMap.put(CONST, TokType.CONST_DECL);
         table.kwMap.put(TRUE, TokType.BOOL_LITERAL);
         table.kwMap.put(FALSE, TokType.BOOL_LITERAL);
-        table.kwMap.put(FUN, TokType.FUN_DECL);
+        table.kwMap.put(FUNCTION, TokType.FUN_DECL);
         table.kwMap.put(RET, TokType.RET);
         table.kwMap.put(IF, TokType.IF);
         table.kwMap.put(ELIF, TokType.ELIF);
