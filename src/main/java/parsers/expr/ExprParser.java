@@ -10,7 +10,7 @@ import operators.OpTable;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import parsers.utils.TokParser;
+import parsers.utils.TokMatcher;
 import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
@@ -23,7 +23,7 @@ import java.io.IOException;
 
 public class ExprParser {
     private Lexer lexer;
-    private TokParser tokParser;
+    private TokMatcher tokMatcher;
     private ExprSemanChecker semanChecker;
     private ParseContext context;
 
@@ -31,12 +31,12 @@ public class ExprParser {
      * Initializes the dependencies.
      *
      * @param lexer        a lexer.
-     * @param tokParser    a parser that consumes valid tokens.
-     * @param semanChecker an expression semantics checker.
+     * @param tokMatcher   a token matcher.
+     * @param semanChecker an expression semantic checker.
      */
-    public void init(Lexer lexer, TokParser tokParser, ExprSemanChecker semanChecker) {
+    public void init(Lexer lexer, TokMatcher tokMatcher, ExprSemanChecker semanChecker) {
         this.lexer = lexer;
-        this.tokParser = tokParser;
+        this.tokMatcher = tokMatcher;
         this.semanChecker = semanChecker;
     }
 
@@ -138,7 +138,7 @@ public class ExprParser {
      */
     private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, boolean isArrLiteral)
             throws IOException {
-        ParseResult<Tok> bracketResult = tokParser.parseTok(leftTokType, context);
+        ParseResult<Tok> bracketResult = tokMatcher.parseTok(leftTokType, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
@@ -161,13 +161,13 @@ public class ExprParser {
         boolean firstExpr = true;
 
         while (!end) {
-            bracketResult = tokParser.parseTok(rightTokType, context);
+            bracketResult = tokMatcher.parseTok(rightTokType, context);
             if (bracketResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             } else if (!(end = bracketResult.getStatus() == ParseStatus.OK)) {
                 if (!firstExpr) {
                     // If this is not the first expression, ',' must be present
-                    commaResult = tokParser.parseTok(TokType.COMMA, context);
+                    commaResult = tokMatcher.parseTok(TokType.COMMA, context);
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
@@ -223,7 +223,7 @@ public class ExprParser {
      */
     private ParseResult<ASTNode> parseIdClause() throws IOException {
         // Parse an id first
-        ParseResult<Tok> idResult = tokParser.parseTok(TokType.ID, context);
+        ParseResult<Tok> idResult = tokMatcher.parseTok(TokType.ID, context);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
@@ -335,7 +335,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseParenExpr() throws IOException {
-        ParseResult<Tok> parenResult = tokParser.parseTok(TokType.LPAREN, context);
+        ParseResult<Tok> parenResult = tokMatcher.parseTok(TokType.LPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
@@ -348,7 +348,7 @@ public class ExprParser {
             return exprResult;
         }
 
-        parenResult = tokParser.parseTok(TokType.RPAREN, context);
+        parenResult = tokMatcher.parseTok(TokType.RPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {

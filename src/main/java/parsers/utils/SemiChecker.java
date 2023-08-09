@@ -6,30 +6,30 @@ import toks.TokType;
 
 import java.io.IOException;
 
-public class SemiParser {
-    private TokParser tokParser;
+public class SemiChecker {
+    private TokMatcher tokMatcher;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser a parser that consumes valid tokens.
+     * @param tokMatcher a token matcher.
      */
-    public void init(TokParser tokParser) {
-        this.tokParser = tokParser;
+    public void init(TokMatcher tokMatcher) {
+        this.tokMatcher = tokMatcher;
     }
 
     /**
-     * Parses a trailing semicolon.
+     * Checks for a trailing semicolon.
      *
      * @param headResult the parsing result preceding the trailing semicolon.
      * @param context    the parsing context.
      * @param <E>        the type of data stored in ParseResult.
-     * @return a ParseResult object as the result of parsing a trailing semicolon.
+     * @return a ParseResult object as the result of checking a trailing semicolon.
      * @throws IOException if there is an IO exception.
      */
-    public <E> ParseResult<E> parseSemi(ParseResult<E> headResult, ParseContext context)
+    public <E> ParseResult<E> check(ParseResult<E> headResult, ParseContext context)
             throws IOException {
-        ParseResult<Tok> semiResult = tokParser.parseTok(TokType.SEMI, context);
+        ParseResult<Tok> semiResult = tokMatcher.parseTok(TokType.SEMI, context);
         if (semiResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (semiResult.getStatus() == ParseStatus.FAIL) {

@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class ScopeParser {
     private LexReader lexReader;
-    private TokParser tokParser;
+    private TokMatcher tokMatcher;
     private StmtParser stmtParser;
     private FunDefParser funDefParser;
     private IfElseParser ifElseParser;
@@ -28,16 +28,16 @@ public class ScopeParser {
      * Initializes the dependencies.
      *
      * @param lexReader    a lexeme reader.
-     * @param tokParser    a parser that consumes valid tokens.
+     * @param tokMatcher    a parser that consumes valid tokens.
      * @param stmtParser   a statement parser.
      * @param funDefParser a function definition parser.
      * @param ifElseParser an if-elif-else sequence parser.
      * @param whileParser  a while-loop parser.
      */
-    public void init(LexReader lexReader, TokParser tokParser, StmtParser stmtParser, FunDefParser funDefParser,
+    public void init(LexReader lexReader, TokMatcher tokMatcher, StmtParser stmtParser, FunDefParser funDefParser,
                      IfElseParser ifElseParser, WhileParser whileParser) {
         this.lexReader = lexReader;
-        this.tokParser = tokParser;
+        this.tokMatcher = tokMatcher;
         this.stmtParser = stmtParser;
         this.funDefParser = funDefParser;
         this.ifElseParser = ifElseParser;
@@ -54,7 +54,7 @@ public class ScopeParser {
      */
     public ParseResult<ASTNode> parseBlock(ScopeType scopeType, ParseContext context) throws IOException {
         // Try parsing '{'
-        ParseResult<Tok> curlyResult = tokParser.parseTok(TokType.LCURLY, context);
+        ParseResult<Tok> curlyResult = tokMatcher.parseTok(TokType.LCURLY, context);
         if (curlyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (curlyResult.getStatus() == ParseStatus.FAIL) {
@@ -74,7 +74,7 @@ public class ScopeParser {
         }
 
         // Try parsing '}'
-        curlyResult = tokParser.parseTok(TokType.RCURLY, context);
+        curlyResult = tokMatcher.parseTok(TokType.RCURLY, context);
         if (curlyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (curlyResult.getStatus() == ParseStatus.FAIL) {

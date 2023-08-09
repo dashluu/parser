@@ -7,22 +7,22 @@ import exceptions.ErrMsg;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import parsers.utils.TokParser;
+import parsers.utils.TokMatcher;
 import toks.Tok;
 import toks.TokType;
 
 import java.io.IOException;
 
 public class DtypeParser {
-    private TokParser tokParser;
+    private TokMatcher tokMatcher;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser a token parser.
+     * @param tokMatcher a token matcher.
      */
-    public void init(TokParser tokParser) {
-        this.tokParser = tokParser;
+    public void init(TokMatcher tokMatcher) {
+        this.tokMatcher = tokMatcher;
     }
 
     /**
@@ -33,7 +33,7 @@ public class DtypeParser {
      */
     public ParseResult<ASTNode> parseTypeAnn(ParseContext context) throws IOException {
         // Try parsing ':'
-        ParseResult<Tok> colonResult = tokParser.parseTok(TokType.COLON, context);
+        ParseResult<Tok> colonResult = tokMatcher.parseTok(TokType.COLON, context);
         if (colonResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (colonResult.getStatus() == ParseStatus.FAIL) {
@@ -41,7 +41,7 @@ public class DtypeParser {
         }
 
         // Parse a data type
-        ParseResult<Tok> dtypeResult = tokParser.parseTok(TokType.ID, context);
+        ParseResult<Tok> dtypeResult = tokMatcher.parseTok(TokType.ID, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {

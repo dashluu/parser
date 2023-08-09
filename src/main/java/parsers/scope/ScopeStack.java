@@ -24,13 +24,13 @@ public class ScopeStack {
         Scope parent = stack.peek();
 
         // Update the return state of the parent scope
-        if (parent != null && parent.getRetState() != RetState.MISSING && parent.getRetState() != RetState.PRESENT) {
+        if (parent != null && parent.getRetState() != RetState.MISSING && parent.getRetState() != RetState.EXIST) {
             if (scope.getScopeType() == ScopeType.SIMPLE || scope.getScopeType() == ScopeType.ELSE) {
-                if (scope.getRetState() == RetState.PRESENT) {
-                    parent.setRetState(RetState.PRESENT);
+                if (scope.getRetState() == RetState.EXIST) {
+                    parent.setRetState(RetState.EXIST);
                 }
             } else {
-                if (scope.getRetState() == RetState.PRESENT) {
+                if (scope.getRetState() == RetState.EXIST) {
                     parent.setRetState(RetState.CHECKING);
                 } else {
                     parent.setRetState(RetState.MISSING);

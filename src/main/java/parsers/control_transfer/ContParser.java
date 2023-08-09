@@ -10,15 +10,15 @@ import toks.TokType;
 import java.io.IOException;
 
 public class ContParser {
-    private TokParser tokParser;
+    private TokMatcher tokMatcher;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser a parser that consumes valid tokens.
+     * @param tokMatcher a token matcher.
      */
-    public void init(TokParser tokParser) {
-        this.tokParser = tokParser;
+    public void init(TokMatcher tokMatcher) {
+        this.tokMatcher = tokMatcher;
     }
 
     /**
@@ -30,7 +30,7 @@ public class ContParser {
      */
     public ParseResult<ASTNode> parseCont(ParseContext context) throws IOException {
         // Check the continue keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.CONT, context);
+        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.CONT, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {

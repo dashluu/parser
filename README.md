@@ -163,8 +163,8 @@ the table to determine if the operands are compatible with the operator. If not,
 several classes associated with type compatibilities:
 
 * **OpCompat**: the base class for operator compatibilities.
-* **BinOpCompat**: a class inherited from `OpCompat` that determines binary operator compatibilities.
-* **UnOpCompat**: a class inherited from `OpCompat` that determines unary operator compatibilities.
+* **BinOpCompat**: a class inheriting from `OpCompat` that determines binary operator compatibilities.
+* **UnOpCompat**: a class inheriting from `OpCompat` that determines unary operator compatibilities.
 
 ## Current language features
 

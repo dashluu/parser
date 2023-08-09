@@ -26,7 +26,7 @@ public class FunDefParser {
      * Initializes the dependencies.
      *
      * @param funHeadParser a function header parser.
-     * @param scopeParser   a scope parser.
+     * @param scopeParser   a scope parser for parsing the function body.
      */
     public void init(FunHeadParser funHeadParser, ScopeParser scopeParser) {
         this.funHeadParser = funHeadParser;
@@ -34,7 +34,7 @@ public class FunDefParser {
     }
 
     /**
-     * Parses a function definition, constructs an AST for it, and checks its semantics.
+     * Parses a function definition.
      *
      * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a function definition.
@@ -62,7 +62,7 @@ public class FunDefParser {
         Scope funScope = scopeStack.pop();
 
         // Check if the return statement is present
-        if (funScope.getRetState() != RetState.PRESENT) {
+        if (funScope.getRetState() != RetState.EXIST) {
             SrcPos funDefEnd = funDefNode.getSrcRange().getEndPos();
             if (funDefNode.getDtype() != VoidType.getInst()) {
                 return context.raiseErr(new ErrMsg("Missing a return statement", funDefEnd));

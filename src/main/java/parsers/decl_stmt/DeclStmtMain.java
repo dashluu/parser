@@ -29,17 +29,17 @@ public class DeclStmtMain {
 
             LexReader lexReader = new LexReader(reader);
             Lexer lexer = new Lexer(lexReader);
-            TokParser tokParser = new TokParser();
+            TokMatcher tokMatcher = new TokMatcher();
             DtypeParser dtypeParser = new DtypeParser();
             ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
             ExprParser exprParser = new ExprParser();
             DeclStmtSemanChecker declStmtSemanChecker = new DeclStmtSemanChecker();
             DeclStmtParser declStmtParser = new DeclStmtParser();
 
-            tokParser.init(lexer);
-            dtypeParser.init(tokParser);
-            exprParser.init(lexer, tokParser, exprSemanChecker);
-            declStmtParser.init(tokParser, dtypeParser, exprParser, declStmtSemanChecker);
+            tokMatcher.init(lexer);
+            dtypeParser.init(tokMatcher);
+            exprParser.init(lexer, tokMatcher, exprSemanChecker);
+            declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);
 
             ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(ScopeType.MODULE, null);

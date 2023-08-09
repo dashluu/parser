@@ -8,7 +8,7 @@ public class Scope {
     protected final ScopeType scopeType;
     protected final Scope parent;
     protected final SymbolTable symbolTable;
-    protected RetState retState = RetState.INITIAL;
+    protected RetState retState = RetState.INIT;
 
     public Scope(ScopeType scopeType, Scope parent) {
         this.scopeType = scopeType;

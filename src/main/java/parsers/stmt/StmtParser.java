@@ -13,8 +13,8 @@ import toks.TokType;
 import java.io.IOException;
 
 public class StmtParser {
-    private TokParser tokParser;
-    private SemiParser semiParser;
+    private TokMatcher tokMatcher;
+    private SemiChecker semiChecker;
     private ExprParser exprParser;
     private DeclStmtParser declStmtParser;
     private RetParser retParser;
@@ -24,18 +24,18 @@ public class StmtParser {
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser   a parser that consumes valid tokens.
-     * @param semiParser  a parser that consumes trailing semicolons.
-     * @param exprParser  an expression parser.
-     * @param declStmtParser  a declaration statement parser.
-     * @param retParser   a return statement parser.
-     * @param breakParser a break statement parser.
-     * @param contParser  a continue statement parser.
+     * @param tokMatcher     a token matcher.
+     * @param semiChecker    a trailing semicolon checker.
+     * @param exprParser     an expression parser.
+     * @param declStmtParser a declaration statement parser.
+     * @param retParser      a return statement parser.
+     * @param breakParser    a break statement parser.
+     * @param contParser     a continue statement parser.
      */
-    public void init(TokParser tokParser, SemiParser semiParser, ExprParser exprParser, DeclStmtParser declStmtParser,
+    public void init(TokMatcher tokMatcher, SemiChecker semiChecker, ExprParser exprParser, DeclStmtParser declStmtParser,
                      RetParser retParser, BreakParser breakParser, ContParser contParser) {
-        this.tokParser = tokParser;
-        this.semiParser = semiParser;
+        this.tokMatcher = tokMatcher;
+        this.semiChecker = semiChecker;
         this.exprParser = exprParser;
         this.declStmtParser = declStmtParser;
         this.retParser = retParser;
@@ -56,7 +56,7 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return semiParser.parseSemi(stmtResult, context);
+            return semiChecker.check(stmtResult, context);
         }
 
         // Parse a return statement
@@ -64,7 +64,7 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return semiParser.parseSemi(stmtResult, context);
+            return semiChecker.check(stmtResult, context);
         }
 
         // Parse a break statement
@@ -72,7 +72,7 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return semiParser.parseSemi(stmtResult, context);
+            return semiChecker.check(stmtResult, context);
         }
 
         // Parse a continue statement
@@ -80,7 +80,7 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return semiParser.parseSemi(stmtResult, context);
+            return semiChecker.check(stmtResult, context);
         }
 
         // Parse a expression
@@ -88,10 +88,10 @@ public class StmtParser {
         if (stmtResult.getStatus() == ParseStatus.ERR) {
             return stmtResult;
         } else if (stmtResult.getStatus() == ParseStatus.OK) {
-            return semiParser.parseSemi(stmtResult, context);
+            return semiChecker.check(stmtResult, context);
         }
 
-        ParseResult<Tok> semiResult = tokParser.parseTok(TokType.SEMI, context);
+        ParseResult<Tok> semiResult = tokMatcher.parseTok(TokType.SEMI, context);
         if (semiResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (semiResult.getStatus() == ParseStatus.FAIL) {

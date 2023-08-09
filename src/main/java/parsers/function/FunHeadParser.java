@@ -12,7 +12,7 @@ import toks.TokType;
 import java.io.IOException;
 
 public class FunHeadParser {
-    private TokParser tokParser;
+    private TokMatcher tokMatcher;
     private DtypeParser dtypeParser;
     private FunHeadSemanChecker semanChecker;
     private ParseContext context;
@@ -20,12 +20,12 @@ public class FunHeadParser {
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser     a token parser.
-     * @param dtypeParser a type annotation parser.
-     * @param semanChecker  a semantics checker for function headers.
+     * @param tokMatcher   a token matcher.
+     * @param dtypeParser  a data type parser.
+     * @param semanChecker a semantic checker for the function header.
      */
-    public void init(TokParser tokParser, DtypeParser dtypeParser, FunHeadSemanChecker semanChecker) {
-        this.tokParser = tokParser;
+    public void init(TokMatcher tokMatcher, DtypeParser dtypeParser, FunHeadSemanChecker semanChecker) {
+        this.tokMatcher = tokMatcher;
         this.dtypeParser = dtypeParser;
         this.semanChecker = semanChecker;
     }
@@ -40,7 +40,7 @@ public class FunHeadParser {
     public ParseResult<ASTNode> parseFunHead(ParseContext context) throws IOException {
         this.context = context;
         // Parse the function keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.FUN_DECL, context);
+        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.FUN_DECL, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -54,7 +54,7 @@ public class FunHeadParser {
         }
 
         // Parse the function id
-        ParseResult<Tok> idResult = tokParser.parseTok(TokType.ID, context);
+        ParseResult<Tok> idResult = tokMatcher.parseTok(TokType.ID, context);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
@@ -118,7 +118,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseParamList() throws IOException {
         // Parse '('
-        ParseResult<Tok> parenResult = tokParser.parseTok(TokType.LPAREN, context);
+        ParseResult<Tok> parenResult = tokMatcher.parseTok(TokType.LPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
@@ -136,13 +136,13 @@ public class FunHeadParser {
 
         while (!end) {
             // Parse ')'
-            parenResult = tokParser.parseTok(TokType.RPAREN, context);
+            parenResult = tokMatcher.parseTok(TokType.RPAREN, context);
             if (parenResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             } else if (!(end = parenResult.getStatus() == ParseStatus.OK)) {
                 if (!firstArg) {
                     // If this is not the first parameter in the list, ',' must be present
-                    commaResult = tokParser.parseTok(TokType.COMMA, context);
+                    commaResult = tokMatcher.parseTok(TokType.COMMA, context);
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
@@ -177,7 +177,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseParam() throws IOException {
         // Parse the parameter's name
-        ParseResult<Tok> nameResult = tokParser.parseTok(TokType.ID, context);
+        ParseResult<Tok> nameResult = tokMatcher.parseTok(TokType.ID, context);
         if (nameResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (nameResult.getStatus() == ParseStatus.FAIL) {

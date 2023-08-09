@@ -406,7 +406,7 @@ public class ExprSemanChecker {
         // Check if the function id exists
         SymbolTable symbolTable = context.getScope().getSymbolTable();
         SymbolInfo symbol = symbolTable.getClosureSymbol(funId);
-        if (symbol == null || symbol.getSymbolType() != SymbolType.FUN) {
+        if (symbol == null || symbol.getSymbolType() != SymbolType.FUNCTION) {
             return context.raiseErr(new ErrMsg("Invalid function identifier '" + funId + "'", funIdTok));
         }
 

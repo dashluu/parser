@@ -13,8 +13,8 @@ import types.BoolType;
 import java.io.IOException;
 
 public abstract class CondBranchParser {
-    protected TokParser tokParser;
-    protected SemiParser semiParser;
+    protected TokMatcher tokMatcher;
+    protected SemiChecker semiChecker;
     protected ExprParser exprParser;
     protected ScopeParser scopeParser;
     protected ParseContext context;
@@ -22,14 +22,14 @@ public abstract class CondBranchParser {
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser   a parser that consumes valid tokens.
-     * @param semiParser  a parser that consumes trailing semicolons.
-     * @param exprParser  an expression parser.
-     * @param scopeParser a scope parser.
+     * @param tokMatcher  a token matcher.
+     * @param semiChecker a trailing semicolon checker.
+     * @param exprParser  an expression parser for parsing the branch condition.
+     * @param scopeParser a scope parser for parsing the branch body.
      */
-    public void init(TokParser tokParser, SemiParser semiParser, ExprParser exprParser, ScopeParser scopeParser) {
-        this.tokParser = tokParser;
-        this.semiParser = semiParser;
+    public void init(TokMatcher tokMatcher, SemiChecker semiChecker, ExprParser exprParser, ScopeParser scopeParser) {
+        this.tokMatcher = tokMatcher;
+        this.semiChecker = semiChecker;
         this.exprParser = exprParser;
         this.scopeParser = scopeParser;
     }
@@ -64,7 +64,7 @@ public abstract class CondBranchParser {
                 return context.raiseErr(new ErrMsg("Invalid branch body", bodyResult.getFailTok()));
             }
             // Check for trailing ';'
-            return semiParser.parseSemi(condResult, context);
+            return semiChecker.check(condResult, context);
         }
 
         ScopeASTNode bodyNode = (ScopeASTNode) bodyResult.getData();
@@ -81,7 +81,7 @@ public abstract class CondBranchParser {
      */
     protected ParseResult<ASTNode> parseCond(TokType tokType) throws IOException {
         // keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(tokType, context);
+        ParseResult<Tok> kwResult = tokMatcher.parseTok(tokType, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -89,7 +89,7 @@ public abstract class CondBranchParser {
         }
 
         // '('
-        ParseResult<Tok> lparenResult = tokParser.parseTok(TokType.LPAREN, context);
+        ParseResult<Tok> lparenResult = tokMatcher.parseTok(TokType.LPAREN, context);
         if (lparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (lparenResult.getStatus() == ParseStatus.FAIL) {
@@ -105,7 +105,7 @@ public abstract class CondBranchParser {
         }
 
         // ')'
-        ParseResult<Tok> rparenResult = tokParser.parseTok(TokType.RPAREN, context);
+        ParseResult<Tok> rparenResult = tokMatcher.parseTok(TokType.RPAREN, context);
         if (rparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (rparenResult.getStatus() == ParseStatus.FAIL) {

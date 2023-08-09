@@ -9,7 +9,7 @@ import parsers.scope.Scope;
 import parsers.utils.ParseContext;
 import parsers.utils.ParseResult;
 import parsers.utils.ParseStatus;
-import parsers.utils.TokParser;
+import parsers.utils.TokMatcher;
 import toks.Tok;
 import toks.TokType;
 import types.TypeInfo;
@@ -18,22 +18,22 @@ import types.VoidType;
 import java.io.IOException;
 
 public class RetParser {
-    private TokParser tokParser;
+    private TokMatcher tokMatcher;
     private ExprParser exprParser;
 
     /**
      * Initializes the dependencies.
      *
-     * @param tokParser  a parser that consumes valid tokens.
+     * @param tokMatcher a token matcher.
      * @param exprParser an expression parser.
      */
-    public void init(TokParser tokParser, ExprParser exprParser) {
-        this.tokParser = tokParser;
+    public void init(TokMatcher tokMatcher, ExprParser exprParser) {
+        this.tokMatcher = tokMatcher;
         this.exprParser = exprParser;
     }
 
     /**
-     * Parses a return statement using the given parsing information.
+     * Parses a return statement.
      *
      * @param context the parsing context.
      * @return a ParseResult object as the result of parsing a return statement.
@@ -41,7 +41,7 @@ public class RetParser {
      */
     public ParseResult<ASTNode> parseRet(ParseContext context) throws IOException {
         // Check for the return keyword
-        ParseResult<Tok> kwResult = tokParser.parseTok(TokType.RET, context);
+        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.RET, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -88,7 +88,7 @@ public class RetParser {
 
         // Update the return state of the current scope
         Scope scope = context.getScope();
-        scope.setRetState(RetState.PRESENT);
+        scope.setRetState(RetState.EXIST);
         return ParseResult.ok(retNode);
     }
 }

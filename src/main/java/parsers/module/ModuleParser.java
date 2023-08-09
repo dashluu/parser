@@ -29,9 +29,9 @@ import java.io.IOException;
 public class ModuleParser {
     private final LexReader lexReader;
     private final Lexer lexer;
-    private final TokParser tokParser = new TokParser();
+    private final TokMatcher tokMatcher = new TokMatcher();
     private final DtypeParser dtypeParser = new DtypeParser();
-    private final SemiParser semiParser = new SemiParser();
+    private final SemiChecker semiChecker = new SemiChecker();
     private final ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
     private final ExprParser exprParser = new ExprParser();
     private final DeclStmtSemanChecker declStmtSemanChecker = new DeclStmtSemanChecker();
@@ -56,20 +56,20 @@ public class ModuleParser {
      * Resolves the dependencies between the components.
      */
     public void init() {
-        tokParser.init(lexer);
-        dtypeParser.init(tokParser);
-        semiParser.init(tokParser);
-        exprParser.init(lexer, tokParser, exprSemanChecker);
-        declStmtParser.init(tokParser, dtypeParser, exprParser, declStmtSemanChecker);
-        retParser.init(tokParser, exprParser);
-        breakParser.init(tokParser);
-        contParser.init(tokParser);
-        stmtParser.init(tokParser, semiParser, exprParser, declStmtParser, retParser, breakParser, contParser);
-        ifElseParser.init(tokParser, semiParser, exprParser, scopeParser);
-        whileParser.init(tokParser, semiParser, exprParser, scopeParser);
-        funHeadParser.init(tokParser, dtypeParser, funHeadSemanChecker);
+        tokMatcher.init(lexer);
+        dtypeParser.init(tokMatcher);
+        semiChecker.init(tokMatcher);
+        exprParser.init(lexer, tokMatcher, exprSemanChecker);
+        declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);
+        retParser.init(tokMatcher, exprParser);
+        breakParser.init(tokMatcher);
+        contParser.init(tokMatcher);
+        stmtParser.init(tokMatcher, semiChecker, exprParser, declStmtParser, retParser, breakParser, contParser);
+        ifElseParser.init(tokMatcher, semiChecker, exprParser, scopeParser);
+        whileParser.init(tokMatcher, semiChecker, exprParser, scopeParser);
+        funHeadParser.init(tokMatcher, dtypeParser, funHeadSemanChecker);
         funDefParser.init(funHeadParser, scopeParser);
-        scopeParser.init(lexReader, tokParser, stmtParser, funDefParser, ifElseParser, whileParser);
+        scopeParser.init(lexReader, tokMatcher, stmtParser, funDefParser, ifElseParser, whileParser);
     }
 
     /**

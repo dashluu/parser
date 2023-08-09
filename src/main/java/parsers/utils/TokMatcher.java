@@ -8,7 +8,7 @@ import toks.TokType;
 
 import java.io.IOException;
 
-public class TokParser {
+public class TokMatcher {
     private Lexer lexer;
 
     /**
@@ -21,11 +21,11 @@ public class TokParser {
     }
 
     /**
-     * Parses a token.
+     * Checks if the next token matches the expected syntax.
      *
      * @param tokType the expected token type.
      * @param context the parsing context.
-     * @return a ParseResult as the result of parsing a token.
+     * @return a ParseResult as the result of matching a token.
      * @throws IOException if there is an IO exception.
      */
     public ParseResult<Tok> parseTok(TokType tokType, ParseContext context) throws IOException {

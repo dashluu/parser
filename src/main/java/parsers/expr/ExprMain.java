@@ -26,12 +26,12 @@ public class ExprMain {
 
             LexReader lexReader = new LexReader(reader);
             Lexer lexer = new Lexer(lexReader);
-            TokParser tokParser = new TokParser();
+            TokMatcher tokMatcher = new TokMatcher();
             ExprSemanChecker semanChecker = new ExprSemanChecker();
             ExprParser parser = new ExprParser();
 
-            tokParser.init(lexer);
-            parser.init(lexer, tokParser, semanChecker);
+            tokMatcher.init(lexer);
+            parser.init(lexer, tokMatcher, semanChecker);
 
             ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(ScopeType.MODULE, null);
