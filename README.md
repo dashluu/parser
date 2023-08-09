@@ -65,7 +65,7 @@ There are several phases in the compilation process:
 
 ### Architecture
 
-The code for lexer is in the package `lexers`. It includes:
+The code for lexer is in the package `lex`. It includes:
 
 * **LexReader**: has an internal buffer which holds characters read from the input source.
 * **AlnumUnderscoreLexer**: reads alphanumeric and underscore characters to form a token.
@@ -77,13 +77,13 @@ The code for lexer is in the package `lexers`. It includes:
 
 ### Grammar
 
-The grammar for lexer is discussed in `lexers/Grammar.md`.
+The grammar for lexer is discussed in `lex/Grammar.md`.
 
 ## Parser
 
 ### Architecture
 
-The code for parser is in the package `parsers`, which includes smaller packages:
+The code for parser is in the package `parse`, which includes smaller packages:
 
 * `expr`: contains the code for parsing expressions.
 * `decl`: contains the code for parsing declaration statements.
@@ -109,7 +109,7 @@ demo app.
 
 ### Grammar
 
-The grammar for parser is discussed in `parsers/Grammar.md`.
+The grammar for parser is discussed in `parse/Grammar.md`.
 
 ## Abstract Syntax Tree(AST)
 
