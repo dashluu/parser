@@ -13,11 +13,12 @@ public class LexReader {
     private final Reader reader;
     public final static int EOS = -1;
     private final static String SPECIAL_CHARS = "(){}[]+-*/%~!&|<>=,.;:_";
-    private final List<Integer> colList = new ArrayList<>();
+    // List of end-of-line columns
+    private final List<Integer> lnEndList = new ArrayList<>();
 
     public LexReader(Reader reader) {
         this.reader = reader;
-        colList.add(1);
+        lnEndList.add(1);
     }
 
     /**
@@ -76,8 +77,8 @@ public class LexReader {
      * @return a SrcPos object as the current source position.
      */
     public SrcPos getSrcPos() {
-        int ln = colList.size();
-        int col = colList.get(colList.size() - 1);
+        int ln = lnEndList.size();
+        int col = lnEndList.get(lnEndList.size() - 1);
         return new SrcPos(ln, col);
     }
 
@@ -171,10 +172,10 @@ public class LexReader {
         int c = buff.pop();
 
         if (c == '\n') {
-            colList.add(1);
+            lnEndList.add(1);
         } else {
-            int lastColIndex = colList.size() - 1;
-            colList.set(lastColIndex, colList.get(lastColIndex) + 1);
+            int currLnEnd = lnEndList.size() - 1;
+            lnEndList.set(currLnEnd, lnEndList.get(currLnEnd) + 1);
         }
 
         return c;
@@ -186,15 +187,15 @@ public class LexReader {
      * @param str the string to be put back.
      */
     public void putBack(String str) {
-        int c, lastColIndex;
+        int c, currLnEnd;
         for (int i = str.length() - 1; i >= 0; --i) {
             c = str.charAt(i);
-            lastColIndex = colList.size() - 1;
+            currLnEnd = lnEndList.size() - 1;
 
             if (c == '\n') {
-                colList.remove(lastColIndex);
+                lnEndList.remove(currLnEnd);
             } else {
-                colList.set(lastColIndex, colList.get(lastColIndex) - 1);
+                lnEndList.set(currLnEnd, lnEndList.get(currLnEnd) - 1);
             }
 
             buff.addFirst(c);
