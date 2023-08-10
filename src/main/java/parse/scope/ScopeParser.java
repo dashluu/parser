@@ -28,7 +28,7 @@ public class ScopeParser {
      * Initializes the dependencies.
      *
      * @param lexReader    a lexeme reader.
-     * @param tokMatcher    a parser that consumes valid tokens.
+     * @param tokMatcher   a token matcher.
      * @param stmtParser   a statement parser.
      * @param funDefParser a function definition parser.
      * @param ifElseParser an if-elif-else sequence parser.
