@@ -17,13 +17,9 @@ public class ExprMain {
     public static void main(String[] args) {
         String inFilename = args[0];
         String outFilename = args[1];
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
 
-        try {
-            reader = new BufferedReader(new FileReader(inFilename));
-            writer = new BufferedWriter(new FileWriter(outFilename));
-
+        try (BufferedReader reader = new BufferedReader(new FileReader(inFilename));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(outFilename))) {
             LexReader lexReader = new LexReader(reader);
             Lexer lexer = new Lexer(lexReader);
             TokMatcher tokMatcher = new TokMatcher();
@@ -44,21 +40,10 @@ public class ExprMain {
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode exprNode = result.getData();
                 JSONWalker walker = new JSONWalker();
-                writer.write(walker.getJSON(exprNode));
+                writer.write(walker.walk(exprNode));
             }
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-                if (writer != null) {
-                    writer.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

@@ -15,13 +15,9 @@ public class ModuleMain {
     public static void main(String[] args) {
         String inFilename = args[0];
         String outFilename = args[1];
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
 
-        try {
-            reader = new BufferedReader(new FileReader(inFilename));
-            writer = new BufferedWriter(new FileWriter(outFilename));
-
+        try (BufferedReader reader = new BufferedReader(new FileReader(inFilename));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(outFilename))) {
             LexReader lexReader = new LexReader(reader);
             ModuleParser moduleParser = new ModuleParser(lexReader);
 
@@ -38,21 +34,10 @@ public class ModuleMain {
             } else if (result.getStatus() == ParseStatus.OK) {
                 ASTNode moduleNode = result.getData();
                 JSONWalker walker = new JSONWalker();
-                writer.write(walker.getJSON(moduleNode));
+                writer.write(walker.walk(moduleNode));
             }
         } catch (SyntaxErr | IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-                if (writer != null) {
-                    writer.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

@@ -6,7 +6,7 @@ import toks.Tok;
 public class JSONWalker implements IASTVisitor {
     private final StringBuilder jsonStrBuff = new StringBuilder();
 
-    public String getJSON(ASTNode root) {
+    public String walk(ASTNode root) {
         jsonStrBuff.append("{");
         root.accept(this);
         jsonStrBuff.append("}");
