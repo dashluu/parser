@@ -9,7 +9,7 @@ import java.util.List;
 
 // AST node with multiple children
 // Implemented using the Iterator pattern
-public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
+public abstract class MultichildASTNode extends ASTNode implements Iterable<ASTNode> {
     private class ASTNodeIterator implements IASTNodeIterator {
         private int i;
 
@@ -36,7 +36,7 @@ public abstract class ListASTNode extends ASTNode implements Iterable<ASTNode> {
 
     protected final List<ASTNode> children = new ArrayList<>();
 
-    public ListASTNode(ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
+    public MultichildASTNode(ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
         super(null, new SrcRange(), nodeType, dtype, valExprFlag);
     }
 

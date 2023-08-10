@@ -1,7 +1,7 @@
 package ast;
 
 // Node for code scopes
-public class ScopeASTNode extends ListASTNode {
+public class ScopeASTNode extends MultichildASTNode {
     public ScopeASTNode() {
         super(ASTNodeType.SCOPE, null, false);
     }

@@ -147,7 +147,7 @@ public class ExprParser {
 
         Tok bracketTok = bracketResult.getData();
         SrcPos bracketStartPos = bracketTok.getSrcRange().getStartPos();
-        ListASTNode groupNode;
+        MultichildASTNode groupNode;
         if (isArrLiteral) {
             groupNode = new ArrLiteralASTNode(null);
         } else {

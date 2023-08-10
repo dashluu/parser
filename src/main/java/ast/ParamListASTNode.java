@@ -1,6 +1,6 @@
 package ast;
 
-public class ParamListASTNode extends ListASTNode {
+public class ParamListASTNode extends MultichildASTNode {
     public ParamListASTNode() {
         super(ASTNodeType.PARAM_LIST, null, false);
     }

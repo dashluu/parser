@@ -13,7 +13,7 @@ public class JSONWalker implements IASTVisitor {
         return jsonStrBuff.toString();
     }
 
-    private void nodeToJSON(ASTNode node) {
+    private void walkNode(ASTNode node) {
         Tok tok = node.getTok();
         SrcRange srcRange = node.getSrcRange();
         ASTNodeType nodeType = node.getNodeType();
@@ -22,8 +22,8 @@ public class JSONWalker implements IASTVisitor {
                 .append(",\"Source range\":\"").append(srcRange).append("\"");
     }
 
-    private void unNodeToJSON(UnASTNode unNode) {
-        nodeToJSON(unNode);
+    private void walkUnNode(UnASTNode unNode) {
+        walkNode(unNode);
         ASTNode exprNode = unNode.getExprNode();
         jsonStrBuff.append(",\"Expression\":");
         if (exprNode == null) {
@@ -36,8 +36,8 @@ public class JSONWalker implements IASTVisitor {
         }
     }
 
-    private void binNodeToJSON(BinASTNode binNode) {
-        nodeToJSON(binNode);
+    private void walkBinNode(BinASTNode binNode) {
+        walkNode(binNode);
         ASTNode left = binNode.getLeft();
         ASTNode right = binNode.getRight();
 
@@ -62,8 +62,8 @@ public class JSONWalker implements IASTVisitor {
         }
     }
 
-    private void brNodeToJSON(BranchNode brNode) {
-        nodeToJSON(brNode);
+    private void walkBrNode(BranchNode brNode) {
+        walkNode(brNode);
         ASTNode condNode = brNode.getCondNode();
         ScopeASTNode bodyNode = brNode.getBodyNode();
 
@@ -88,8 +88,8 @@ public class JSONWalker implements IASTVisitor {
         }
     }
 
-    private void listNodeToJSON(ListASTNode listNode) {
-        nodeToJSON(listNode);
+    private void walkMultichildNode(MultichildASTNode listNode) {
+        walkNode(listNode);
         jsonStrBuff.append(",\"Children\":[");
         IASTNodeIterator childrenIter = listNode.nodeIterator();
         ASTNode child;
@@ -111,25 +111,25 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitId(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         return node;
     }
 
     @Override
     public ASTNode visitSimpleDtype(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         return node;
     }
 
     @Override
     public ASTNode visitLiteral(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         return node;
     }
 
     @Override
     public ASTNode visitVarDecl(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         VarDeclASTNode varDeclNode = (VarDeclASTNode) node;
         IdASTNode idNode = varDeclNode.getIdNode();
         DtypeASTNode dtypeNode = varDeclNode.getDtypeNode();
@@ -159,7 +159,7 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitVarDef(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         VarDefASTNode varDefNode = (VarDefASTNode) node;
         VarDeclASTNode varDeclNode = varDefNode.getVarDeclNode();
         ASTNode exprNode = varDefNode.getExprNode();
@@ -189,7 +189,7 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitParamDecl(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         ParamDeclASTNode paramDeclNode = (ParamDeclASTNode) node;
         IdASTNode idNode = paramDeclNode.getIdNode();
         DtypeASTNode dtypeNode = paramDeclNode.getDtypeNode();
@@ -220,27 +220,27 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitParamList(ASTNode node) {
         ParamListASTNode paramListNode = (ParamListASTNode) node;
-        listNodeToJSON(paramListNode);
+        walkMultichildNode(paramListNode);
         return node;
     }
 
     @Override
     public ASTNode visitUnOp(ASTNode node) {
         UnOpASTNode unOpNode = (UnOpASTNode) node;
-        unNodeToJSON(unOpNode);
+        walkUnNode(unOpNode);
         return node;
     }
 
     @Override
     public ASTNode visitBinOp(ASTNode node) {
         BinOpASTNode binOpNode = (BinOpASTNode) node;
-        binNodeToJSON(binOpNode);
+        walkBinNode(binOpNode);
         return node;
     }
 
     @Override
     public ASTNode visitElse(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         ElseASTNode elseNode = (ElseASTNode) node;
         ScopeASTNode bodyNode = elseNode.getBodyNode();
 
@@ -260,13 +260,13 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitWhile(ASTNode node) {
         WhileASTNode whileNode = (WhileASTNode) node;
-        brNodeToJSON(whileNode);
+        walkBrNode(whileNode);
         return node;
     }
 
     @Override
     public ASTNode visitArrAccess(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         ArrAccessASTNode arrAccessNode = (ArrAccessASTNode) node;
         IdASTNode idNode = arrAccessNode.getIdNode();
         ExprListASTNode indexListNode = arrAccessNode.getIndexListNode();
@@ -297,19 +297,19 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitArrLiteral(ASTNode node) {
         ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) node;
-        listNodeToJSON(arrLiteralNode);
+        walkMultichildNode(arrLiteralNode);
         return node;
     }
 
     @Override
     public ASTNode visitExprList(ASTNode node) {
-        listNodeToJSON((ListASTNode) node);
+        walkMultichildNode((MultichildASTNode) node);
         return node;
     }
 
     @Override
     public ASTNode visitFunDef(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         FunDefASTNode funDefNode = (FunDefASTNode) node;
         IdASTNode idNode = funDefNode.getIdNode();
         FunSignASTNode funSignNode = funDefNode.getSignNode();
@@ -350,7 +350,7 @@ public class JSONWalker implements IASTVisitor {
 
     @Override
     public ASTNode visitFunSign(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         FunSignASTNode funSignNode = (FunSignASTNode) node;
         ParamListASTNode paramListNode = funSignNode.getParamListNode();
         DtypeASTNode retDtypeNode = funSignNode.getRetDtypeNode();
@@ -381,46 +381,46 @@ public class JSONWalker implements IASTVisitor {
     @Override
     public ASTNode visitRet(ASTNode node) {
         RetASTNode retNode = (RetASTNode) node;
-        unNodeToJSON(retNode);
+        walkUnNode(retNode);
         return node;
     }
 
     @Override
     public ASTNode visitBreak(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         return node;
     }
 
     @Override
     public ASTNode visitCont(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         return node;
     }
 
     @Override
     public ASTNode visitScope(ASTNode node) {
         ScopeASTNode scopeNode = (ScopeASTNode) node;
-        listNodeToJSON(scopeNode);
+        walkMultichildNode(scopeNode);
         return node;
     }
 
     @Override
     public ASTNode visitIfElse(ASTNode node) {
         IfElseASTNode ifElseNode = (IfElseASTNode) node;
-        listNodeToJSON(ifElseNode);
+        walkMultichildNode(ifElseNode);
         return node;
     }
 
     @Override
     public ASTNode visitIf(ASTNode node) {
         IfASTNode ifNode = (IfASTNode) node;
-        brNodeToJSON(ifNode);
+        walkBrNode(ifNode);
         return node;
     }
 
     @Override
     public ASTNode visitFunCall(ASTNode node) {
-        nodeToJSON(node);
+        walkNode(node);
         FunCallASTNode funCallNode = (FunCallASTNode) node;
         IdASTNode idNode = funCallNode.getIdNode();
         ExprListASTNode argListNode = funCallNode.getArgListNode();

@@ -415,7 +415,7 @@ public class ExprSemanChecker {
         TypeInfo paramDtype;
         ParseResult<ASTNode> argResult;
         ASTNode argNode;
-        ListASTNode argListNode = funCallNode.getArgListNode();
+        MultichildASTNode argListNode = funCallNode.getArgListNode();
         IASTNodeIterator argIter = argListNode.nodeIterator();
         int i = 0;
 
