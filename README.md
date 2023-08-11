@@ -37,7 +37,7 @@ There are several phases in the compilation process:
 * **Assembling**: turns assembly instructions into relocatable machine code.
 * **Linking**: links relocatable machine code with code from other object files to produce executables.
 
-## Compiler v.s Interpreter
+## Compiler, interpreter and beyond
 
 * **Compiler**: compiles the source language to a low-level target language.
 * **Transpiler**: compiles the source language to another high-level target language.
@@ -121,7 +121,7 @@ The code for AST is stored in the package `ast`.
 * AST traversal:
     * `IASTVisitor`: an interface that uses the visitor pattern to traverse and process each node in the tree.
     * `IASTNodeIterator`: an interface that is used to loop over children nodes. This can only be applied to a node with
-      multiple children, that is, it must inherit from `ListASTNode`.
+      multiple children, that is, it must inherit from `MultichildASTNode`.
     * `JSONWalker`: an implementation of `IASTVisitor` that displays the AST using JSON.
 
 ## Other components
