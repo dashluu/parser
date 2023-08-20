@@ -295,9 +295,9 @@ public class ExprParser {
             return arrLiteralResult;
         }
 
-        // Set void as the core type and dimension of 1 by default
+        // Set void as the core type by default
         // Semantics checker will update this later
-        TypeInfo arrDtype = new ArrTypeInfo(VoidType.getInst(), 1);
+        TypeInfo arrDtype = new ArrTypeInfo(VoidType.getInst());
         ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) arrLiteralResult.getData();
         arrLiteralNode.setDtype(arrDtype);
         return ParseResult.ok(arrLiteralNode);
