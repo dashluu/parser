@@ -109,7 +109,7 @@ public class DeclStmtParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<Tok> parseHead() throws IOException {
-        ParseResult<Tok> headResult = tokMatcher.parseTok(TokType.VAR_DECL, context);
+        ParseResult<Tok> headResult = tokMatcher.match(TokType.VAR_DECL, context);
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (headResult.getStatus() == ParseStatus.OK) {
@@ -117,7 +117,7 @@ public class DeclStmtParser {
         }
 
         // If variable keyword is not present, try parsing constant keyword
-        headResult = tokMatcher.parseTok(TokType.CONST_DECL, context);
+        headResult = tokMatcher.match(TokType.CONST_DECL, context);
         if (headResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
@@ -133,7 +133,7 @@ public class DeclStmtParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseId(boolean mutable) throws IOException {
-        ParseResult<Tok> result = tokMatcher.parseTok(TokType.ID, context);
+        ParseResult<Tok> result = tokMatcher.match(TokType.ID, context);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (result.getStatus() == ParseStatus.FAIL) {
@@ -152,7 +152,7 @@ public class DeclStmtParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseDef() throws IOException {
-        ParseResult<Tok> result = tokMatcher.parseTok(TokType.ASSIGNMENT, context);
+        ParseResult<Tok> result = tokMatcher.match(TokType.ASSIGNMENT, context);
         if (result.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (result.getStatus() == ParseStatus.FAIL) {

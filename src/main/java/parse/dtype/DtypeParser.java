@@ -33,7 +33,7 @@ public class DtypeParser {
      */
     public ParseResult<ASTNode> parseTypeAnn(ParseContext context) throws IOException {
         // Try parsing ':'
-        ParseResult<Tok> colonResult = tokMatcher.parseTok(TokType.COLON, context);
+        ParseResult<Tok> colonResult = tokMatcher.match(TokType.COLON, context);
         if (colonResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (colonResult.getStatus() == ParseStatus.FAIL) {
@@ -41,7 +41,7 @@ public class DtypeParser {
         }
 
         // Parse a data type
-        ParseResult<Tok> dtypeResult = tokMatcher.parseTok(TokType.ID, context);
+        ParseResult<Tok> dtypeResult = tokMatcher.match(TokType.ID, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (dtypeResult.getStatus() == ParseStatus.FAIL) {

@@ -122,6 +122,13 @@ public class JSONWalker implements IASTVisitor {
     }
 
     @Override
+    public ASTNode visitGenericDtype(ASTNode node) {
+        GenericDtypeASTNode genericDtypeNode = (GenericDtypeASTNode) node;
+        walkMultichildNode(genericDtypeNode);
+        return node;
+    }
+
+    @Override
     public ASTNode visitLiteral(ASTNode node) {
         walkNode(node);
         return node;

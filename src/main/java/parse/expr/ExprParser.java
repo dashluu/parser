@@ -138,7 +138,7 @@ public class ExprParser {
      */
     private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, boolean isArrLiteral)
             throws IOException {
-        ParseResult<Tok> bracketResult = tokMatcher.parseTok(leftTokType, context);
+        ParseResult<Tok> bracketResult = tokMatcher.match(leftTokType, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (bracketResult.getStatus() == ParseStatus.FAIL) {
@@ -161,13 +161,13 @@ public class ExprParser {
         boolean firstExpr = true;
 
         while (!end) {
-            bracketResult = tokMatcher.parseTok(rightTokType, context);
+            bracketResult = tokMatcher.match(rightTokType, context);
             if (bracketResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             } else if (!(end = bracketResult.getStatus() == ParseStatus.OK)) {
                 if (!firstExpr) {
                     // If this is not the first expression, ',' must be present
-                    commaResult = tokMatcher.parseTok(TokType.COMMA, context);
+                    commaResult = tokMatcher.match(TokType.COMMA, context);
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
@@ -223,7 +223,7 @@ public class ExprParser {
      */
     private ParseResult<ASTNode> parseIdClause() throws IOException {
         // Parse an id first
-        ParseResult<Tok> idResult = tokMatcher.parseTok(TokType.ID, context);
+        ParseResult<Tok> idResult = tokMatcher.match(TokType.ID, context);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
@@ -335,7 +335,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseParenExpr() throws IOException {
-        ParseResult<Tok> parenResult = tokMatcher.parseTok(TokType.LPAREN, context);
+        ParseResult<Tok> parenResult = tokMatcher.match(TokType.LPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
@@ -348,7 +348,7 @@ public class ExprParser {
             return exprResult;
         }
 
-        parenResult = tokMatcher.parseTok(TokType.RPAREN, context);
+        parenResult = tokMatcher.match(TokType.RPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {

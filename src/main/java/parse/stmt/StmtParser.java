@@ -91,7 +91,7 @@ public class StmtParser {
             return semiChecker.check(stmtResult, context);
         }
 
-        ParseResult<Tok> semiResult = tokMatcher.parseTok(TokType.SEMI, context);
+        ParseResult<Tok> semiResult = tokMatcher.match(TokType.SEMI, context);
         if (semiResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (semiResult.getStatus() == ParseStatus.FAIL) {

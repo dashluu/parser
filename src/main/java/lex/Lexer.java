@@ -45,6 +45,29 @@ public class Lexer {
     }
 
     /**
+     * Performs multistep lookahead.
+     *
+     * @param steps   the number of steps to lookahead.
+     * @param context the parsing context.
+     * @return a LexResult object as the result of looking ahead the given number of steps.
+     * @throws IOException if the read operation causes an IO error.
+     */
+    public LexResult<Tok> lookahead(int steps, ParseContext context) throws IOException {
+        LexResult<Tok> result = null;
+
+        for (int i = 0; i < steps; ++i) {
+            result = lookahead(context);
+            // We don't have to check if it has failed here
+            // If there is an error, it is returned immediately
+            if (result.getStatus() == LexStatus.ERR) {
+                return result;
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Looks ahead to the next token without removing it from the stream.
      *
      * @param context the parsing context.

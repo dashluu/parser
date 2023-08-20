@@ -62,7 +62,7 @@ public class IfElseParser extends CondBranchParser {
      */
     private ParseResult<ASTNode> parseElse() throws IOException {
         // keyword
-        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.ELSE, context);
+        ParseResult<Tok> kwResult = tokMatcher.match(TokType.ELSE, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {

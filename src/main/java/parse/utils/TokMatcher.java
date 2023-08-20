@@ -28,7 +28,7 @@ public class TokMatcher {
      * @return a ParseResult as the result of matching a token.
      * @throws IOException if there is an IO exception.
      */
-    public ParseResult<Tok> parseTok(TokType tokType, ParseContext context) throws IOException {
+    public ParseResult<Tok> match(TokType tokType, ParseContext context) throws IOException {
         LexResult<Tok> tokResult = lexer.lookahead(context);
         if (tokResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(tokResult.getErrMsg());

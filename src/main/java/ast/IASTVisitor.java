@@ -5,6 +5,8 @@ public interface IASTVisitor {
 
     ASTNode visitSimpleDtype(ASTNode node);
 
+    ASTNode visitGenericDtype(ASTNode node);
+
     ASTNode visitLiteral(ASTNode node);
 
     ASTNode visitVarDecl(ASTNode node);

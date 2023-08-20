@@ -30,7 +30,7 @@ public class BreakParser {
      */
     public ParseResult<ASTNode> parseBreak(ParseContext context) throws IOException {
         // Check the break keyword
-        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.BREAK, context);
+        ParseResult<Tok> kwResult = tokMatcher.match(TokType.BREAK, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {

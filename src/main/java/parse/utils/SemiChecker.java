@@ -29,7 +29,7 @@ public class SemiChecker {
      */
     public <E> ParseResult<E> check(ParseResult<E> headResult, ParseContext context)
             throws IOException {
-        ParseResult<Tok> semiResult = tokMatcher.parseTok(TokType.SEMI, context);
+        ParseResult<Tok> semiResult = tokMatcher.match(TokType.SEMI, context);
         if (semiResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (semiResult.getStatus() == ParseStatus.FAIL) {

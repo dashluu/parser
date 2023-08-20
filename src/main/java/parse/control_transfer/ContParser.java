@@ -30,7 +30,7 @@ public class ContParser {
      */
     public ParseResult<ASTNode> parseCont(ParseContext context) throws IOException {
         // Check the continue keyword
-        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.CONT, context);
+        ParseResult<Tok> kwResult = tokMatcher.match(TokType.CONT, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {

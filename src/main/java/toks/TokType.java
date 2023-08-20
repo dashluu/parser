@@ -12,6 +12,7 @@ public enum TokType {
     LPAREN, RPAREN,
     LCURLY, RCURLY,
     LSQUARE, RSQUARE,
+    LANGLE, RANGLE,
     COLON, SEMI, COMMA, DOT, ASSIGNMENT,
     EOS
 }

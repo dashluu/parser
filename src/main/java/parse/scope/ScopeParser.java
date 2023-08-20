@@ -54,7 +54,7 @@ public class ScopeParser {
      */
     public ParseResult<ASTNode> parseBlock(ScopeType scopeType, ParseContext context) throws IOException {
         // Try parsing '{'
-        ParseResult<Tok> curlyResult = tokMatcher.parseTok(TokType.LCURLY, context);
+        ParseResult<Tok> curlyResult = tokMatcher.match(TokType.LCURLY, context);
         if (curlyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (curlyResult.getStatus() == ParseStatus.FAIL) {
@@ -74,7 +74,7 @@ public class ScopeParser {
         }
 
         // Try parsing '}'
-        curlyResult = tokMatcher.parseTok(TokType.RCURLY, context);
+        curlyResult = tokMatcher.match(TokType.RCURLY, context);
         if (curlyResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (curlyResult.getStatus() == ParseStatus.FAIL) {

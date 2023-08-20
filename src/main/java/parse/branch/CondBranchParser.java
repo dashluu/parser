@@ -81,7 +81,7 @@ public abstract class CondBranchParser {
      */
     protected ParseResult<ASTNode> parseCond(TokType tokType) throws IOException {
         // keyword
-        ParseResult<Tok> kwResult = tokMatcher.parseTok(tokType, context);
+        ParseResult<Tok> kwResult = tokMatcher.match(tokType, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -89,7 +89,7 @@ public abstract class CondBranchParser {
         }
 
         // '('
-        ParseResult<Tok> lparenResult = tokMatcher.parseTok(TokType.LPAREN, context);
+        ParseResult<Tok> lparenResult = tokMatcher.match(TokType.LPAREN, context);
         if (lparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (lparenResult.getStatus() == ParseStatus.FAIL) {
@@ -105,7 +105,7 @@ public abstract class CondBranchParser {
         }
 
         // ')'
-        ParseResult<Tok> rparenResult = tokMatcher.parseTok(TokType.RPAREN, context);
+        ParseResult<Tok> rparenResult = tokMatcher.match(TokType.RPAREN, context);
         if (rparenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (rparenResult.getStatus() == ParseStatus.FAIL) {

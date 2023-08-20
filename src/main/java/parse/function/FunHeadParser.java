@@ -40,7 +40,7 @@ public class FunHeadParser {
     public ParseResult<ASTNode> parseFunHead(ParseContext context) throws IOException {
         this.context = context;
         // Parse the function keyword
-        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.FUN_DECL, context);
+        ParseResult<Tok> kwResult = tokMatcher.match(TokType.FUN_DECL, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
@@ -54,7 +54,7 @@ public class FunHeadParser {
         }
 
         // Parse the function id
-        ParseResult<Tok> idResult = tokMatcher.parseTok(TokType.ID, context);
+        ParseResult<Tok> idResult = tokMatcher.match(TokType.ID, context);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (idResult.getStatus() == ParseStatus.FAIL) {
@@ -118,7 +118,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseParamList() throws IOException {
         // Parse '('
-        ParseResult<Tok> parenResult = tokMatcher.parseTok(TokType.LPAREN, context);
+        ParseResult<Tok> parenResult = tokMatcher.match(TokType.LPAREN, context);
         if (parenResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (parenResult.getStatus() == ParseStatus.FAIL) {
@@ -136,13 +136,13 @@ public class FunHeadParser {
 
         while (!end) {
             // Parse ')'
-            parenResult = tokMatcher.parseTok(TokType.RPAREN, context);
+            parenResult = tokMatcher.match(TokType.RPAREN, context);
             if (parenResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             } else if (!(end = parenResult.getStatus() == ParseStatus.OK)) {
                 if (!firstArg) {
                     // If this is not the first parameter in the list, ',' must be present
-                    commaResult = tokMatcher.parseTok(TokType.COMMA, context);
+                    commaResult = tokMatcher.match(TokType.COMMA, context);
                     if (commaResult.getStatus() == ParseStatus.ERR) {
                         return ParseResult.err();
                     } else if (commaResult.getStatus() == ParseStatus.FAIL) {
@@ -177,7 +177,7 @@ public class FunHeadParser {
      */
     private ParseResult<ASTNode> parseParam() throws IOException {
         // Parse the parameter's name
-        ParseResult<Tok> nameResult = tokMatcher.parseTok(TokType.ID, context);
+        ParseResult<Tok> nameResult = tokMatcher.match(TokType.ID, context);
         if (nameResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (nameResult.getStatus() == ParseStatus.FAIL) {

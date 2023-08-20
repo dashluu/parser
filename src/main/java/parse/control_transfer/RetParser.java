@@ -41,7 +41,7 @@ public class RetParser {
      */
     public ParseResult<ASTNode> parseRet(ParseContext context) throws IOException {
         // Check for the return keyword
-        ParseResult<Tok> kwResult = tokMatcher.parseTok(TokType.RET, context);
+        ParseResult<Tok> kwResult = tokMatcher.match(TokType.RET, context);
         if (kwResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (kwResult.getStatus() == ParseStatus.FAIL) {
