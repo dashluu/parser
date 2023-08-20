@@ -17,7 +17,6 @@ import toks.TokType;
 import types.ArrTypeInfo;
 import types.IntType;
 import types.TypeInfo;
-import types.TypeInfoType;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -275,7 +274,7 @@ public class ExprSemanChecker {
 
         // Check if the id is of type array
         TypeInfo dtype = arrIdNode.getDtype();
-        if (dtype.getInfoType() != TypeInfoType.ARR) {
+        if (!dtype.isPrimitive()) {
             return context.raiseErr(new ErrMsg("Expected an array identifier '" + arrId + "'", arrIdTok));
         }
 
@@ -346,7 +345,7 @@ public class ExprSemanChecker {
 
             if (firstElm) {
                 firstElm = false;
-                if (elmDtype.getInfoType() != TypeInfoType.ARR) {
+                if (!elmDtype.isPrimitive()) {
                     // The element is not an array
                     arrDtype.setCoreDtype(elmDtype);
                 } else {
@@ -360,7 +359,7 @@ public class ExprSemanChecker {
             } else {
                 arrDim = arrDtype.getDim();
                 // Check if the dimensions match
-                if (elmDtype.getInfoType() != TypeInfoType.ARR) {
+                if (!elmDtype.isPrimitive()) {
                     if (arrDim != 1) {
                         return context.raiseErr(new ErrMsg("Arrays cannot be heterogeneous", elmNode.getSrcRange()));
                     }

@@ -6,7 +6,7 @@ public class VoidType extends TypeInfo {
     private static final VoidType inst = new VoidType();
 
     public VoidType() {
-        super(ID, TypeInfoType.PRIMITIVE, SIZE);
+        super(ID, true, SIZE);
     }
 
     /**

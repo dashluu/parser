@@ -1,14 +1,12 @@
 package types;
 
-public class ArrTypeInfo extends TypeInfo {
+public class ArrTypeInfo extends ObjTypeInfo {
     public static final String ID = "Array";
-    // Size of an array reference
-    public static final int SIZE = 4;
     private TypeInfo coreDtype;
     private int dim;
 
     public ArrTypeInfo(TypeInfo coreDtype, int dim) {
-        super(ID, TypeInfoType.ARR, SIZE);
+        super(ID);
         this.coreDtype = coreDtype;
         this.dim = dim;
     }

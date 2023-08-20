@@ -6,7 +6,7 @@ public class BoolType extends TypeInfo {
     private static final BoolType inst = new BoolType();
 
     public BoolType() {
-        super(ID, TypeInfoType.PRIMITIVE, SIZE);
+        super(ID, true, SIZE);
     }
 
     /**
