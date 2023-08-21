@@ -57,7 +57,7 @@ public class ModuleParser {
      */
     public void init() {
         tokMatcher.init(lexer);
-        dtypeParser.init(tokMatcher);
+        dtypeParser.init(lexer, tokMatcher);
         semiChecker.init(tokMatcher);
         exprParser.init(lexer, tokMatcher, exprSemanChecker);
         declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);

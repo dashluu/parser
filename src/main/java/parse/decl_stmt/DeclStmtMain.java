@@ -33,7 +33,7 @@ public class DeclStmtMain {
             DeclStmtParser declStmtParser = new DeclStmtParser();
 
             tokMatcher.init(lexer);
-            dtypeParser.init(tokMatcher);
+            dtypeParser.init(lexer, tokMatcher);
             exprParser.init(lexer, tokMatcher, exprSemanChecker);
             declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);
 

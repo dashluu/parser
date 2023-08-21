@@ -4,6 +4,9 @@ import ast.ASTNode;
 import ast.DtypeASTNode;
 import ast.SimpleDtypeASTNode;
 import exceptions.ErrMsg;
+import lex.LexResult;
+import lex.LexStatus;
+import lex.Lexer;
 import parse.utils.ParseContext;
 import parse.utils.ParseResult;
 import parse.utils.ParseStatus;
@@ -14,14 +17,17 @@ import toks.TokType;
 import java.io.IOException;
 
 public class DtypeParser {
+    private Lexer lexer;
     private TokMatcher tokMatcher;
 
     /**
      * Initializes the dependencies.
      *
+     * @param lexer      a lexer.
      * @param tokMatcher a token matcher.
      */
-    public void init(TokMatcher tokMatcher) {
+    public void init(Lexer lexer, TokMatcher tokMatcher) {
+        this.lexer = lexer;
         this.tokMatcher = tokMatcher;
     }
 

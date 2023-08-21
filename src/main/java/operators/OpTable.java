@@ -142,7 +142,6 @@ public class OpTable {
         TypeInfo intType = IntType.getInst();
         TypeInfo floatType = FloatType.getInst();
         TypeInfo boolType = BoolType.getInst();
-        TypeInfo voidType = VoidType.getInst();
 
         // Unary operators
         table.registerCompat(new UnOpCompat(TokType.ADD, intType), intType);
@@ -223,16 +222,10 @@ public class OpTable {
         table.registerCompat(new BinOpCompat(TokType.TYPE_CONV, boolType, boolType), boolType);
 
         table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, intType, intType), intType);
-        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, intType, voidType), intType);
         table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, intType, floatType), floatType);
         table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, floatType, intType), floatType);
-        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, floatType, voidType), floatType);
         table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, floatType, floatType), floatType);
         table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, boolType, boolType), boolType);
-        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, boolType, voidType), boolType);
-        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, voidType, intType), intType);
-        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, voidType, floatType), floatType);
-        table.registerCompat(new BinOpCompat(TokType.ARR_TYPE_CONV, voidType, boolType), boolType);
 
         return table;
     }

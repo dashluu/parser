@@ -15,9 +15,6 @@ import toks.SrcPos;
 import toks.SrcRange;
 import toks.Tok;
 import toks.TokType;
-import types.ArrTypeInfo;
-import types.TypeInfo;
-import types.VoidType;
 
 import java.io.IOException;
 
@@ -295,11 +292,8 @@ public class ExprParser {
             return arrLiteralResult;
         }
 
-        // Set void as the core type by default
-        // Semantics checker will update this later
-        TypeInfo arrDtype = new ArrTypeInfo(VoidType.getInst());
+        // Semantics checker will update the array data type later
         ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) arrLiteralResult.getData();
-        arrLiteralNode.setDtype(arrDtype);
         return ParseResult.ok(arrLiteralNode);
     }
 
