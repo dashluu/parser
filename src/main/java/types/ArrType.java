@@ -11,18 +11,17 @@ public class ArrType extends ObjType {
     private TypeInfo elmDtype;
     private final List<Integer> dimList = new ArrayList<>();
 
-    public ArrType(TypeInfo coreDtype, int dim) {
+    public ArrType(TypeInfo dtype) {
         super(ID);
-        this.coreDtype = coreDtype;
-        elmDtype = coreDtype;
-        dimList.add(dim);
-    }
-
-    public ArrType(ArrType elmArrDtype) {
-        super(ID);
-        coreDtype = elmArrDtype.coreDtype;
-        elmDtype = elmArrDtype;
-        dimList.addAll(elmArrDtype.dimList);
+        if (dtype == null || !dtype.getId().equals(ID)) {
+            coreDtype = dtype;
+            elmDtype = dtype;
+        } else {
+            ArrType elmArrDtype = (ArrType) dtype;
+            coreDtype = elmArrDtype.coreDtype;
+            elmDtype = elmArrDtype;
+            dimList.addAll(elmArrDtype.dimList);
+        }
     }
 
     public TypeInfo getCoreDtype() {
@@ -41,6 +40,12 @@ public class ArrType extends ObjType {
         this.elmDtype = elmDtype;
     }
 
+    /**
+     * Gets an array element's data type starting from the given dimension.
+     *
+     * @param startDim the starting dimension used to determine the array element's data type.
+     * @return a data type.
+     */
     public TypeInfo getNestedElmDtype(int startDim) {
         TypeInfo nestedElmDtype = this;
         for (int i = 0; i < startDim; ++i) {
@@ -49,12 +54,26 @@ public class ArrType extends ObjType {
         return nestedElmDtype;
     }
 
-    public void addDim(int dim) {
-        dimList.add(dim);
+    public void addFirstDim(int dim) {
+        dimList.add(0, dim);
     }
 
     public int getNumDims() {
         return dimList.size();
+    }
+
+    /**
+     * Checks if this array data type is homogeneous with another array data type.
+     *
+     * @param arrDtype the other array data type to be checked with.
+     * @return true if the two arrays are homogeneous and false otherwise.
+     */
+    public boolean homogeneousWith(ArrType arrDtype) {
+        if (!equals(arrDtype)) {
+            return false;
+        }
+        // Check if the dimension lists match
+        return dimList.equals(arrDtype.dimList);
     }
 
     @Override
@@ -62,8 +81,8 @@ public class ArrType extends ObjType {
         if (!super.equals(obj) || !(obj instanceof ArrType arrDtype)) {
             return false;
         }
-        // Check if the dimension lists match
-        if (!dimList.equals(arrDtype.dimList)) {
+        // Check if the numbers of dimensions match
+        if (getNumDims() != arrDtype.getNumDims()) {
             return false;
         }
         // Check if the core data types match
