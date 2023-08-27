@@ -37,7 +37,7 @@ public class TokMatcher {
         if (tok.getTokType() != tokType) {
             return ParseResult.fail(tok);
         }
-        lexer.consume();
+        lexer.consume(context);
         return ParseResult.ok(tok);
     }
 }

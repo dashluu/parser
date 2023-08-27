@@ -1,16 +1,25 @@
 package ast;
 
 import toks.SrcRange;
-import toks.Tok;
 import types.TypeInfo;
 
 public class ArrDtypeASTNode extends DtypeASTNode {
-    public ArrDtypeASTNode(Tok tok, SrcRange srcRange, ASTNodeType nodeType, TypeInfo dtype) {
-        super(tok, srcRange, nodeType, dtype);
+    private DtypeASTNode elmDtypeNode;
+
+    public ArrDtypeASTNode(SrcRange srcRange, TypeInfo dtype) {
+        super(null, srcRange, ASTNodeType.ARR_DTYPE, dtype);
+    }
+
+    public DtypeASTNode getElmDtypeNode() {
+        return elmDtypeNode;
+    }
+
+    public void setElmDtypeNode(DtypeASTNode elmDtypeNode) {
+        this.elmDtypeNode = elmDtypeNode;
     }
 
     @Override
     public ASTNode accept(IASTVisitor visitor) {
-        return null;
+        return visitor.visitArrDtype(this);
     }
 }

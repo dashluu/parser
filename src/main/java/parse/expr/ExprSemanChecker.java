@@ -230,8 +230,8 @@ public class ExprSemanChecker {
         } else if (opId == TokType.TYPE_CONV) {
             // Check type conversion operator
             if (rightNode.getNodeType() != ASTNodeType.SIMPLE_DTYPE) {
-                return context.raiseErr(new ErrMsg("Expected a data type on the right-hand side of '" + opVal +
-                        "' operator", rightNode.getSrcRange()));
+                return context.raiseErr(new ErrMsg("Expected a non-array data type on the right-hand side of '" +
+                        opVal + "' operator", rightNode.getSrcRange()));
             }
         } else if (!leftNode.isValExpr() || !rightNode.isValExpr()) {
             return context.raiseErr(new ErrMsg("Each operand on both sides of '" + opVal +
@@ -273,7 +273,7 @@ public class ExprSemanChecker {
         }
 
         // Check if the id is of type array
-        TypeInfo dtype = arrIdNode.getDtype();
+        TypeInfo dtype = symbol.getDtype();
         if (dtype.isPrimitive()) {
             return context.raiseErr(new ErrMsg("Expected an array identifier '" + arrId + "'", arrIdTok));
         }
@@ -310,6 +310,7 @@ public class ExprSemanChecker {
         }
 
         TypeInfo arrAccessDtype = arrDtype.getNestedElmDtype(i);
+        arrIdNode.setDtype(arrDtype);
         arrAccessNode.setDtype(arrAccessDtype);
         return ParseResult.ok(arrAccessNode);
     }
@@ -324,10 +325,9 @@ public class ExprSemanChecker {
     private ParseResult<ASTNode> checkArrLiteral(ArrLiteralASTNode arrLiteralNode) throws IOException {
         ParseResult<ASTNode> elmResult;
         ASTNode elmNode;
-        TypeInfo elmDtype, arrCoreDtype, elmCoreDtype, resultDtype;
+        TypeInfo arrElmDtype, elmDtype;
         ArrType arrDtype;
-        OpCompat opCompat;
-        int dim = arrLiteralNode.countChildren();
+        int elmArrNumElms = 0;
         IASTNodeIterator elmIter = arrLiteralNode.nodeIterator();
         boolean firstElm = true;
 
@@ -339,45 +339,22 @@ public class ExprSemanChecker {
             }
 
             elmNode = elmResult.getData();
-            // Data type of the element, which can be primitive or array
             elmDtype = elmNode.getDtype();
 
             if (firstElm) {
                 firstElm = false;
-                if (elmDtype.isPrimitive()) {
-                    // The element is not an array
-                    arrDtype = new ArrType(elmDtype, dim);
-                } else {
-                    arrDtype = new ArrType((ArrType) elmDtype);
-                    arrDtype.addDim(dim);
-                }
+                arrDtype = new ArrType(elmDtype);
                 arrLiteralNode.setDtype(arrDtype);
+                if (elmNode.getNodeType() == ASTNodeType.ARR_LITERAL) {
+                    elmArrNumElms = ((ArrLiteralASTNode) elmNode).countChildren();
+                }
             } else {
                 // Check if the array is homogeneous
                 arrDtype = (ArrType) arrLiteralNode.getDtype();
-                if ((arrDtype.getElmDtype().getId().equals(ArrType.ID) || elmDtype.getId().equals(ArrType.ID)) &&
-                        !arrDtype.getElmDtype().equals(elmDtype)) {
+                arrElmDtype = arrDtype.getElmDtype();
+                if (!arrElmDtype.equals(elmDtype) || (arrElmDtype.getId().equals(ArrType.ID) &&
+                        ((ArrLiteralASTNode) elmNode).countChildren() != elmArrNumElms)) {
                     return context.raiseErr(new ErrMsg("Arrays must be homogeneous", elmNode.getSrcRange()));
-                }
-
-                if (elmDtype.isPrimitive()) {
-                    elmCoreDtype = elmDtype;
-                } else {
-                    elmCoreDtype = ((ArrType) elmDtype).getCoreDtype();
-                }
-
-                // Check if the core data type of the array and its element match
-                arrCoreDtype = arrDtype.getCoreDtype();
-                if (arrCoreDtype == null) {
-                    arrDtype.setCoreDtype(elmCoreDtype);
-                } else {
-                    opCompat = new BinOpCompat(TokType.ARR_TYPE_CONV, arrCoreDtype, elmCoreDtype);
-                    resultDtype = context.getOpTable().getCompatDtype(opCompat);
-                    if (resultDtype == null) {
-                        return context.raiseErr(new ErrMsg("Unable to have data of type '" + elmCoreDtype.getId() +
-                                "' in an array of type '" + arrCoreDtype.getId() + "'", elmNode.getSrcRange()));
-                    }
-                    arrDtype.setCoreDtype(resultDtype);
                 }
             }
 

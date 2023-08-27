@@ -4,6 +4,7 @@ import ast.*;
 import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
+import parse.dtype.DtypeSemanChecker;
 import parse.utils.ParseContext;
 import parse.utils.ParseResult;
 import parse.utils.ParseStatus;
@@ -16,6 +17,16 @@ import types.TypeInfo;
 
 public class DeclStmtSemanChecker {
     private ParseContext context;
+    private DtypeSemanChecker dtypeSemanChecker;
+
+    /**
+     * Initializes the dependencies.
+     *
+     * @param dtypeSemanChecker a data type semantic checker.
+     */
+    public void init(DtypeSemanChecker dtypeSemanChecker) {
+        this.dtypeSemanChecker = dtypeSemanChecker;
+    }
 
     /**
      * Checks the semantics of a variable declaration statement.
@@ -68,7 +79,7 @@ public class DeclStmtSemanChecker {
             return ParseResult.ok(idSymbol);
         }
 
-        ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
+        ParseResult<TypeInfo> dtypeResult = dtypeSemanChecker.checkDtype(dtypeNode, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
@@ -109,22 +120,6 @@ public class DeclStmtSemanChecker {
     }
 
     /**
-     * Checks if a data type is valid.
-     *
-     * @param dtypeNode the AST node that stores a data type token.
-     * @return a ParseResult object as the result of checking the data type.
-     */
-    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
-        Tok dtypeTok = dtypeNode.getTok();
-        String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = context.getTypeTable().getType(dtypeId);
-        if (dtype == null) {
-            return context.raiseErr(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
-        }
-        return ParseResult.ok(dtype);
-    }
-
-    /**
      * Checks type compatibility between the left-hand side and right-hand side of the variable definition.
      *
      * @param varSymbol the symbol on the left-hand side.
@@ -141,7 +136,7 @@ public class DeclStmtSemanChecker {
         // Compare and check if the lhs and rhs have compatible types
         if (rhsDtype == null) {
             return context.raiseErr(new ErrMsg("No type detected on the right-hand side", defTok));
-        } else if (lhsDtype != rhsDtype) {
+        } else if (lhsDtype == null || !lhsDtype.equals(rhsDtype)) {
             if (lhsDtype != null) {
                 OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
                 if (context.getOpTable().getCompatDtype(opCompat) == null) {

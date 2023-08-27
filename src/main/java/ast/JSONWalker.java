@@ -122,9 +122,15 @@ public class JSONWalker implements IASTVisitor {
     }
 
     @Override
-    public ASTNode visitGenericDtype(ASTNode node) {
-        GenericDtypeASTNode genericDtypeNode = (GenericDtypeASTNode) node;
-        walkMultichildNode(genericDtypeNode);
+    public ASTNode visitArrDtype(ASTNode node) {
+        walkNode(node);
+        ArrDtypeASTNode arrDtypeNode = (ArrDtypeASTNode) node;
+        DtypeASTNode elmDtypeNode = arrDtypeNode.getElmDtypeNode();
+        jsonStrBuff.append(",\"Element data type\":");
+        jsonStrBuff.append("{");
+        elmDtypeNode = (DtypeASTNode) elmDtypeNode.accept(this);
+        jsonStrBuff.append("}");
+        arrDtypeNode.setElmDtypeNode(elmDtypeNode);
         return node;
     }
 

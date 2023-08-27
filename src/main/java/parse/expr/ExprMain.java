@@ -5,6 +5,7 @@ import ast.JSONWalker;
 import exceptions.SyntaxErr;
 import lex.LexReader;
 import lex.Lexer;
+import parse.dtype.DtypeParser;
 import parse.scope.ScopeType;
 import parse.utils.*;
 import parse.utils.ParseContext;
@@ -23,11 +24,12 @@ public class ExprMain {
             LexReader lexReader = new LexReader(reader);
             Lexer lexer = new Lexer(lexReader);
             TokMatcher tokMatcher = new TokMatcher();
+            DtypeParser dtypeParser = new DtypeParser();
             ExprSemanChecker semanChecker = new ExprSemanChecker();
             ExprParser parser = new ExprParser();
 
             tokMatcher.init(lexer);
-            parser.init(lexer, tokMatcher, semanChecker);
+            parser.init(lexer, tokMatcher, dtypeParser, semanChecker);
 
             ParseContext context = ParseContext.createContext();
             Scope globalScope = new Scope(ScopeType.MODULE, null);

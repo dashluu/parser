@@ -2,6 +2,7 @@ package parse.function;
 
 import ast.*;
 import exceptions.ErrMsg;
+import parse.dtype.DtypeSemanChecker;
 import parse.scope.FunScope;
 import parse.scope.Scope;
 import parse.scope.ScopeStack;
@@ -17,6 +18,16 @@ import types.VoidType;
 
 public class FunHeadSemanChecker {
     private ParseContext context;
+    private DtypeSemanChecker dtypeSemanChecker;
+
+    /**
+     * Initializes the dependencies.
+     *
+     * @param dtypeSemanChecker a data type semantic checker.
+     */
+    public void init(DtypeSemanChecker dtypeSemanChecker) {
+        this.dtypeSemanChecker = dtypeSemanChecker;
+    }
 
     /**
      * Checks the semantics of a function header.
@@ -67,7 +78,7 @@ public class FunHeadSemanChecker {
             retDtype = VoidType.getInst();
         } else {
             // Check the return type
-            ParseResult<TypeInfo> retDtypeResult = checkDtype(retDtypeNode);
+            ParseResult<TypeInfo> retDtypeResult = dtypeSemanChecker.checkDtype(retDtypeNode, context);
             if (retDtypeResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
             }
@@ -156,7 +167,7 @@ public class FunHeadSemanChecker {
 
         // Check the parameter's data type
         DtypeASTNode dtypeNode = paramDeclNode.getDtypeNode();
-        ParseResult<TypeInfo> dtypeResult = checkDtype(dtypeNode);
+        ParseResult<TypeInfo> dtypeResult = dtypeSemanChecker.checkDtype(dtypeNode, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return dtypeResult;
         }
@@ -168,22 +179,6 @@ public class FunHeadSemanChecker {
         nameNode.setDtype(dtype);
         dtypeNode.setDtype(dtype);
         paramDeclNode.setDtype(dtype);
-        return ParseResult.ok(dtype);
-    }
-
-    /**
-     * Checks if a data type is valid.
-     *
-     * @param dtypeNode the AST node that stores a data type token.
-     * @return a ParseResult object as the result of checking the data type.
-     */
-    private ParseResult<TypeInfo> checkDtype(DtypeASTNode dtypeNode) {
-        Tok dtypeTok = dtypeNode.getTok();
-        String dtypeId = dtypeTok.getVal();
-        TypeInfo dtype = context.getTypeTable().getType(dtypeId);
-        if (dtype == null) {
-            return context.raiseErr(new ErrMsg("Invalid data type '" + dtypeId + "'", dtypeTok));
-        }
         return ParseResult.ok(dtype);
     }
 }

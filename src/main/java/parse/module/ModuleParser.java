@@ -13,6 +13,7 @@ import parse.control_transfer.ContParser;
 import parse.decl_stmt.DeclStmtParser;
 import parse.decl_stmt.DeclStmtSemanChecker;
 import parse.dtype.DtypeParser;
+import parse.dtype.DtypeSemanChecker;
 import parse.expr.ExprParser;
 import parse.expr.ExprSemanChecker;
 import parse.function.*;
@@ -31,6 +32,7 @@ public class ModuleParser {
     private final Lexer lexer;
     private final TokMatcher tokMatcher = new TokMatcher();
     private final DtypeParser dtypeParser = new DtypeParser();
+    private final DtypeSemanChecker dtypeSemanChecker = new DtypeSemanChecker();
     private final SemiChecker semiChecker = new SemiChecker();
     private final ExprSemanChecker exprSemanChecker = new ExprSemanChecker();
     private final ExprParser exprParser = new ExprParser();
@@ -59,7 +61,8 @@ public class ModuleParser {
         tokMatcher.init(lexer);
         dtypeParser.init(lexer, tokMatcher);
         semiChecker.init(tokMatcher);
-        exprParser.init(lexer, tokMatcher, exprSemanChecker);
+        exprParser.init(lexer, tokMatcher, dtypeParser, exprSemanChecker);
+        declStmtSemanChecker.init(dtypeSemanChecker);
         declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);
         retParser.init(tokMatcher, exprParser);
         breakParser.init(tokMatcher);
@@ -67,6 +70,7 @@ public class ModuleParser {
         stmtParser.init(tokMatcher, semiChecker, exprParser, declStmtParser, retParser, breakParser, contParser);
         ifElseParser.init(tokMatcher, semiChecker, exprParser, scopeParser);
         whileParser.init(tokMatcher, semiChecker, exprParser, scopeParser);
+        funHeadSemanChecker.init(dtypeSemanChecker);
         funHeadParser.init(tokMatcher, dtypeParser, funHeadSemanChecker);
         funDefParser.init(funHeadParser, scopeParser);
         scopeParser.init(lexReader, tokMatcher, stmtParser, funDefParser, ifElseParser, whileParser);

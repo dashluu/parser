@@ -7,6 +7,7 @@ import lex.LexResult;
 import lex.LexStatus;
 import lex.Lexer;
 import operators.OpTable;
+import parse.dtype.DtypeParser;
 import parse.utils.ParseContext;
 import parse.utils.ParseResult;
 import parse.utils.ParseStatus;
@@ -21,6 +22,7 @@ import java.io.IOException;
 public class ExprParser {
     private Lexer lexer;
     private TokMatcher tokMatcher;
+    private DtypeParser dtypeParser;
     private ExprSemanChecker semanChecker;
     private ParseContext context;
 
@@ -29,11 +31,13 @@ public class ExprParser {
      *
      * @param lexer        a lexer.
      * @param tokMatcher   a token matcher.
-     * @param semanChecker an expression semantic checker.
+     * @param dtypeParser  a data type parser.
+     * @param semanChecker a semantic checker for the expression.
      */
-    public void init(Lexer lexer, TokMatcher tokMatcher, ExprSemanChecker semanChecker) {
+    public void init(Lexer lexer, TokMatcher tokMatcher, DtypeParser dtypeParser, ExprSemanChecker semanChecker) {
         this.lexer = lexer;
         this.tokMatcher = tokMatcher;
+        this.dtypeParser = dtypeParser;
         this.semanChecker = semanChecker;
     }
 
@@ -76,7 +80,7 @@ public class ExprParser {
             return ParseResult.fail(opTok);
         }
 
-        lexer.consume();
+        lexer.consume(context);
         UnASTNode opNode = new UnOpASTNode(opTok, null);
         return ParseResult.ok(opNode);
     }
@@ -99,7 +103,7 @@ public class ExprParser {
             return ParseResult.fail(opTok);
         }
 
-        lexer.consume();
+        lexer.consume(context);
         UnASTNode opNode = new UnOpASTNode(opTok, null);
         return ParseResult.ok(opNode);
     }
@@ -127,13 +131,15 @@ public class ExprParser {
     /**
      * Parses a list of expressions independent of the left and right bracket type.
      *
-     * @param leftTokType  the left bracket type identified by its token type.
-     * @param rightTokType the right bracket type identified by its token type.
-     * @param isArrLiteral true if this is an array literal and false otherwise.
+     * @param leftTokType   the left bracket type identified by its token type.
+     * @param rightTokType  the right bracket type identified by its token type.
+     * @param atLeastOneElm true if the list must have at least one element.
+     * @param isArrLiteral  true if this is an array literal and false otherwise.
      * @return a ParseResult object as the result of parsing a list of expressions.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, boolean isArrLiteral)
+    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType,
+                                           boolean atLeastOneElm, boolean isArrLiteral)
             throws IOException {
         ParseResult<Tok> bracketResult = tokMatcher.match(leftTokType, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
@@ -161,7 +167,11 @@ public class ExprParser {
             bracketResult = tokMatcher.match(rightTokType, context);
             if (bracketResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
-            } else if (!(end = bracketResult.getStatus() == ParseStatus.OK)) {
+            } else if ((end = bracketResult.getStatus() == ParseStatus.OK)) {
+                if (firstExpr && atLeastOneElm) {
+                    return ParseResult.fail(bracketResult.getData());
+                }
+            } else {
                 if (!firstExpr) {
                     // If this is not the first expression, ',' must be present
                     commaResult = tokMatcher.match(TokType.COMMA, context);
@@ -194,18 +204,22 @@ public class ExprParser {
     /**
      * Parses an array access expression.
      *
-     * @param arrIdTok the array identifier.
      * @return a ParseResult object as the result of parsing the array access expression.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseArrAccess(Tok arrIdTok) throws IOException {
-        ParseResult<ASTNode> indexListResult = parseList(TokType.LSQUARE, TokType.RSQUARE, false);
+    private ParseResult<ASTNode> parseArrAccess() throws IOException {
+        ParseResult<ASTNode> idResult = parseId();
+        if (idResult.getStatus() == ParseStatus.ERR || idResult.getStatus() == ParseStatus.FAIL) {
+            return idResult;
+        }
+
+        ParseResult<ASTNode> indexListResult = parseList(TokType.LSQUARE, TokType.RSQUARE, true, false);
         if (indexListResult.getStatus() == ParseStatus.ERR || indexListResult.getStatus() == ParseStatus.FAIL) {
             return indexListResult;
         }
 
         ArrAccessASTNode arrAccessNode = new ArrAccessASTNode(null);
-        IdASTNode idNode = new IdASTNode(arrIdTok, null, false);
+        IdASTNode idNode = (IdASTNode) idResult.getData();
         ExprListASTNode indexListNode = (ExprListASTNode) indexListResult.getData();
         arrAccessNode.setIdNode(idNode);
         arrAccessNode.setIndexListNode(indexListNode);
@@ -213,13 +227,40 @@ public class ExprParser {
     }
 
     /**
-     * Parses an identifier and also an argument list following it if there is any.
+     * Parses an identifier clause.
      *
-     * @return a ParseResult object as the result of parsing the identifier and the argument list.
+     * @return a ParseResult object as the result of parsing the identifier clause.
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseIdClause() throws IOException {
-        // Parse an id first
+        // Try parsing a function call
+        ParseResult<ASTNode> result = parseFunCall();
+        if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.OK) {
+            return result;
+        }
+
+        // Try parsing an array data type
+        result = dtypeParser.parseArrDtype(context);
+        if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.OK) {
+            return result;
+        }
+
+        // Try parsing an array access expression
+        result = parseArrAccess();
+        if (result.getStatus() == ParseStatus.ERR || result.getStatus() == ParseStatus.OK) {
+            return result;
+        }
+
+        return parseId();
+    }
+
+    /**
+     * Parses an identifier.
+     *
+     * @return a ParseResult object as the result of parsing the identifier.
+     * @throws IOException if there is an IO exception.
+     */
+    private ParseResult<ASTNode> parseId() throws IOException {
         ParseResult<Tok> idResult = tokMatcher.match(TokType.ID, context);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
@@ -227,39 +268,29 @@ public class ExprParser {
             return ParseResult.fail(idResult.getFailTok());
         }
 
-        Tok idTok = idResult.getData();
-        // Try parsing an argument list
-        ParseResult<ASTNode> argListResult = parseArgList(idTok);
-        if (argListResult.getStatus() == ParseStatus.ERR || argListResult.getStatus() == ParseStatus.OK) {
-            return argListResult;
-        }
-
-        // Try parsing an array access expression
-        ParseResult<ASTNode> arrAccessResult = parseArrAccess(idTok);
-        if (arrAccessResult.getStatus() == ParseStatus.ERR || arrAccessResult.getStatus() == ParseStatus.OK) {
-            return arrAccessResult;
-        }
-
-        // Dummy id node
-        ASTNode idNode = new IdASTNode(idTok, null, false);
+        ASTNode idNode = new IdASTNode(idResult.getData(), null, false);
         return ParseResult.ok(idNode);
     }
 
     /**
-     * Parses a function call's argument list.
+     * Parses a function call.
      *
-     * @param funIdTok the function's identifier token.
-     * @return a ParseResult object as the result of parsing the function call's argument list.
+     * @return a ParseResult object as the result of parsing the function call.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseArgList(Tok funIdTok) throws IOException {
-        ParseResult<ASTNode> argListResult = parseList(TokType.LPAREN, TokType.RPAREN, false);
+    private ParseResult<ASTNode> parseFunCall() throws IOException {
+        ParseResult<ASTNode> idResult = parseId();
+        if (idResult.getStatus() == ParseStatus.ERR || idResult.getStatus() == ParseStatus.FAIL) {
+            return idResult;
+        }
+
+        ParseResult<ASTNode> argListResult = parseList(TokType.LPAREN, TokType.RPAREN, false, false);
         if (argListResult.getStatus() == ParseStatus.ERR || argListResult.getStatus() == ParseStatus.FAIL) {
             return argListResult;
         }
 
         FunCallASTNode funCallNode = new FunCallASTNode(null);
-        IdASTNode idNode = new IdASTNode(funIdTok, null, false);
+        IdASTNode idNode = (IdASTNode) idResult.getData();
         ExprListASTNode argListNode = (ExprListASTNode) argListResult.getData();
         funCallNode.setIdNode(idNode);
         funCallNode.setArgListNode(argListNode);
@@ -287,12 +318,11 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrLiteral() throws IOException {
-        ParseResult<ASTNode> arrLiteralResult = parseList(TokType.LSQUARE, TokType.RSQUARE, true);
+        ParseResult<ASTNode> arrLiteralResult = parseList(TokType.LSQUARE, TokType.RSQUARE, false, true);
         if (arrLiteralResult.getStatus() == ParseStatus.ERR || arrLiteralResult.getStatus() == ParseStatus.FAIL) {
             return arrLiteralResult;
         }
 
-        // Semantics checker will update the array data type later
         ArrLiteralASTNode arrLiteralNode = (ArrLiteralASTNode) arrLiteralResult.getData();
         return ParseResult.ok(arrLiteralNode);
     }
@@ -317,7 +347,7 @@ public class ExprParser {
             return ParseResult.fail(literalTok);
         }
 
-        lexer.consume();
+        lexer.consume(context);
         LiteralASTNode literalNode = new LiteralASTNode(literalTok, null);
         return ParseResult.ok(literalNode);
     }
@@ -526,7 +556,7 @@ public class ExprParser {
                 return leftResult;
             }
 
-            lexer.consume();
+            lexer.consume(context);
             binOpNode = new BinOpASTNode(opTok, null);
             rightResult = parseInfixExpr(opTok);
             rightStatus = rightResult.getStatus();

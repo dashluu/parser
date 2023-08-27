@@ -34,7 +34,7 @@ public class DeclStmtMain {
 
             tokMatcher.init(lexer);
             dtypeParser.init(lexer, tokMatcher);
-            exprParser.init(lexer, tokMatcher, exprSemanChecker);
+            exprParser.init(lexer, tokMatcher, dtypeParser, exprSemanChecker);
             declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);
 
             ParseContext context = ParseContext.createContext();
