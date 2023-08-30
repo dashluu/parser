@@ -104,14 +104,25 @@ public class DtypeParser {
      */
     public ParseResult<ASTNode> parseArrDtype(ParseContext context) throws IOException {
         // Look ahead for '['
-        LexResult<Tok> lookaheadResult = lexer.lookahead(2, context);
-        if (lookaheadResult.getStatus() == LexStatus.ERR) {
+        LexResult<Tok> lookAheadResult = lexer.lookAhead(2, context);
+        if (lookAheadResult.getStatus() == LexStatus.ERR) {
             return ParseResult.err();
         }
 
-        Tok lookaheadTok = lookaheadResult.getData();
-        if (lookaheadTok.getTokType() != TokType.LSQUARE) {
-            return ParseResult.fail(lookaheadTok);
+        Tok lookAheadTok = lookAheadResult.getData();
+        if (lookAheadTok.getTokType() != TokType.LSQUARE) {
+            return ParseResult.fail(lookAheadTok);
+        }
+
+        // Look ahead for ']'
+        lookAheadResult = lexer.lookAhead(3, context);
+        if (lookAheadResult.getStatus() == LexStatus.ERR) {
+            return ParseResult.err();
+        }
+
+        lookAheadTok = lookAheadResult.getData();
+        if (lookAheadTok.getTokType() != TokType.RSQUARE) {
+            return ParseResult.fail(lookAheadTok);
         }
 
         // Parse the array's core data type
@@ -119,7 +130,7 @@ public class DtypeParser {
         if (coreDtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         } else if (coreDtypeResult.getStatus() == ParseStatus.FAIL) {
-            return context.raiseErr(new ErrMsg("Expected a data type for the array", coreDtypeResult.getFailTok()));
+            return ParseResult.fail(coreDtypeResult.getFailTok());
         }
 
         boolean end = false;
@@ -135,11 +146,9 @@ public class DtypeParser {
             squareResult = tokMatcher.match(TokType.LSQUARE, context);
             if (squareResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
-            } else if (squareResult.getStatus() == ParseStatus.FAIL) {
-                end = true;
             }
 
-            if (!end) {
+            if (!(end = squareResult.getStatus() == ParseStatus.FAIL)) {
                 // Parse ']'
                 squareResult = tokMatcher.match(TokType.RSQUARE, context);
                 if (squareResult.getStatus() == ParseStatus.ERR) {
@@ -147,15 +156,14 @@ public class DtypeParser {
                 } else if (squareResult.getStatus() == ParseStatus.FAIL) {
                     return context.raiseErr(new ErrMsg("Missing ']'", squareResult.getFailTok()));
                 }
-            }
 
-            srcRange = new SrcRange(srcRange.getStartPos(), squareResult.getData().getSrcRange().getEndPos());
-            // The number of elements will be updated later by the semantic checker
-            arrDtype = new ArrType(elmDtype);
-            arrDtypeNode = new ArrDtypeASTNode(srcRange, arrDtype);
-            arrDtypeNode.setElmDtypeNode(elmDtypeNode);
-            elmDtype = arrDtype;
-            elmDtypeNode = arrDtypeNode;
+                srcRange = new SrcRange(srcRange.getStartPos(), squareResult.getData().getSrcRange().getEndPos());
+                arrDtype = new ArrType(elmDtype);
+                arrDtypeNode = new ArrDtypeASTNode(srcRange, arrDtype);
+                arrDtypeNode.setElmDtypeNode(elmDtypeNode);
+                elmDtype = arrDtype;
+                elmDtypeNode = arrDtypeNode;
+            }
         }
 
         return ParseResult.ok(arrDtypeNode);
