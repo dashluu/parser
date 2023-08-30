@@ -29,7 +29,7 @@ public class TokMatcher {
      * @throws IOException if there is an IO exception.
      */
     public ParseResult<Tok> match(TokType tokType, ParseContext context) throws IOException {
-        LexResult<Tok> tokResult = lexer.lookahead(context);
+        LexResult<Tok> tokResult = lexer.lookAhead(context);
         if (tokResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(tokResult.getErrMsg());
         }
