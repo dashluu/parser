@@ -39,7 +39,8 @@ public class FunHeadSemanChecker {
     public ParseResult<ASTNode> checkSeman(FunDefASTNode funDefNode, ParseContext context) {
         this.context = context;
         // Check function id
-        ParseResult<FunInfo> idResult = checkId(funDefNode.getIdNode());
+        IdASTNode idNode = funDefNode.getIdNode();
+        ParseResult<FunInfo> idResult = checkId(idNode);
         if (idResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
@@ -52,7 +53,9 @@ public class FunHeadSemanChecker {
         }
 
         // Update the return type
-        funDefNode.setDtype(funSignResult.getData().getDtype());
+        TypeInfo retDtype = funSignResult.getData().getDtype();
+        idNode.setDtype(retDtype);
+        funDefNode.setDtype(retDtype);
         return ParseResult.ok(funDefNode);
     }
 
@@ -78,12 +81,11 @@ public class FunHeadSemanChecker {
             retDtype = VoidType.getInst();
         } else {
             // Check the return type
-            ParseResult<TypeInfo> retDtypeResult = dtypeSemanChecker.checkDtype(retDtypeNode, context);
+            ParseResult<ASTNode> retDtypeResult = dtypeSemanChecker.checkDtype(retDtypeNode, context);
             if (retDtypeResult.getStatus() == ParseStatus.ERR) {
-                return ParseResult.err();
+                return retDtypeResult;
             }
-            retDtype = retDtypeResult.getData();
-            retDtypeNode.setDtype(retDtype);
+            retDtype = retDtypeResult.getData().getDtype();
         }
 
         // Set the return data type for the function scope
@@ -167,12 +169,12 @@ public class FunHeadSemanChecker {
 
         // Check the parameter's data type
         DtypeASTNode dtypeNode = paramDeclNode.getDtypeNode();
-        ParseResult<TypeInfo> dtypeResult = dtypeSemanChecker.checkDtype(dtypeNode, context);
+        ParseResult<ASTNode> dtypeResult = dtypeSemanChecker.checkDtype(dtypeNode, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
-            return dtypeResult;
+            return ParseResult.err();
         }
 
-        TypeInfo dtype = dtypeResult.getData();
+        TypeInfo dtype = dtypeResult.getData().getDtype();
         // Add parameter to the symbol table
         ParamInfo paramInfo = new ParamInfo(name, dtype);
         symbolTable.registerSymbol(paramInfo);
