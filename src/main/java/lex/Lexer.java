@@ -35,7 +35,7 @@ public class Lexer {
      */
     public LexResult<Tok> consume(ParseContext context) throws IOException {
         if (tokBuff.isEmpty()) {
-            LexResult<Tok> tokResult = lookahead(context);
+            LexResult<Tok> tokResult = lookAhead(context);
             if (tokResult.getStatus() == LexStatus.ERR) {
                 return tokResult;
             }
@@ -56,14 +56,14 @@ public class Lexer {
     }
 
     /**
-     * Performs multistep lookahead.
+     * Performs a multistep lookahead.
      *
      * @param steps   the number of steps to look ahead.
      * @param context the parsing context.
      * @return a LexResult object as the result of looking ahead the given number of steps.
      * @throws IOException if the read operation causes an IO error.
      */
-    public LexResult<Tok> lookahead(int steps, ParseContext context) throws IOException {
+    public LexResult<Tok> lookAhead(int steps, ParseContext context) throws IOException {
         LexResult<Tok> tokResult;
         int buffSize = tokBuff.size();
 
@@ -87,7 +87,7 @@ public class Lexer {
      * @return a LexResult object as the result of peeking at the next token.
      * @throws IOException if the read operation causes an IO error.
      */
-    public LexResult<Tok> lookahead(ParseContext context) throws IOException {
+    public LexResult<Tok> lookAhead(ParseContext context) throws IOException {
         // Read from the token buffer before extracting a token from the stream
         if (!tokBuff.isEmpty()) {
             return LexResult.ok(tokBuff.get(0));
