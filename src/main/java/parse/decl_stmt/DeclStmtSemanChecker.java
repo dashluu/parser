@@ -79,15 +79,14 @@ public class DeclStmtSemanChecker {
             return ParseResult.ok(idSymbol);
         }
 
-        ParseResult<TypeInfo> dtypeResult = dtypeSemanChecker.checkDtype(dtypeNode, context);
+        ParseResult<ASTNode> dtypeResult = dtypeSemanChecker.checkDtype(dtypeNode, context);
         if (dtypeResult.getStatus() == ParseStatus.ERR) {
             return ParseResult.err();
         }
 
-        TypeInfo dtype = dtypeResult.getData();
+        TypeInfo dtype = dtypeResult.getData().getDtype();
         declNode.setDtype(dtype);
         idNode.setDtype(dtype);
-        dtypeNode.setDtype(dtype);
         return ParseResult.ok(idSymbol);
     }
 
@@ -132,23 +131,26 @@ public class DeclStmtSemanChecker {
         ASTNode exprNode = defNode.getExprNode();
         TypeInfo lhsDtype = declNode.getDtype();
         TypeInfo rhsDtype = exprNode.getDtype();
+        TypeInfo resultDtype;
 
         // Compare and check if the lhs and rhs have compatible types
         if (rhsDtype == null) {
             return context.raiseErr(new ErrMsg("No type detected on the right-hand side", defTok));
-        } else if (lhsDtype == null || !lhsDtype.equals(rhsDtype)) {
-            if (lhsDtype != null) {
-                OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
-                if (context.getOpTable().getCompatDtype(opCompat) == null) {
-                    return context.raiseErr(new ErrMsg("Unable to assign data of type '" + rhsDtype.getId() +
-                            "' to data of type '" + lhsDtype.getId() + "'", defTok));
-                }
+        } else if (lhsDtype == null || lhsDtype.equals(rhsDtype)) {
+            resultDtype = rhsDtype;
+        } else {
+            OpCompat opCompat = new BinOpCompat(TokType.ASSIGNMENT, lhsDtype, rhsDtype);
+            resultDtype = context.getOpTable().getCompatDtype(opCompat);
+            if (resultDtype == null) {
+                return context.raiseErr(new ErrMsg("Unable to assign data of type '" + rhsDtype.getId() +
+                        "' to data of type '" + lhsDtype.getId() + "'", defTok));
             }
-            declNode.setDtype(rhsDtype);
-            varSymbol.setDtype(rhsDtype);
         }
 
-        defNode.setDtype(rhsDtype);
+        varSymbol.setDtype(resultDtype);
+        // Only assign the result data type to the definition node
+        // No need to do so to the id node or the declaration node
+        defNode.setDtype(resultDtype);
         return ParseResult.ok(defNode);
     }
 }
