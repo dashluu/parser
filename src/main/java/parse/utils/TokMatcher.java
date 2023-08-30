@@ -33,10 +33,12 @@ public class TokMatcher {
         if (tokResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(tokResult.getErrMsg());
         }
+
         Tok tok = tokResult.getData();
         if (tok.getTokType() != tokType) {
             return ParseResult.fail(tok);
         }
+
         lexer.consume(context);
         return ParseResult.ok(tok);
     }
