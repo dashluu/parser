@@ -70,7 +70,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parsePrefixOp() throws IOException {
-        LexResult<Tok> opResult = lexer.lookahead(context);
+        LexResult<Tok> opResult = lexer.lookAhead(context);
         if (opResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(opResult.getErrMsg());
         }
@@ -92,7 +92,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parsePostfixOp() throws IOException {
-        LexResult<Tok> tokResult = lexer.lookahead(context);
+        LexResult<Tok> tokResult = lexer.lookAhead(context);
         if (tokResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(tokResult.getErrMsg());
         }
@@ -131,15 +131,13 @@ public class ExprParser {
     /**
      * Parses a list of expressions independent of the left and right bracket type.
      *
-     * @param leftTokType   the left bracket type identified by its token type.
-     * @param rightTokType  the right bracket type identified by its token type.
-     * @param atLeastOneElm true if the list must have at least one element.
-     * @param isArrLiteral  true if this is an array literal and false otherwise.
+     * @param leftTokType  the left bracket type identified by its token type.
+     * @param rightTokType the right bracket type identified by its token type.
+     * @param isArrLiteral true if this is an array literal and false otherwise.
      * @return a ParseResult object as the result of parsing a list of expressions.
      * @throws IOException if there is an IO exception.
      */
-    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType,
-                                           boolean atLeastOneElm, boolean isArrLiteral)
+    private ParseResult<ASTNode> parseList(TokType leftTokType, TokType rightTokType, boolean isArrLiteral)
             throws IOException {
         ParseResult<Tok> bracketResult = tokMatcher.match(leftTokType, context);
         if (bracketResult.getStatus() == ParseStatus.ERR) {
@@ -167,11 +165,7 @@ public class ExprParser {
             bracketResult = tokMatcher.match(rightTokType, context);
             if (bracketResult.getStatus() == ParseStatus.ERR) {
                 return ParseResult.err();
-            } else if ((end = bracketResult.getStatus() == ParseStatus.OK)) {
-                if (firstExpr && atLeastOneElm) {
-                    return ParseResult.fail(bracketResult.getData());
-                }
-            } else {
+            } else if (!(end = bracketResult.getStatus() == ParseStatus.OK)) {
                 if (!firstExpr) {
                     // If this is not the first expression, ',' must be present
                     commaResult = tokMatcher.match(TokType.COMMA, context);
@@ -208,12 +202,20 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrAccess() throws IOException {
+        // Look ahead 2 steps for '['
+        LexResult<Tok> parenResult = lexer.lookAhead(2, context);
+        if (parenResult.getStatus() == LexStatus.ERR) {
+            return ParseResult.err();
+        } else if (parenResult.getStatus() == LexStatus.OK && parenResult.getData().getTokType() != TokType.LSQUARE) {
+            return ParseResult.fail(parenResult.getData());
+        }
+
         ParseResult<ASTNode> idResult = parseId();
         if (idResult.getStatus() == ParseStatus.ERR || idResult.getStatus() == ParseStatus.FAIL) {
             return idResult;
         }
 
-        ParseResult<ASTNode> indexListResult = parseList(TokType.LSQUARE, TokType.RSQUARE, true, false);
+        ParseResult<ASTNode> indexListResult = parseList(TokType.LSQUARE, TokType.RSQUARE, false);
         if (indexListResult.getStatus() == ParseStatus.ERR || indexListResult.getStatus() == ParseStatus.FAIL) {
             return indexListResult;
         }
@@ -279,12 +281,20 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseFunCall() throws IOException {
+        // Look ahead 2 steps for '('
+        LexResult<Tok> parenResult = lexer.lookAhead(2, context);
+        if (parenResult.getStatus() == LexStatus.ERR) {
+            return ParseResult.err();
+        } else if (parenResult.getStatus() == LexStatus.OK && parenResult.getData().getTokType() != TokType.LPAREN) {
+            return ParseResult.fail(parenResult.getData());
+        }
+
         ParseResult<ASTNode> idResult = parseId();
         if (idResult.getStatus() == ParseStatus.ERR || idResult.getStatus() == ParseStatus.FAIL) {
             return idResult;
         }
 
-        ParseResult<ASTNode> argListResult = parseList(TokType.LPAREN, TokType.RPAREN, false, false);
+        ParseResult<ASTNode> argListResult = parseList(TokType.LPAREN, TokType.RPAREN, false);
         if (argListResult.getStatus() == ParseStatus.ERR || argListResult.getStatus() == ParseStatus.FAIL) {
             return argListResult;
         }
@@ -318,7 +328,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseArrLiteral() throws IOException {
-        ParseResult<ASTNode> arrLiteralResult = parseList(TokType.LSQUARE, TokType.RSQUARE, false, true);
+        ParseResult<ASTNode> arrLiteralResult = parseList(TokType.LSQUARE, TokType.RSQUARE, true);
         if (arrLiteralResult.getStatus() == ParseStatus.ERR || arrLiteralResult.getStatus() == ParseStatus.FAIL) {
             return arrLiteralResult;
         }
@@ -334,7 +344,7 @@ public class ExprParser {
      * @throws IOException if there is an IO exception.
      */
     private ParseResult<ASTNode> parseLiteral() throws IOException {
-        LexResult<Tok> literalResult = lexer.lookahead(context);
+        LexResult<Tok> literalResult = lexer.lookAhead(context);
         if (literalResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(literalResult.getErrMsg());
         }
@@ -503,7 +513,7 @@ public class ExprParser {
      * @return a ParseResult object as the result of parsing an infix operator.
      */
     private ParseResult<Tok> parseInfixOp() throws IOException {
-        LexResult<Tok> opResult = lexer.lookahead(context);
+        LexResult<Tok> opResult = lexer.lookAhead(context);
         if (opResult.getStatus() != LexStatus.OK) {
             return context.raiseErr(opResult.getErrMsg());
         }
