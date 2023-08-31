@@ -117,6 +117,26 @@ public class NumLexer {
     }
 
     /**
+     * Checks if the numeric expression is valid.
+     *
+     * @param val  the string value of the numeric expression.
+     * @param isFp true if the numeric expression is floating-point and false otherwise.
+     * @return true if the numeric expression is valid and false otherwise.
+     */
+    private boolean isValidNum(String val, boolean isFp) {
+        try {
+            if (isFp) {
+                Float.parseFloat(val);
+            } else {
+                Integer.parseInt(val);
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
      * Reads a numeric expression.
      *
      * @return a LexResult object as the result of reading a numeric expression.
@@ -152,9 +172,13 @@ public class NumLexer {
             return LexResult.err(expResult.getErrMsg());
         }
 
-        TokType literalType = (isFp ? TokType.FLOAT_LITERAL : TokType.INT_LITERAL);
         SrcPos endPos = reader.getSrcPos();
         SrcRange srcRange = new SrcRange(startPos, endPos);
+        if (!isValidNum(tokVal.toString(), isFp)) {
+            return LexResult.err(new ErrMsg("Invalid numeric expression", srcRange));
+        }
+
+        TokType literalType = (isFp ? TokType.FLOAT_LITERAL : TokType.INT_LITERAL);
         Tok numTok = new Tok(tokVal.toString(), literalType, srcRange);
         return LexResult.ok(numTok);
     }
