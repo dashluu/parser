@@ -202,6 +202,7 @@ public class ExprSemanChecker {
         }
 
         leftNode = result.getData();
+        binOpNode.setLeft(leftNode);
         TypeInfo leftDtype = leftNode.getDtype();
         // Recursively analyze the semantics of the right node
         ASTNode rightNode = binOpNode.getRight();
@@ -211,6 +212,7 @@ public class ExprSemanChecker {
         }
 
         rightNode = result.getData();
+        binOpNode.setRight(rightNode);
         TypeInfo rightDtype = rightNode.getDtype();
 
         if (opId == TokType.ASSIGNMENT) {
@@ -235,9 +237,6 @@ public class ExprSemanChecker {
                     leftDtype.getId() + "' and type '" + rightDtype.getId() + "'", opTok));
         }
 
-        // Update the left and right child
-        binOpNode.setLeft(leftNode);
-        binOpNode.setRight(rightNode);
         // Set the current node's data type to that of the result
         binOpNode.setDtype(resultDtype);
         return ParseResult.ok(binOpNode);
