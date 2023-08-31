@@ -2,7 +2,7 @@ package ast;
 
 public class IfElseASTNode extends MultichildASTNode {
     public IfElseASTNode() {
-        super(ASTNodeType.IF_ELSE, null, false);
+        super(ASTNodeType.IF_ELSE, null);
     }
 
     @Override

@@ -9,7 +9,7 @@ public class FunSignASTNode extends ASTNode {
 
     public FunSignASTNode(TypeInfo dtype) {
         // data type is the same as the function's return type
-        super(null, new SrcRange(), ASTNodeType.FUN_SIGN, dtype, false);
+        super(null, new SrcRange(), ASTNodeType.FUN_SIGN, dtype);
     }
 
     public ParamListASTNode getParamListNode() {

@@ -7,7 +7,7 @@ public class ElseASTNode extends ASTNode {
     private ScopeASTNode bodyNode;
 
     public ElseASTNode(Tok tok) {
-        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.ELSE, null, false);
+        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.ELSE, null);
     }
 
     public ScopeASTNode getBodyNode() {

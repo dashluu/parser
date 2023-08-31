@@ -9,8 +9,8 @@ public abstract class BinASTNode extends ASTNode {
     protected ASTNode left;
     protected ASTNode right;
 
-    public BinASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
-        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype, valExprFlag);
+    public BinASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {
+        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype);
     }
 
     public ASTNode getLeft() {

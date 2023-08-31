@@ -9,7 +9,7 @@ public class VarDeclASTNode extends ASTNode {
     private DtypeASTNode dtypeNode;
 
     public VarDeclASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.VAR_DECL, dtype, false);
+        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.VAR_DECL, dtype);
     }
 
     public IdASTNode getIdNode() {

@@ -8,7 +8,7 @@ public abstract class BranchNode extends ASTNode {
     protected ScopeASTNode bodyNode;
 
     public BranchNode(Tok tok, ASTNodeType nodeType) {
-        super(tok, new SrcRange(tok.getSrcRange()), nodeType, null, false);
+        super(tok, new SrcRange(tok.getSrcRange()), nodeType, null);
     }
 
     public ASTNode getCondNode() {

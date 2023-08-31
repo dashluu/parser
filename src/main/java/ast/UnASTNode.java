@@ -8,8 +8,8 @@ import types.TypeInfo;
 public abstract class UnASTNode extends ASTNode {
     protected ASTNode exprNode;
 
-    public UnASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
-        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype, valExprFlag);
+    public UnASTNode(Tok tok, ASTNodeType nodeType, TypeInfo dtype) {
+        super(tok, new SrcRange(tok.getSrcRange()), nodeType, dtype);
     }
 
     public ASTNode getExprNode() {

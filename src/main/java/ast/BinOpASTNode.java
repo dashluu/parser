@@ -5,7 +5,7 @@ import types.TypeInfo;
 
 public class BinOpASTNode extends BinASTNode {
     public BinOpASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.BIN_OP, dtype, true);
+        super(tok, ASTNodeType.BIN_OP, dtype);
     }
 
     @Override

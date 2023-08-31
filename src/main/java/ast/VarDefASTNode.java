@@ -9,7 +9,7 @@ public class VarDefASTNode extends ASTNode {
     private ASTNode exprNode;
 
     public VarDefASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.VAR_DEF, dtype, false);
+        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.VAR_DEF, dtype);
     }
 
     public VarDeclASTNode getVarDeclNode() {

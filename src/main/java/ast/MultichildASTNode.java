@@ -36,8 +36,8 @@ public abstract class MultichildASTNode extends ASTNode implements Iterable<ASTN
 
     protected final List<ASTNode> children = new ArrayList<>();
 
-    public MultichildASTNode(ASTNodeType nodeType, TypeInfo dtype, boolean valExprFlag) {
-        super(null, new SrcRange(), nodeType, dtype, valExprFlag);
+    public MultichildASTNode(ASTNodeType nodeType, TypeInfo dtype) {
+        super(null, new SrcRange(), nodeType, dtype);
     }
 
     /**

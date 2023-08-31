@@ -5,7 +5,7 @@ import types.TypeInfo;
 
 public class RetASTNode extends UnASTNode {
     public RetASTNode(Tok tok, TypeInfo dtype) {
-        super(tok, ASTNodeType.RET, dtype, false);
+        super(tok, ASTNodeType.RET, dtype);
     }
 
     @Override

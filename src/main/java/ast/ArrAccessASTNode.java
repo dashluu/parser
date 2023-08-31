@@ -8,7 +8,7 @@ public class ArrAccessASTNode extends ASTNode {
     private ExprListASTNode indexListNode;
 
     public ArrAccessASTNode(TypeInfo dtype) {
-        super(null, new SrcRange(), ASTNodeType.ARR_ACCESS, dtype, true);
+        super(null, new SrcRange(), ASTNodeType.ARR_ACCESS, dtype);
     }
 
     public IdASTNode getIdNode() {

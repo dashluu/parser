@@ -8,7 +8,7 @@ public class FunCallASTNode extends ASTNode {
     private ExprListASTNode argListNode;
 
     public FunCallASTNode(TypeInfo dtype) {
-        super(null, new SrcRange(), ASTNodeType.FUN_CALL, dtype, true);
+        super(null, new SrcRange(), ASTNodeType.FUN_CALL, dtype);
     }
 
     public IdASTNode getIdNode() {

@@ -4,7 +4,7 @@ import types.TypeInfo;
 
 public class ArrLiteralASTNode extends MultichildASTNode {
     public ArrLiteralASTNode(TypeInfo dtype) {
-        super(ASTNodeType.ARR_LITERAL, dtype, true);
+        super(ASTNodeType.ARR_LITERAL, dtype);
     }
 
     @Override

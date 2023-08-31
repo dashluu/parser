@@ -11,7 +11,7 @@ public class FunDefASTNode extends ASTNode {
     private ScopeASTNode bodyNode;
 
     public FunDefASTNode(Tok tok, TypeInfo retDtype) {
-        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.FUN_DEF, retDtype, false);
+        super(tok, new SrcRange(tok.getSrcRange()), ASTNodeType.FUN_DEF, retDtype);
     }
 
     public IdASTNode getIdNode() {

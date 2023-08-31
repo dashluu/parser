@@ -4,7 +4,7 @@ import toks.Tok;
 
 public class ContASTNode extends ASTNode {
     public ContASTNode(Tok tok) {
-        super(tok, tok.getSrcRange(), ASTNodeType.CONT, null, false);
+        super(tok, tok.getSrcRange(), ASTNodeType.CONT, null);
     }
 
     @Override

@@ -61,6 +61,7 @@ public class ModuleParser {
         tokMatcher.init(lexer);
         dtypeParser.init(lexer, tokMatcher);
         semiChecker.init(tokMatcher);
+        exprSemanChecker.init(dtypeSemanChecker);
         exprParser.init(lexer, tokMatcher, dtypeParser, exprSemanChecker);
         declStmtSemanChecker.init(dtypeSemanChecker);
         declStmtParser.init(tokMatcher, dtypeParser, exprParser, declStmtSemanChecker);
@@ -94,7 +95,7 @@ public class ModuleParser {
 
         // Check if the end of stream is reached
         // If not, there is a syntax error
-        LexResult<Tok> lexResult = lexer.lookahead(context);
+        LexResult<Tok> lexResult = lexer.lookAhead(context);
         if (lexResult.getStatus() != LexStatus.OK) {
             // Lexer always yields an OK or error status
             return context.raiseErr(lexResult.getErrMsg());

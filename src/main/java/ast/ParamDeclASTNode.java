@@ -8,7 +8,7 @@ public class ParamDeclASTNode extends ASTNode {
     private DtypeASTNode dtypeNode;
 
     public ParamDeclASTNode(TypeInfo dtype) {
-        super(null, new SrcRange(), ASTNodeType.PARAM_DECL, dtype, false);
+        super(null, new SrcRange(), ASTNodeType.PARAM_DECL, dtype);
     }
 
     public IdASTNode getIdNode() {
