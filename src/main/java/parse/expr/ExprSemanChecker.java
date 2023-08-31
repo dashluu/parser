@@ -5,6 +5,7 @@ import exceptions.ErrMsg;
 import operators.BinOpCompat;
 import operators.OpCompat;
 import operators.UnOpCompat;
+import parse.dtype.DtypeSemanChecker;
 import parse.utils.ParseContext;
 import parse.utils.ParseResult;
 import parse.utils.ParseStatus;
@@ -23,6 +24,16 @@ import java.util.Iterator;
 
 public class ExprSemanChecker {
     private ParseContext context;
+    private DtypeSemanChecker dtypeSemanChecker;
+
+    /**
+     * Initializes the dependencies.
+     *
+     * @param dtypeSemanChecker a data type semantic checker.
+     */
+    public void init(DtypeSemanChecker dtypeSemanChecker) {
+        this.dtypeSemanChecker = dtypeSemanChecker;
+    }
 
     /**
      * Checks the semantics of an expression.
@@ -34,28 +45,7 @@ public class ExprSemanChecker {
      */
     public ParseResult<ASTNode> checkSeman(ASTNode exprNode, ParseContext context) throws IOException {
         this.context = context;
-        return checkValExprSeman(exprNode);
-    }
-
-    /**
-     * Checks if an expression is a value expression, that is, it carries a value and not just a data type.
-     *
-     * @param exprNode the expression AST's root to be checked.
-     * @return a ParseResult object as the result of checking the expression.
-     * @throws IOException if there is an IO exception.
-     */
-    private ParseResult<ASTNode> checkValExprSeman(ASTNode exprNode) throws IOException {
-        ParseResult<ASTNode> result = recurCheckSeman(exprNode);
-        if (result.getStatus() == ParseStatus.ERR) {
-            return result;
-        }
-
-        exprNode = result.getData();
-        if (!exprNode.isValExpr()) {
-            return context.raiseErr(new ErrMsg("Expected a value expression", exprNode.getSrcRange()));
-        }
-
-        return result;
+        return recurCheckSeman(exprNode);
     }
 
     /**
@@ -76,7 +66,8 @@ public class ExprSemanChecker {
             case BIN_OP -> result = typeCheckBinExpr((BinOpASTNode) exprNode);
             case ARR_ACCESS -> result = checkArrAccess((ArrAccessASTNode) exprNode);
             case ARR_LITERAL -> result = checkArrLiteral((ArrLiteralASTNode) exprNode);
-            default -> result = checkFunCall((FunCallASTNode) exprNode);
+            case FUN_CALL -> result = checkFunCall((FunCallASTNode) exprNode);
+            default -> result = dtypeSemanChecker.checkDtype((DtypeASTNode) exprNode, context);
         }
 
         return result;
@@ -139,7 +130,7 @@ public class ExprSemanChecker {
         ASTNode exprNode = unOpNode.getExprNode();
 
         // Recursively analyze the semantics of the operand node
-        ParseResult<ASTNode> result = checkValExprSeman(exprNode);
+        ParseResult<ASTNode> result = recurCheckSeman(exprNode);
         if (result.getStatus() == ParseStatus.ERR) {
             return result;
         }
@@ -154,7 +145,7 @@ public class ExprSemanChecker {
                     operandDtype.getId() + "'", opTok));
         }
 
-        // Update the child node
+        // Update the expression node
         unOpNode.setExprNode(exprNode);
         // Set the current node's data type to that of the result
         unOpNode.setDtype(resultDtype);
@@ -162,32 +153,34 @@ public class ExprSemanChecker {
     }
 
     /**
-     * Checks if the left-hand side node of an operator is holding an lvalue.
+     * Checks if the left-hand side of the assignment node is holding an lvalue.
      *
-     * @param leftNode the left-hand side node of the operator.
-     * @param opTok    the operator token.
-     * @return a ParseResult object as the result of checking the left-hand side node of the operator.
+     * @param assignmentNode the assignment node.
+     * @return a ParseResult object as the result of checking the left-hand side of the assignment node.
      */
-    private ParseResult<ASTNode> checkLvalue(ASTNode leftNode, Tok opTok) {
-        IdASTNode leftIdNode;
+    private ParseResult<ASTNode> checkAssignmentLvalue(BinOpASTNode assignmentNode) {
+        ASTNode leftNode = assignmentNode.getLeft();
         ASTNodeType leftNodeType = leftNode.getNodeType();
+        if ((leftNodeType != ASTNodeType.ID && leftNodeType != ASTNodeType.ARR_ACCESS) ||
+                (leftNodeType == ASTNodeType.ARR_ACCESS && leftNode.getDtype().getId().equals(ArrType.ID))) {
+            return context.raiseErr(new ErrMsg("The left-hand side of '" + assignmentNode.getTok().getVal() +
+                    "' is not an lvalue", leftNode.getSrcRange()));
+        }
 
+        IdASTNode idNode;
         if (leftNodeType == ASTNodeType.ID) {
-            leftIdNode = (IdASTNode) leftNode;
-        } else if (leftNodeType == ASTNodeType.ARR_ACCESS) {
-            ArrAccessASTNode leftArrAccessNode = (ArrAccessASTNode) leftNode;
-            leftIdNode = leftArrAccessNode.getIdNode();
+            idNode = (IdASTNode) leftNode;
         } else {
-            return context.raiseErr(new ErrMsg("The left-hand side of '" + opTok.getVal() + "' is not lvalue",
-                    leftNode.getSrcRange()));
+            ArrAccessASTNode leftArrAccessNode = (ArrAccessASTNode) leftNode;
+            idNode = leftArrAccessNode.getIdNode();
         }
 
-        Tok leftTok = leftIdNode.getTok();
-        if (!leftIdNode.isMutable()) {
-            return context.raiseErr(new ErrMsg("Identifier '" + leftTok.getVal() + "' is not mutable", leftTok));
+        Tok idTok = idNode.getTok();
+        if (!idNode.isMutable()) {
+            return context.raiseErr(new ErrMsg("Identifier '" + idTok.getVal() + "' is not mutable", idTok));
         }
 
-        return ParseResult.ok(leftNode);
+        return ParseResult.ok(assignmentNode);
     }
 
     /**
@@ -222,20 +215,16 @@ public class ExprSemanChecker {
 
         if (opId == TokType.ASSIGNMENT) {
             // Check assignment operator
-            result = checkLvalue(leftNode, opTok);
+            result = checkAssignmentLvalue(binOpNode);
             if (result.getStatus() == ParseStatus.ERR) {
                 return result;
             }
-            leftNode = result.getData();
         } else if (opId == TokType.TYPE_CONV) {
             // Check type conversion operator
             if (rightNode.getNodeType() != ASTNodeType.SIMPLE_DTYPE) {
                 return context.raiseErr(new ErrMsg("Expected a non-array data type on the right-hand side of '" +
                         opVal + "' operator", rightNode.getSrcRange()));
             }
-        } else if (!leftNode.isValExpr() || !rightNode.isValExpr()) {
-            return context.raiseErr(new ErrMsg("Each operand on both sides of '" + opVal +
-                    "' must be a value expression", opTok));
         }
 
         // Check the result's data type after applying the operator
@@ -275,7 +264,7 @@ public class ExprSemanChecker {
         // Check if the id is of type array
         TypeInfo dtype = symbol.getDtype();
         if (dtype.isPrimitive()) {
-            return context.raiseErr(new ErrMsg("Expected an array identifier '" + arrId + "'", arrIdTok));
+            return context.raiseErr(new ErrMsg("Invalid array identifier '" + arrId + "'", arrIdTok));
         }
 
         ParseResult<ASTNode> indexResult;
@@ -286,7 +275,7 @@ public class ExprSemanChecker {
 
         while (indexIter.hasNext()) {
             indexNode = indexIter.next();
-            indexResult = checkValExprSeman(indexNode);
+            indexResult = recurCheckSeman(indexNode);
             if (indexResult.getStatus() == ParseStatus.ERR) {
                 return indexResult;
             }
@@ -305,12 +294,13 @@ public class ExprSemanChecker {
 
         ArrType arrDtype = (ArrType) dtype;
         if (i > arrDtype.getNumDims()) {
-            return context.raiseErr(new ErrMsg("Accessing array '" + arrId + "' requires <= " + arrDtype.getNumDims() +
-                    "dimensions but got " + i, arrIdNode.getSrcRange()));
+            return context.raiseErr(new ErrMsg("Accessing array '" + arrId + "' requires <= " +
+                    arrDtype.getNumDims() + " dimensions but got " + i, arrAccessNode.getSrcRange()));
         }
 
-        TypeInfo arrAccessDtype = arrDtype.getNestedElmDtype(i);
         arrIdNode.setDtype(arrDtype);
+        arrIdNode.setMutable(symbol.isMutable());
+        TypeInfo arrAccessDtype = arrDtype.getNestedElmDtype(i);
         arrAccessNode.setDtype(arrAccessDtype);
         return ParseResult.ok(arrAccessNode);
     }
@@ -333,13 +323,18 @@ public class ExprSemanChecker {
 
         while (elmIter.hasNext()) {
             elmNode = elmIter.next();
-            elmResult = checkValExprSeman(elmNode);
+            elmResult = recurCheckSeman(elmNode);
             if (elmResult.getStatus() == ParseStatus.ERR) {
                 return elmResult;
             }
 
             elmNode = elmResult.getData();
             elmDtype = elmNode.getDtype();
+            if (elmNode.getNodeType() != ASTNodeType.ARR_LITERAL && elmDtype.getId().equals(ArrType.ID)) {
+                // Element as an array reference but not an array literal
+                return context.raiseErr(new ErrMsg("Cannot have an array reference element inside an array literal",
+                        elmNode.getSrcRange()));
+            }
 
             if (firstElm) {
                 firstElm = false;
@@ -354,7 +349,7 @@ public class ExprSemanChecker {
                 arrElmDtype = arrDtype.getElmDtype();
                 if (!arrElmDtype.equals(elmDtype) || (arrElmDtype.getId().equals(ArrType.ID) &&
                         ((ArrLiteralASTNode) elmNode).countChildren() != elmArrNumElms)) {
-                    return context.raiseErr(new ErrMsg("Arrays must be homogeneous", elmNode.getSrcRange()));
+                    return context.raiseErr(new ErrMsg("An array must be homogeneous", elmNode.getSrcRange()));
                 }
             }
 
@@ -395,15 +390,15 @@ public class ExprSemanChecker {
             argNode = argIter.next();
             // Check if each argument type is as expected
             paramDtype = paramDtypesIter.next();
-            argResult = checkValExprSeman(argNode);
+            argResult = recurCheckSeman(argNode);
             if (argResult.getStatus() == ParseStatus.ERR) {
                 return argResult;
             }
 
             argNode = argResult.getData();
             if (!argNode.getDtype().equals(paramDtype)) {
-                return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.getId() + "' for argument " + i,
-                        argNode.getSrcRange()));
+                return context.raiseErr(new ErrMsg("Expected type '" + paramDtype.getId() + "' for argument " +
+                        (i + 1), argNode.getSrcRange()));
             }
 
             // Update the argument node at the current position
