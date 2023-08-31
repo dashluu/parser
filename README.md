@@ -151,8 +151,8 @@ The code for AST is stored in the package `ast`.
 * The code for the symbol table is in the package `symbols`.
 * Symbols refer to variables, constants, parameters, and functions.
 * Symbol table maps an identifier to a `SymbolInfo` object that stores a symbol's information, including its data type.
-* The currently supported primitive data types include 32-bit `Int`, `Float`, `Void`, and 8-bit `Bool`. Arrays are also
-  being implemented.
+* The currently supported primitive data types include 32-bit `Int`, `Float`, `Void`, and 8-bit `Bool`. Initial
+  implementation of arrays is in the work.
 * The compiler is statically typed(like C++ or Java) and not dynamically typed(like Python or JavaScript).
 
 ### Type compatibilities and operators
@@ -181,6 +181,21 @@ Keep in mind that the language is still buggy and these features might not work 
 var a = 6;
 // The statement above is equivalent to
 var a:Int = 6;
+```
+
+### Arrays
+
+* Each element in the array must have the same core data type regardless of the dimension.
+* Each element that is of type array and in the same depth must have the same number of elements.
+* All arrays are homogeneous.
+* To access an array, we use square brackets to surround the list of indices as shown below.
+
+```
+// A two-dimensional array
+var a:Int[][] = [[1, 2], [3, 4]];
+// Accessing '2' in array 'a'
+// Note that a[0][1] raises a syntax error
+var b = a[0, 1];
 ```
 
 ### Functions
